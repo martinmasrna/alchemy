@@ -172,7 +172,9 @@
   // All motion is Web Animations with pixel values: CSS variables inside keyframes are unreliable on iOS.
   function reveal(rec) {
     const st = $("stage"), A = items.find((i) => i.id === rec.a), B = items.find((i) => i.id === rec.b), k = I[intensity];
-    const T = k.dur * 1000, STOP = k.stop * 1000, d0 = Math.round(T + STOP + 500);
+    const T = k.dur * 1000, STOP = k.stop * 1000;
+    const M = variant === "orbit" ? T * 1.4 : T; // when the ingredients meet
+    const d0 = Math.round(M + STOP + 500);
     const sparks = Array.from({ length: k.sparks }, () => `<div class="anchor spark"><div></div></div>`).join("");
     st.className = "stage show";
     st.innerHTML = `<div class="backdrop"></div><div class="who" id="who">
@@ -199,20 +201,22 @@
       q(".ing.b > div").animate([{ transform: `translate(${b0.x}px, ${b0.y}px)`, opacity: 1 }, { opacity: 1, offset: .95 }, meet], fwd(T, 0, ease));
     } else {
       const ease = "cubic-bezier(.5,0,.9,.4)";
-      q(".ing.a > div").animate([{ transform: `translate(${a0.x}px, ${a0.y}px)`, opacity: 1 }, { transform: "rotate(0deg) translateX(80px) rotate(0deg)", offset: .3 }, { opacity: 1, offset: .95 }, { transform: "rotate(540deg) translateX(0px) rotate(-540deg) scale(.5)", opacity: 0 }], fwd(T, 0, ease));
-      q(".ing.b > div").animate([{ transform: `translate(${b0.x}px, ${b0.y}px)`, opacity: 1 }, { transform: "rotate(180deg) translateX(80px) rotate(-180deg)", offset: .3 }, { opacity: 1, offset: .95 }, { transform: "rotate(720deg) translateX(0px) rotate(-720deg) scale(.5)", opacity: 0 }], fwd(T, 0, ease));
+      // same transform functions from first frame to last, so the browser interpolates the angle, not a straight line
+      const r = Math.abs(a0.x);
+      q(".ing.a > div").animate([{ transform: `rotate(180deg) translateX(${r}px) rotate(-180deg)`, opacity: 1 }, { opacity: 1, offset: .95 }, { transform: "rotate(720deg) translateX(0px) rotate(-720deg) scale(.5)", opacity: 0 }], fwd(T * 1.4, 0, ease));
+      q(".ing.b > div").animate([{ transform: `rotate(0deg) translateX(${r}px) rotate(0deg)`, opacity: 1 }, { opacity: 1, offset: .95 }, { transform: "rotate(540deg) translateX(0px) rotate(-540deg) scale(.5)", opacity: 0 }], fwd(T * 1.4, 0, ease));
     }
     // the impact: flash and ring on contact, the stage kicks, then a hit-stop before the result lands
-    q(".flash > div").animate([{ transform: "scale(.2)", opacity: 1 }, { transform: `scale(${k.flash})`, opacity: 0 }], fwd(300, T));
-    q(".ring > div").animate([{ transform: "scale(.2)", opacity: 1 }, { transform: `scale(${k.ring})`, opacity: 0 }], fwd(600, T));
+    q(".flash > div").animate([{ transform: "scale(.2)", opacity: 1 }, { transform: `scale(${k.flash})`, opacity: 0 }], fwd(300, M));
+    q(".ring > div").animate([{ transform: "scale(.2)", opacity: 1 }, { transform: `scale(${k.ring})`, opacity: 0 }], fwd(600, M));
     const kk = k.kick;
-    q("#who").animate([{ transform: "none" }, { transform: `translate(${-kk}px, ${kk * .6}px)`, offset: .2 }, { transform: `translate(${kk * .7}px, ${-kk * .4}px)`, offset: .45 }, { transform: `translate(${-kk * .3}px, ${kk * .2}px)`, offset: .7 }, { transform: "none" }], { duration: 300, delay: T, easing: "cubic-bezier(.2,.8,.2,1)" });
-    q(".glow > div").animate([{ transform: "scale(.2)", opacity: 0 }, { opacity: 1, offset: .4 }, { transform: "scale(1.6)", opacity: .35 }], fwd(1200, T + STOP));
+    q("#who").animate([{ transform: "none" }, { transform: `translate(${-kk}px, ${kk * .6}px)`, offset: .2 }, { transform: `translate(${kk * .7}px, ${-kk * .4}px)`, offset: .45 }, { transform: `translate(${-kk * .3}px, ${kk * .2}px)`, offset: .7 }, { transform: "none" }], { duration: 300, delay: M, easing: "cubic-bezier(.2,.8,.2,1)" });
+    q(".glow > div").animate([{ transform: "scale(.2)", opacity: 0 }, { opacity: 1, offset: .4 }, { transform: "scale(1.6)", opacity: .35 }], fwd(1200, M + STOP));
     st.querySelectorAll(".spark > div").forEach((s, i) => {
       const a = Math.round(i * 360 / k.sparks);
-      s.animate([{ transform: `rotate(${a}deg) translateX(0px)`, opacity: 1 }, { transform: `rotate(${a}deg) translateX(${k.fly}px)`, opacity: 0 }], fwd(900, T + STOP + (i % 3) * 50));
+      s.animate([{ transform: `rotate(${a}deg) translateX(0px)`, opacity: 1 }, { transform: `rotate(${a}deg) translateX(${k.fly}px)`, opacity: 0 }], fwd(900, M + STOP + (i % 3) * 50));
     });
-    q(".out > div").animate([{ transform: "scale(.2)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], fwd(600, T + STOP, "cubic-bezier(.2,1.6,.4,1)"));
+    q(".out > div").animate([{ transform: "scale(.2)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], fwd(600, M + STOP, "cubic-bezier(.2,1.6,.4,1)"));
 
     st.onclick = () => { st.className = "stage"; if (!has(rec.id)) { items.push({ id: rec.id, icon: rec.icon, name: rec.name }); newId = rec.id; render(); } };
   }
