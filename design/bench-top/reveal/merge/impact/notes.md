@@ -10,3 +10,5 @@ Added to both remaining approaches:
 - impact: a white flash and a ring shockwave at the moment of contact, a hit-stop before the result lands, and a kick that jolts the whole stage.
 
 Axis: intensity, as a knob. soft / medium / hard scale the hit-stop (60 to 160ms), kick (3 to 14px), flash, ring, spark count and flight. Approach stays selectable (collide, orbit) so the two knobs can be judged independently.
+
+Round 4b: the ingredients started from the top-left on iOS. Cause: CSS custom properties inside @keyframes, which iOS Safari resolves unreliably. All arena motion now runs through the Web Animations API with pixel values computed in JS. Rule for the port: no var() inside keyframes, ever.

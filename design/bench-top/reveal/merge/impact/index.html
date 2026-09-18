@@ -60,8 +60,6 @@
   .backdrop { position: absolute; inset: 0; background: rgba(5,6,10,.9); animation: fadein .2s; }
   @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
   .who { position: relative; text-align: center; max-width: 360px; width: 100%; }
-  .who.kick { animation: kick .3s var(--t) cubic-bezier(.2,.8,.2,1); }
-  @keyframes kick { 0% { transform: none; } 20% { transform: translate(calc(var(--k) * -1), calc(var(--k) * .6)); } 45% { transform: translate(calc(var(--k) * .7), calc(var(--k) * -.4)); } 70% { transform: translate(calc(var(--k) * -.3), calc(var(--k) * .2)); } 100% { transform: none; } }
   .pair { font-size: 14px; color: var(--muted); }
   .name { font-size: 32px; font-weight: 600; line-height: 1.15; margin-top: 8px; }
   .blurb { font-size: 16px; color: var(--text); margin-top: 16px; text-align: left; }
@@ -80,28 +78,8 @@
   .ring > div { width: 60px; height: 60px; margin: -30px; border-radius: 50%; border: 2px solid var(--accent); }
   .glow > div { width: 160px; height: 160px; margin: -80px; border-radius: 50%; background: radial-gradient(circle, rgba(245,196,81,.55), rgba(245,196,81,0) 70%); }
   .spark > div { width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: var(--accent); }
+  .ing > div, .out > div, .flash > div, .ring > div, .glow > div, .spark > div { opacity: 0; } /* every actor starts hidden; JS animates with real pixel values */
 
-  /* the approach: ingredients start where their slots are (--ax/--ay, --bx/--by), pull back, then go */
-  .collide .ing.a { animation: cA var(--dur) cubic-bezier(.7,-.3,1,.5) forwards; }
-  .collide .ing.b { animation: cB var(--dur) cubic-bezier(.7,-.3,1,.5) forwards; }
-  @keyframes cA { 0% { transform: translate(var(--ax), var(--ay)); opacity: 1; } 95% { opacity: 1; } 100% { transform: translate(0,0) scale(.5); opacity: 0; } }
-  @keyframes cB { 0% { transform: translate(var(--bx), var(--by)); opacity: 1; } 95% { opacity: 1; } 100% { transform: translate(0,0) scale(.5); opacity: 0; } }
-  .orbit .ing.a { animation: oA var(--dur) cubic-bezier(.5,0,.9,.4) forwards; }
-  .orbit .ing.b { animation: oB var(--dur) cubic-bezier(.5,0,.9,.4) forwards; }
-  @keyframes oA { 0% { transform: translate(var(--ax), var(--ay)); opacity: 1; } 30% { transform: rotate(0deg) translateX(80px) rotate(0deg); } 95% { opacity: 1; } 100% { transform: rotate(540deg) translateX(0) rotate(-540deg) scale(.5); opacity: 0; } }
-  @keyframes oB { 0% { transform: translate(var(--bx), var(--by)); opacity: 1; } 30% { transform: rotate(180deg) translateX(80px) rotate(-180deg); } 95% { opacity: 1; } 100% { transform: rotate(720deg) translateX(0) rotate(-720deg) scale(.5); opacity: 0; } }
-
-  /* the impact: flash and ring at --t, then a hit-stop of --stop before the result lands */
-  .flash > div { opacity: 0; animation: flash .3s ease-out var(--t) forwards; }
-  @keyframes flash { 0% { transform: scale(.2); opacity: 1; } 100% { transform: scale(var(--f)); opacity: 0; } }
-  .ring > div { opacity: 0; animation: ring .6s ease-out var(--t) forwards; }
-  @keyframes ring { 0% { transform: scale(.2); opacity: 1; } 100% { transform: scale(var(--r)); opacity: 0; } }
-  .glow > div { opacity: 0; animation: glow 1.2s ease-out calc(var(--t) + var(--stop)) forwards; }
-  @keyframes glow { 0% { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } 100% { transform: scale(1.6); opacity: .35; } }
-  .spark > div { opacity: 0; animation: fly .9s ease-out calc(var(--t) + var(--stop) + var(--d)) forwards; }
-  @keyframes fly { 0% { transform: rotate(var(--a)) translateX(0); opacity: 1; } 100% { transform: rotate(var(--a)) translateX(var(--fl)); opacity: 0; } }
-  .out > div { opacity: 0; animation: land .6s cubic-bezier(.2,1.6,.4,1) calc(var(--t) + var(--stop)) forwards; }
-  @keyframes land { 0% { transform: scale(.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 </style>
 </head>
 <body>
@@ -191,16 +169,17 @@
     }
   }
 
-  // ingredient A leaves the first slot, ingredient B leaves the card that was just tapped
+  // ingredient A leaves the first slot, ingredient B leaves the card that was just tapped.
+  // All motion is Web Animations with pixel values: CSS variables inside keyframes are unreliable on iOS.
   function reveal(rec, fromCard) {
     const st = $("stage"), A = items.find((i) => i.id === rec.a), B = items.find((i) => i.id === rec.b), k = I[intensity];
     const ra = $("slotA").getBoundingClientRect();
     const rb = (fromCard ?? $("slotB")).getBoundingClientRect();
-    const sparks = Array.from({ length: k.sparks }, (_, i) => `<div class="anchor spark" style="--a:${Math.round(i * 360 / k.sparks)}deg; --d:${(i % 3) * .05}s"><div></div></div>`).join("");
-    const t = k.dur, d0 = Math.round((t + k.stop + .5) * 1000);
-    st.className = "stage show " + variant;
-    st.innerHTML = `<div class="backdrop"></div><div class="who kick" style="--t:${t}s; --k:${k.kick}px">
-      <div class="arena" id="arena" style="--t:${t}s; --dur:${t}s; --stop:${k.stop}s; --f:${k.flash}; --r:${k.ring}; --fl:${k.fly}px">
+    const T = k.dur * 1000, STOP = k.stop * 1000, d0 = Math.round(T + STOP + 500);
+    const sparks = Array.from({ length: k.sparks }, () => `<div class="anchor spark"><div></div></div>`).join("");
+    st.className = "stage show";
+    st.innerHTML = `<div class="backdrop"></div><div class="who" id="who">
+      <div class="arena" id="arena">
         <div class="anchor ing a"><div>${A.icon}</div></div><div class="anchor ing b"><div>${B.icon}</div></div>
         <div class="anchor flash"><div></div></div><div class="anchor ring"><div></div></div><div class="anchor glow"><div></div></div>${sparks}
         <div class="anchor out"><div>${rec.icon}</div></div>
@@ -209,11 +188,37 @@
       <div class="name in" style="animation-delay:${d0 + 100}ms">${rec.name}</div>
       <div class="blurb in" style="animation-delay:${d0 + 250}ms">${rec.blurb}</div>
       <div class="credit in" style="animation-delay:${d0 + 450}ms">+1 credit</div></div>`;
-    // now that the arena is laid out, aim the ingredients from their real starting points
-    const ar = $("arena").getBoundingClientRect(), ax = ar.left + ar.width / 2, ay = ar.top + ar.height / 2;
-    const arena = $("arena");
-    arena.style.setProperty("--ax", `${ra.left + ra.width / 2 - ax}px`); arena.style.setProperty("--ay", `${ra.top + ra.height / 2 - ay}px`);
-    arena.style.setProperty("--bx", `${rb.left + rb.width / 2 - ax}px`); arena.style.setProperty("--by", `${rb.top + rb.height / 2 - ay}px`);
+
+    // where the actors start, relative to the arena centre
+    const ar = $("arena").getBoundingClientRect(), cx = ar.left + ar.width / 2, cy = ar.top + ar.height / 2;
+    const a0 = { x: ra.left + ra.width / 2 - cx, y: ra.top + ra.height / 2 - cy };
+    const b0 = { x: rb.left + rb.width / 2 - cx, y: rb.top + rb.height / 2 - cy };
+    const q = (sel) => st.querySelector(sel);
+    const fwd = (duration, delay = 0, easing = "ease-out") => ({ duration, delay, easing, fill: "forwards" });
+
+    // the approach
+    const meet = { transform: "translate(0px, 0px) scale(.5)", opacity: 0, offset: 1 };
+    if (variant === "collide") {
+      const ease = "cubic-bezier(.7,-.3,1,.5)"; // negative overshoot = the pull-back before the flight
+      q(".ing.a > div").animate([{ transform: `translate(${a0.x}px, ${a0.y}px)`, opacity: 1 }, { opacity: 1, offset: .95 }, meet], fwd(T, 0, ease));
+      q(".ing.b > div").animate([{ transform: `translate(${b0.x}px, ${b0.y}px)`, opacity: 1 }, { opacity: 1, offset: .95 }, meet], fwd(T, 0, ease));
+    } else {
+      const ease = "cubic-bezier(.5,0,.9,.4)";
+      q(".ing.a > div").animate([{ transform: `translate(${a0.x}px, ${a0.y}px)`, opacity: 1 }, { transform: "rotate(0deg) translateX(80px) rotate(0deg)", offset: .3 }, { opacity: 1, offset: .95 }, { transform: "rotate(540deg) translateX(0px) rotate(-540deg) scale(.5)", opacity: 0 }], fwd(T, 0, ease));
+      q(".ing.b > div").animate([{ transform: `translate(${b0.x}px, ${b0.y}px)`, opacity: 1 }, { transform: "rotate(180deg) translateX(80px) rotate(-180deg)", offset: .3 }, { opacity: 1, offset: .95 }, { transform: "rotate(720deg) translateX(0px) rotate(-720deg) scale(.5)", opacity: 0 }], fwd(T, 0, ease));
+    }
+    // the impact: flash and ring on contact, the stage kicks, then a hit-stop before the result lands
+    q(".flash > div").animate([{ transform: "scale(.2)", opacity: 1 }, { transform: `scale(${k.flash})`, opacity: 0 }], fwd(300, T));
+    q(".ring > div").animate([{ transform: "scale(.2)", opacity: 1 }, { transform: `scale(${k.ring})`, opacity: 0 }], fwd(600, T));
+    const kk = k.kick;
+    q("#who").animate([{ transform: "none" }, { transform: `translate(${-kk}px, ${kk * .6}px)`, offset: .2 }, { transform: `translate(${kk * .7}px, ${-kk * .4}px)`, offset: .45 }, { transform: `translate(${-kk * .3}px, ${kk * .2}px)`, offset: .7 }, { transform: "none" }], { duration: 300, delay: T, easing: "cubic-bezier(.2,.8,.2,1)" });
+    q(".glow > div").animate([{ transform: "scale(.2)", opacity: 0 }, { opacity: 1, offset: .4 }, { transform: "scale(1.6)", opacity: .35 }], fwd(1200, T + STOP));
+    st.querySelectorAll(".spark > div").forEach((s, i) => {
+      const a = Math.round(i * 360 / k.sparks);
+      s.animate([{ transform: `rotate(${a}deg) translateX(0px)`, opacity: 1 }, { transform: `rotate(${a}deg) translateX(${k.fly}px)`, opacity: 0 }], fwd(900, T + STOP + (i % 3) * 50));
+    });
+    q(".out > div").animate([{ transform: "scale(.2)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], fwd(600, T + STOP, "cubic-bezier(.2,1.6,.4,1)"));
+
     st.onclick = () => { st.className = "stage"; if (!has(rec.id)) { items.push({ id: rec.id, icon: rec.icon, name: rec.name }); newId = rec.id; render(); } };
   }
 
@@ -228,6 +233,9 @@
   if (state === "orbit") { document.querySelector('[data-v="orbit"]').click(); tap("hydrogen"); tap("oxygen"); }
   if (state === "hard") { document.querySelector('[data-i="hard"]').click(); tap("hydrogen"); tap("oxygen"); }
   if (state === "dud") { tap("energy"); tap("energy"); }
+  // ?freeze=<ms> holds every animation at that moment, for screenshots
+  const freeze = new URLSearchParams(location.search).get("freeze");
+  if (freeze !== null) requestAnimationFrame(() => document.getAnimations().forEach((a) => { a.pause(); a.currentTime = +freeze; }));
 </script>
 </body>
 </html>
