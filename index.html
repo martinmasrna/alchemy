@@ -22,10 +22,21 @@
   footer { flex-wrap: wrap; }
   header { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0 6px; }
   header h1 { font-size: 18px; margin: 0; font-weight: 600; }
-  header .count { color: var(--muted); font-variant-numeric: tabular-nums; }
+  header .meta { display: flex; gap: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  header .credits { color: var(--accent); }
+  .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .label .sub { text-transform: none; letter-spacing: 0; margin-left: 6px; opacity: .7; }
+  .hiddenwrap { margin-top: 22px; }
+  .hiddenwrap .grid { margin-top: 8px; }
+  .card.unknown { border-style: dashed; color: var(--muted); }
+  .card.unknown .icon { color: var(--muted); }
+  .card.armed { border-color: var(--accent); color: var(--accent); border-style: solid; }
+  .card.armed .icon { color: var(--accent); }
+  .card.named { border-style: dashed; opacity: .85; }
+  .card .how { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .card button.how { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; cursor: pointer; }
 
   .goal { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 8px 0; }
-  .goal .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
   .targets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
   .target { display: inline-flex; align-items: center; gap: 6px; background: var(--panel-2); border: 1px dashed var(--line); border-radius: 999px; padding: 4px 6px 4px 10px; font-size: 14px; }
   .target.summit { border-color: var(--accent); color: var(--accent); }
@@ -76,12 +87,15 @@
 <body>
   <header>
     <h1 id="worldName">…</h1>
-    <div class="count"><span id="count">0</span> / <span id="total">0</span></div>
+    <div class="meta">
+      <span class="credits" title="hint credits">⬡ <span id="credits">0</span></span>
+      <span class="count"><span id="count">0</span> / <span id="total">0</span></span>
+    </div>
   </header>
 
   <section class="goal">
     <div class="label">Goal</div>
-    <div class="targets" id="targets"></div>
+    <div class="targets" id="goal"></div>
   </section>
 
   <section class="bench" id="bench">
@@ -96,6 +110,11 @@
   </section>
 
   <section class="grid" id="grid"></section>
+
+  <section class="hiddenwrap">
+    <div class="label">Undiscovered · <span id="hiddenCount">0</span> <span class="sub">tap a square twice to learn its name</span></div>
+    <div class="grid" id="hidden"></div>
+  </section>
 
   <footer>
     <span id="elapsed"></span>

@@ -7,21 +7,38 @@ const recipes = new Map(); // pairKey -> result id
 for (const it of world.items) if (it.recipe) recipes.set(pairKey(...it.recipe), it.id);
 const children = (id) => world.items.filter((i) => i.recipe?.includes(id));
 const discoveries = world.items.filter((i) => !i.seed);
+const isDeadEnd = (id) => id !== world.summit && children(id).length === 0;
+const critical = new Set([world.summit]);
+(function walk(id) { for (const p of byId.get(id).recipe ?? []) if (!critical.has(p)) { critical.add(p); walk(p); } })(world.summit);
+
+// Hints cost credits. Every discovery earns one. Tunable.
+const START_CREDITS = 2;
+const EARN = 1;
+const COST = { name: 1, leads: 2, pairs: 2, recipe: 3 };
+
+// Undiscovered squares sit in a fixed shuffled order so position leaks nothing.
+const hash = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+const hiddenOrder = discoveries.map((i) => i.id).filter((id) => id !== world.summit).sort((a, b) => hash(a + world.id) - hash(b + world.id));
 
 // ---------- state ----------
 const KEY = `alchemy.${world.id}`;
 const fresh = () => ({
+  version: world.version,
   owned: [...world.seeds],
-  tried: [],              // pairKeys that produced nothing
-  targets: [world.summit], // names the player knows exist
-  recipesKnown: [],       // target ids whose recipe was revealed
+  tried: [],               // pairKeys that produced nothing
+  named: [world.summit],   // undiscovered ids whose name the player knows
+  recipesKnown: [],        // ids whose recipe was revealed
+  credits: START_CREDITS,
   startedAt: Date.now(),
   finishedAt: null,
-  log: [],                // { t, kind: "try"|"hint", ... }
+  log: [],                 // { t, kind: "try"|"hint", ... }
 });
 let S = load();
 function load() {
-  try { const raw = localStorage.getItem(KEY); if (raw) return { ...fresh(), ...JSON.parse(raw) }; } catch {}
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) { const s = JSON.parse(raw); if (s.version === world.version) return { ...fresh(), ...s }; }
+  } catch {}
   return fresh();
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
@@ -29,47 +46,31 @@ const owned = () => new Set(S.owned);
 
 // ---------- dom ----------
 const $ = (id) => document.getElementById(id);
-const el = { grid: $("grid"), targets: $("targets"), slotA: $("slotA"), slotB: $("slotB"), bench: $("bench"),
-  hintLeads: $("hintLeads"), hintPairs: $("hintPairs"), count: $("count"), total: $("total"),
+const el = { grid: $("grid"), hidden: $("hidden"), hiddenCount: $("hiddenCount"), goal: $("goal"), slotA: $("slotA"), slotB: $("slotB"), bench: $("bench"),
+  hintLeads: $("hintLeads"), hintPairs: $("hintPairs"), count: $("count"), total: $("total"), credits: $("credits"),
   toast: $("toast"), overlay: $("overlay"), reveal: $("reveal"), elapsed: $("elapsed") };
 
-let selected = null; // id of first pick
-let justMade = null; // id to animate
+let selected = null;   // id of first pick
+let justMade = null;   // id to animate
+let armed = null;      // hidden id waiting for a second tap to buy its name
+let armTimer;
 
 $("worldName").textContent = world.name;
 document.title = `${world.name} · Alchemy`;
 el.total.textContent = discoveries.length;
+el.hintLeads.textContent = `What does this lead to? · ${COST.leads}`;
+el.hintPairs.textContent = `What goes with this? · ${COST.pairs}`;
 
 // ---------- rendering ----------
 function render() {
   const own = owned();
   el.count.textContent = S.owned.filter((id) => !byId.get(id).seed).length;
+  el.credits.textContent = S.credits;
 
-  // targets
-  el.targets.innerHTML = "";
-  for (const tid of S.targets) {
-    if (own.has(tid)) continue;
-    const t = byId.get(tid);
-    const chip = document.createElement("div");
-    chip.className = "target" + (tid === world.summit ? " summit" : "");
-    chip.innerHTML = `<span>${t.icon} ${t.name}</span>`;
-    if (S.recipesKnown.includes(tid)) {
-      const [a, b] = t.recipe.map((x) => byId.get(x));
-      chip.innerHTML += `<span class="recipe">= ${a.icon} ${a.name} + ${b.icon} ${b.name}</span>`;
-    } else {
-      const btn = document.createElement("button");
-      btn.textContent = "how?";
-      btn.onclick = (e) => { e.stopPropagation(); revealRecipe(tid); };
-      chip.appendChild(btn);
-    }
-    el.targets.appendChild(chip);
-  }
-  if (own.has(world.summit)) {
-    const done = document.createElement("div");
-    done.className = "target summit";
-    done.innerHTML = `<span>${byId.get(world.summit).icon} ${byId.get(world.summit).name} — reached</span>`;
-    el.targets.appendChild(done);
-  }
+  // goal
+  const summit = byId.get(world.summit);
+  el.goal.innerHTML = "";
+  el.goal.appendChild(targetChip(summit, own.has(world.summit)));
 
   // bench
   const sel = selected ? byId.get(selected) : null;
@@ -77,9 +78,10 @@ function render() {
   el.slotA.innerHTML = sel ? `<span class="icon">${sel.icon}</span>${sel.name}` : "tap a card";
   el.slotB.className = "slot";
   el.slotB.textContent = sel ? "then another (or the same)" : "then another";
-  el.hintLeads.disabled = el.hintPairs.disabled = !sel;
+  el.hintLeads.disabled = !sel || S.credits < COST.leads;
+  el.hintPairs.disabled = !sel || S.credits < COST.pairs;
 
-  // grid: seeds first, then in discovery order
+  // owned grid: seeds first, then in discovery order
   el.grid.innerHTML = "";
   for (const id of S.owned) {
     const it = byId.get(id);
@@ -97,10 +99,56 @@ function render() {
     el.grid.appendChild(card);
   }
   justMade = null;
+
+  // hidden grid: ? squares and named-but-unmade items
+  el.hidden.innerHTML = "";
+  let remaining = 0;
+  for (const id of hiddenOrder) {
+    if (own.has(id)) continue;
+    remaining++;
+    const it = byId.get(id);
+    const card = document.createElement("div");
+    if (S.named.includes(id)) {
+      card.className = "card named";
+      const known = S.recipesKnown.includes(id);
+      const [a, b] = known ? it.recipe.map((x) => byId.get(x)) : [];
+      card.innerHTML = `<div class="icon">${it.icon}</div><div class="name">${it.name}</div>` +
+        (known ? `<div class="how">${a.icon} + ${b.icon}</div>` : `<button class="how">how? · ${COST.recipe}</button>`);
+      if (!known) card.querySelector("button").onclick = (e) => { e.stopPropagation(); revealRecipe(id); };
+    } else if (id === armed) {
+      card.className = "card unknown armed";
+      card.innerHTML = `<div class="icon">?</div><div class="name">name it · ${COST.name}</div>`;
+      card.onclick = () => revealName(id);
+    } else {
+      card.className = "card unknown";
+      card.innerHTML = `<div class="icon">?</div><div class="name">&nbsp;</div>`;
+      card.onclick = () => arm(id);
+    }
+    el.hidden.appendChild(card);
+  }
+  el.hiddenCount.textContent = remaining;
+}
+
+function targetChip(t, reached) {
+  const chip = document.createElement("div");
+  chip.className = "target summit";
+  if (reached) { chip.innerHTML = `<span>${t.icon} ${t.name} — reached</span>`; return chip; }
+  chip.innerHTML = `<span>${t.icon} ${t.name}</span>`;
+  if (S.recipesKnown.includes(t.id)) {
+    const [a, b] = t.recipe.map((x) => byId.get(x));
+    chip.innerHTML += `<span class="recipe">= ${a.icon} ${a.name} + ${b.icon} ${b.name}</span>`;
+  } else {
+    const btn = document.createElement("button");
+    btn.textContent = `how? · ${COST.recipe}`;
+    btn.onclick = (e) => { e.stopPropagation(); revealRecipe(t.id); };
+    chip.appendChild(btn);
+  }
+  return chip;
 }
 
 // ---------- play ----------
 function pick(id) {
+  disarm();
   if (!selected) { selected = id; render(); return; }
   combine(selected, id);
   selected = null;
@@ -112,6 +160,7 @@ function combine(a, b) {
   const own = owned();
   if (result && !own.has(result)) {
     S.owned.push(result);
+    S.credits += EARN;
     S.log.push({ t: Date.now(), kind: "try", a, b, result });
     if (result === world.summit && !S.finishedAt) S.finishedAt = Date.now();
     justMade = result;
@@ -146,7 +195,7 @@ function showReveal(id, a, b) {
   el.reveal.innerHTML = `
     <div class="icon">${it.icon}</div>
     <h2>${it.name}</h2>
-    <div class="made">${A.icon} ${A.name} + ${B.icon} ${B.name}</div>
+    <div class="made">${A.icon} ${A.name} + ${B.icon} ${B.name} · +${EARN} credit</div>
     <p>${it.blurb}</p>
     <button id="closeReveal">${isSummit ? "Home." : "Go on"}</button>${stats}`;
   el.overlay.classList.add("show");
@@ -156,58 +205,76 @@ function showReveal(id, a, b) {
 function closeReveal() { el.overlay.classList.remove("show"); }
 
 let toastTimer;
-function toast(msg) {
+function toast(msg, ms = 3000) {
   el.toast.textContent = msg; el.toast.classList.add("show");
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.toast.classList.remove("show"), 1400);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.toast.classList.remove("show"), ms);
 }
 
-// ---------- hints (free for now) ----------
-function addTarget(id) { if (!S.targets.includes(id) && !owned().has(id)) S.targets.push(id); }
+// ---------- hints ----------
+function pay(type) {
+  if (S.credits < COST[type]) { toast(`Not enough credits. That one costs ${COST[type]}, you have ${S.credits}.`); return false; }
+  S.credits -= COST[type];
+  return true;
+}
+function nameIt(id) { if (!S.named.includes(id) && !owned().has(id)) S.named.push(id); }
+
+// Prefer what moves the player toward the summit; point at a dead end only when nothing else is left.
+function pickChild(from) {
+  const own = owned();
+  const cands = children(from).filter((c) => !own.has(c.id));
+  const rank = (c) => (critical.has(c.id) ? 0 : isDeadEnd(c.id) ? 2 : 1);
+  cands.sort((a, b) => rank(a) - rank(b));
+  return cands.length ? cands.filter((c) => rank(c) === rank(cands[0])) : [];
+}
+const oneOf = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+function arm(id) { armed = id; clearTimeout(armTimer); armTimer = setTimeout(disarm, 3000); render(); }
+function disarm() { if (armed) { armed = null; render(); } }
+
+function revealName(id) {
+  armed = null; clearTimeout(armTimer);
+  if (!pay("name")) { render(); return; }
+  nameIt(id);
+  S.log.push({ t: Date.now(), kind: "hint", type: "name", revealed: id });
+  save(); render();
+  toast(`That one is ${byId.get(id).name}.`);
+}
 
 function revealRecipe(tid) {
+  if (S.recipesKnown.includes(tid)) return;
+  if (!pay("recipe")) return;
   const t = byId.get(tid);
-  if (!S.recipesKnown.includes(tid)) S.recipesKnown.push(tid);
-  for (const p of t.recipe) addTarget(p);
+  S.recipesKnown.push(tid);
+  for (const p of t.recipe) nameIt(p);
   S.log.push({ t: Date.now(), kind: "hint", type: "recipe", target: tid });
   save(); render();
 }
 
 el.hintLeads.onclick = () => {
-  const own = owned();
-  const cands = children(selected).filter((c) => !own.has(c.id) && !S.targets.includes(c.id));
-  const known = children(selected).filter((c) => !own.has(c.id) && S.targets.includes(c.id));
-  const name = byId.get(selected).name;
-  if (cands.length) {
-    const c = cands[Math.floor(Math.random() * cands.length)];
-    addTarget(c.id);
-    S.log.push({ t: Date.now(), kind: "hint", type: "leads", from: selected, revealed: c.id });
-    toast(`${name} leads to ${c.name}.`);
-  } else if (known.length) {
-    toast(`${name} leads to ${known.map((c) => c.name).join(", ")}. You knew that.`);
-  } else if (children(selected).length) {
-    toast(`You've already made everything ${name} leads to.`);
-  } else {
-    S.log.push({ t: Date.now(), kind: "hint", type: "leads", from: selected, revealed: null });
-    toast(`${name} leads nowhere further. A dead end.`);
+  const from = selected; const name = byId.get(from).name;
+  const cands = pickChild(from);
+  if (!children(from).length) { if (!pay("leads")) return; S.log.push({ t: Date.now(), kind: "hint", type: "leads", from, revealed: null }); toast(`${name} leads nowhere further. A dead end.`); }
+  else if (!cands.length) { toast(`You've already made everything ${name} leads to.`); }
+  else {
+    const unnamed = cands.filter((c) => !S.named.includes(c.id));
+    if (!unnamed.length) { toast(`${name} leads to ${cands.map((c) => c.name).join(", ")}. You knew that.`); }
+    else { if (!pay("leads")) return; const c = oneOf(unnamed); nameIt(c.id); S.log.push({ t: Date.now(), kind: "hint", type: "leads", from, revealed: c.id }); toast(`${name} leads to ${c.name}.`); }
   }
   selected = null; save(); render();
 };
 
 el.hintPairs.onclick = () => {
-  const own = owned();
-  const cands = children(selected).filter((c) => !own.has(c.id));
-  const name = byId.get(selected).name;
-  if (cands.length) {
-    const c = cands[Math.floor(Math.random() * cands.length)];
-    const partner = c.recipe[0] === selected ? c.recipe[1] : c.recipe[0];
-    if (partner === selected) toast(`${name} goes with itself.`);
-    else { addTarget(partner); toast(`${name} goes with ${byId.get(partner).name}.`); }
-    S.log.push({ t: Date.now(), kind: "hint", type: "pairs", from: selected, partner });
-  } else if (children(selected).length) {
-    toast(`You've already made everything ${name} leads to.`);
-  } else {
-    S.log.push({ t: Date.now(), kind: "hint", type: "pairs", from: selected, partner: null });
-    toast(`${name} goes with nothing. A dead end.`);
+  const from = selected; const name = byId.get(from).name;
+  const cands = pickChild(from);
+  if (!children(from).length) { if (!pay("pairs")) return; S.log.push({ t: Date.now(), kind: "hint", type: "pairs", from, partner: null }); toast(`${name} goes with nothing. A dead end.`); }
+  else if (!cands.length) { toast(`You've already made everything ${name} leads to.`); }
+  else {
+    if (!pay("pairs")) return;
+    const c = oneOf(cands);
+    const partner = c.recipe[0] === from ? c.recipe[1] : c.recipe[0];
+    if (partner === from) toast(`${name} goes with itself.`);
+    else { nameIt(partner); toast(`${name} goes with ${byId.get(partner).name}.`); }
+    S.log.push({ t: Date.now(), kind: "hint", type: "pairs", from, partner });
   }
   selected = null; save(); render();
 };
