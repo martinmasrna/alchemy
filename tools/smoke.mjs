@@ -66,6 +66,7 @@ try {
   await evalJs(HELPERS);
 
   const total = world.items.filter((i) => !i.seed).length;
+  const byId = new Map(world.items.map((i) => [i.id, i]));
   check((await evalJs("__names().length")) === 4, "starts with 4 seeds");
   check((await evalJs("document.getElementById('total').textContent")) === String(total), "total counter matches table");
   check((await evalJs("document.querySelectorAll('#hidden .sq').length")) === total - 1, "one ? square per undiscovered item, summit excluded");
@@ -89,18 +90,21 @@ try {
   check((await evalJs("__credits()")) === c0 + 1, "a discovery earns one credit");
   check((await evalJs("document.querySelectorAll('#hidden .sq').length")) === total - 2, "its ? square disappears");
 
-  // recipe hint on the summit costs 3
+  // too poor for a recipe yet
   await evalJs("document.querySelector('#goal .target.summit button').click()");
-  check((await evalJs("document.querySelector('#goal .target.summit .recipe').textContent")).includes("Ocean"), "summit 'how?' reveals Ocean + Air");
-  check((await evalJs("__credits()")) === c0 + 1 - 3, "recipe hint cost 3");
-  check((await evalJs("document.querySelectorAll('#named .target').length")) === 2, "Ocean and Air show as named squares");
-
-  // not enough credits for another recipe
-  await evalJs("document.querySelector('#named .target button').click()");
   check((await evalJs("__toast()")).includes("Not enough"), "refuses a hint you can't afford");
 
-  // earn, then buy a name with two taps
+  // earn up, then the summit recipe costs 5
   await evalJs("__combine('Particle','Particle')"); // Hydrogen, +1
+  await evalJs("__combine('Matter','Matter')");     // Gravity, +1
+  await evalJs("__combine('Energy','Space')");      // Light, +1
+  check((await evalJs("__credits()")) === c0 + 4, "four guessed discoveries, four credits");
+  await evalJs("document.querySelector('#goal .target.summit button').click()");
+  check((await evalJs("document.querySelector('#goal .target.summit .recipe').textContent")).includes("Ocean"), "summit 'how?' reveals Ocean + Air");
+  check((await evalJs("__credits()")) === c0 + 4 - 5, "recipe hint cost 5");
+  check((await evalJs("document.querySelectorAll('#named .target').length")) === 2, "Ocean and Air show as named squares");
+
+  // buy a name with two taps
   const before = await evalJs("__credits()");
   await evalJs("document.querySelector('#hidden .sq').click()");
   check((await evalJs("document.querySelectorAll('#hidden .sq.armed').length")) === 1, "first tap arms a ? square");
@@ -109,21 +113,33 @@ try {
   check((await evalJs("__state().named.length")) === 4, "named list grew by one");
 
   // bottom-up hint prefers the path to the summit
-  await evalJs("__combine('Matter','Matter')"); // Gravity, +1
-  await evalJs("__combine('Energy','Space')");  // Light, +1
+  await evalJs("__combine('Hydrogen','Gravity')"); // Nebula, +1
+  await evalJs("__combine('Nebula','Gravity')");   // Star, +1
   const c1 = await evalJs("__credits()");
   await evalJs("__card('Hydrogen').click(); document.getElementById('hintLeads').click()");
   const named = await evalJs("__state().named");
-  check(["nebula", "helium", "water"].some((id) => named.includes(id)), "'leads to' on Hydrogen names something on the path to the summit");
+  check(["helium", "water"].some((id) => named.includes(id)), "'leads to' on Hydrogen names something on the path to the summit");
   check((await evalJs("__credits()")) === c1 - 2, "bottom-up hint cost 2");
+
+  // a "goes with" hint hands over a pair, and that discovery earns nothing
+  await evalJs("__combine('Star','Time')");        // Supernova, +1
+  await evalJs("__combine('Star','Hydrogen')");    // Helium, +1
+  const c2 = await evalJs("__credits()");
+  await evalJs("__card('Supernova').click(); document.getElementById('hintPairs').click()");
+  const hp = await evalJs("__state().hintedPairs");
+  check(hp.length === 1, "'goes with' records the pair it gave away");
+  const [pa, pb] = hp[0].split("+").map((id) => byId.get(id).name);
+  await evalJs(`__combine(${JSON.stringify(pa)}, ${JSON.stringify(pb)})`);
+  check((await evalJs("__credits()")) === c2 - 2, "the handed-over discovery earned no credit");
 
   // persistence across reload
   await send("Page.reload"); await sleep(1200); await evalJs(HELPERS);
   check((await evalJs("__names().includes('Hydrogen')")), "progress survives reload");
 
-  // play to the summit
-  const byId = new Map(world.items.map((i) => [i.id, i]));
-  const owned = new Set([...world.seeds, "particle", "hydrogen", "gravity", "light"]);
+  // play to the summit; everything left is guessed except Earth, whose recipe was bought
+  const c3 = await evalJs("__credits()");
+  const ownedNow = await evalJs("__state().owned");
+  const owned = new Set(ownedNow);
   let grew = true;
   while (grew) {
     grew = false;
@@ -136,6 +152,7 @@ try {
   }
   const st = await evalJs("__state()");
   check(st.owned.includes(world.summit), "summit reached");
+  check((await evalJs("__credits()")) === c3 + (world.items.length - ownedNow.length - 1), "every guessed discovery earned, the bought summit did not");
   check(st.owned.length === world.items.length, `every item discovered (${st.owned.length}/${world.items.length})`);
   check(!!st.finishedAt, "finish time recorded");
   check((await evalJs("document.querySelectorAll('#hidden .sq, #named .target').length")) === 0, "no undiscovered squares left");

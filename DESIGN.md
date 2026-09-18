@@ -12,7 +12,7 @@ Martin owns feel, systems and mechanics. Writing is shared. Code is the agent's 
 Four seeds, one visible summit, everything between is dark. Tap two owned things, get one thing or nothing.
 Always two ingredients. Ingredients are never consumed. Exactly one recipe per result.
 A world is 25 to 40 discoveries and takes 30 to 60 minutes. It ends when the summit is reached and should leave you wanting the next one.
-Hints cost credits and the balance is always visible. Free hints turned into the game itself in the first play. Current tunable: start with 2, every discovery earns 1. "What is it?" (tap an undiscovered square for its name) costs 1, "what does this lead to?" and "what goes with this?" cost 2, "how is it made?" costs 3.
+Hints cost credits and the balance is always visible. Free hints turned into the game itself in the first play; cheap ones let the second play buy the whole planet half. Current tunable: start with 2. Only a guessed discovery earns 1: if its recipe was bought or a "goes with" hint handed over the pair, it earns nothing, so hints cannot fund hints. "What is it?" (tap an undiscovered square for its name) costs 1, "what does this lead to?" and "what goes with this?" cost 2, "how is it made?" costs 5.
 Undiscovered items show as ? squares in a fixed shuffled order, so position leaks nothing. Named ones show their name and offer the recipe hint.
 Name hints prefer items on the path to the summit and point at a dead end only when nothing else is left. In the first play a hint named Comet, a dead end, and it ate 20 attempts.
 On the shelf: dead ends announcing themselves when found. Try it only if the grind returns in a later log.

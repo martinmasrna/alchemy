@@ -12,10 +12,10 @@ const isDeadEnd = (id) => id !== world.summit && children(id).length === 0;
 const critical = new Set([world.summit]);
 (function walk(id) { for (const p of byId.get(id).recipe ?? []) if (!critical.has(p)) { critical.add(p); walk(p); } })(world.summit);
 
-// Hints cost credits. Every discovery earns one. Tunable.
+// Hints cost credits. Only a discovery you guessed earns one; anything a hint pointed at earns nothing.
 const START_CREDITS = 2;
 const EARN = 1;
-const COST = { name: 1, leads: 2, pairs: 2, recipe: 3 };
+const COST = { name: 1, leads: 2, pairs: 2, recipe: 5 };
 
 // Undiscovered squares sit in a fixed shuffled order so position leaks nothing.
 const hash = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -29,6 +29,7 @@ const fresh = () => ({
   tried: [],               // pairKeys that produced nothing
   named: [world.summit],   // undiscovered ids whose name the player knows
   recipesKnown: [],        // ids whose recipe was revealed
+  hintedPairs: [],         // pairKeys a "goes with" hint handed over
   credits: START_CREDITS,
   startedAt: Date.now(),
   finishedAt: null,
@@ -196,13 +197,14 @@ function combine(a, b) {
   const result = recipes.get(k);
   const own = owned();
   if (result && !own.has(result)) {
+    const guessed = !S.recipesKnown.includes(result) && !S.hintedPairs.includes(k);
     S.owned.push(result);
-    S.credits += EARN;
-    S.log.push({ t: Date.now(), kind: "try", a, b, result });
+    if (guessed) S.credits += EARN;
+    S.log.push({ t: Date.now(), kind: "try", a, b, result, guessed });
     if (result === world.summit && !S.finishedAt) S.finishedAt = Date.now();
     justMade = result;
     save(); render();
-    showReveal(result, a, b);
+    showReveal(result, a, b, guessed);
   } else if (result) {
     S.log.push({ t: Date.now(), kind: "try", a, b, result, repeat: true });
     save(); render();
@@ -216,7 +218,7 @@ function combine(a, b) {
   }
 }
 
-function showReveal(id, a, b) {
+function showReveal(id, a, b, guessed) {
   const it = byId.get(id);
   const isSummit = id === world.summit;
   const A = byId.get(a), B = byId.get(b);
@@ -232,7 +234,7 @@ function showReveal(id, a, b) {
   el.reveal.innerHTML = `
     <div class="icon">${it.icon}</div>
     <h2>${it.name}</h2>
-    <div class="made">${A.icon} ${A.name} + ${B.icon} ${B.name} · +${EARN} credit</div>
+    <div class="made">${A.icon} ${A.name} + ${B.icon} ${B.name}${guessed ? ` · +${EARN} credit` : " · hinted, no credit"}</div>
     <p>${it.blurb}</p>
     <button id="closeReveal">${isSummit ? "Home." : "Go on"}</button>${stats}`;
   el.overlay.classList.add("show");
@@ -311,6 +313,7 @@ el.hintPairs.onclick = () => {
     const partner = c.recipe[0] === from ? c.recipe[1] : c.recipe[0];
     if (partner === from) toast(`${name} goes with itself.`);
     else { nameIt(partner); toast(`${name} goes with ${byId.get(partner).name}.`); }
+    S.hintedPairs.push(pairKey(from, partner));
     S.log.push({ t: Date.now(), kind: "hint", type: "pairs", from, partner });
   }
   selected = null; save(); render();
