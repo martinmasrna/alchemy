@@ -33,7 +33,7 @@ Fewer dead ends. Eight of 28 was too many when they are indistinguishable from u
 
 ## Platform
 Browser, phone-first, installable to the home screen. No build step, no framework.
-Progress must survive closing the tab, clearing history and switching phones. Browser storage alone is not enough for the finished game.
+Progress must survive closing the tab, clearing history and switching phones. Browser storage alone is not enough for the finished game. The worker already holds every player's latest save, so restoring on another phone is a small step away.
 
 ## Process
 Martin plays each new world blind. The table stays hidden from him until after the play, because "would I have guessed it" can only be tested once. Then the table is cut and rewritten together.
@@ -48,5 +48,7 @@ Dead ends. Failure feedback on a dud combination (silence vs. near-miss). Which 
 `python -m http.server 8765` in the repo root, open http://127.0.0.1:8765/.
 `node tools/check-world.mjs worlds/world1.js` validates a table: ids, reachability, one recipe per pair, critical path, dead ends.
 `node tools/smoke.mjs` plays world 1 to the summit in headless Chrome and checks the app (needs the server running).
-`node tools/analyze-log.mjs playlogs/<log>.json worlds/world1.js` turns a pasted play log into the story of the session: timeline, duds before each hit, repeated duds, how each discovery was found. Logs live in `playlogs/`.
+Every play uploads itself to a Cloudflare Worker (`worker/`, URL in `config.js`). First launch asks the player's name. `ADMIN_KEY=$(cat worker/.admin-key) node tools/pull-logs.mjs` downloads every play into `playlogs/`; the key file is git-ignored and also stored as the repo secret ADMIN_KEY.
+The worker deploys from GitHub Actions (`.github/workflows/deploy-worker.yml`) on any push touching `worker/`, because the work PC's proxy only lets GitHub through. The terminal cannot reach Cloudflare or the deployed game at all; anything that has to talk to them goes through headless Chrome, which is what the smoke and pull tools do.
+`node tools/analyze-log.mjs playlogs/<log>.json worlds/world1.js` turns a play log into the story of the session: timeline, duds before each hit, repeated duds, how each discovery was found.
 The table has a `version`. Bump it when recipes change, and bump `VERSION` in `sw.js` on every deploy. A save from another table version starts fresh.
