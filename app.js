@@ -56,13 +56,16 @@ function setPlayer(name) {
 }
 let syncTimer;
 function scheduleSync() { if (!SYNC_URL || !player) return; clearTimeout(syncTimer); syncTimer = setTimeout(sync, 3000); }
-function sync() {
+// keepalive lets the request outlive a closing tab, but browsers cap keepalive bodies at 64 KB,
+// so it is only used for the last-moment flush when the body is small enough.
+function sync(leaving = false) {
   if (!SYNC_URL || !player) return;
-  clearTimeout(syncTimer);
-  fetch(`${SYNC_URL}/w/${world.id}/${player.id}`, { method: "PUT", keepalive: true,
-    headers: { "content-type": "application/json" }, body: JSON.stringify({ player, state: S }) }).catch(() => {});
+  clearTimeout(syncTimer); syncTimer = null;
+  const body = JSON.stringify({ player, state: S });
+  fetch(`${SYNC_URL}/w/${world.id}/${player.id}`, { method: "PUT", keepalive: leaving && body.length < 60_000,
+    headers: { "content-type": "application/json" }, body }).catch(() => {});
 }
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && syncTimer) sync(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && syncTimer) sync(true); });
 
 // ---------- dom ----------
 const $ = (id) => document.getElementById(id);
