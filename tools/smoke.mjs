@@ -56,6 +56,9 @@ try {
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await send("Page.navigate", { url: URL_ });
   await sleep(1200);
+  // pretend the player already gave a name, so the who's-playing form never blocks the test
+  await evalJs(`localStorage.setItem('alchemy.player', JSON.stringify({ id: 'smoketest', name: 'Smoke Test' })); true`);
+  await send("Page.reload"); await sleep(1200);
   if (process.env.SHOT) {
     const shot = await send("Page.captureScreenshot", { format: "png" });
     writeFileSync(process.env.SHOT, Buffer.from(shot.result.data, "base64"));

@@ -4,7 +4,9 @@ import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 
-const log = JSON.parse(readFileSync(process.argv[2], "utf8"));
+const raw = JSON.parse(readFileSync(process.argv[2], "utf8"));
+const log = raw.state ?? raw; // uploaded records wrap the save in { player, state }
+if (raw.player) console.log(`player: ${raw.player.name ?? "?"} (${raw.player.id})`);
 const world = (await import(pathToFileURL(resolve(process.argv[3] ?? "worlds/world1.js")).href)).default;
 const byId = new Map(world.items.map((i) => [i.id, i]));
 const N = (id) => byId.get(id)?.name ?? id;

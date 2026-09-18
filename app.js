@@ -1,4 +1,5 @@
 import world from "./worlds/world1.js";
+import { SYNC_URL } from "./config.js";
 
 // ---------- data ----------
 const byId = new Map(world.items.map((i) => [i.id, i]));
@@ -41,8 +42,27 @@ function load() {
   } catch {}
   return fresh();
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} scheduleSync(); }
 const owned = () => new Set(S.owned);
+
+// ---------- who is playing, and uploading the play ----------
+// One id per device, a name typed once. Every save uploads the whole state, debounced.
+const PKEY = "alchemy.player";
+let player = null;
+try { player = JSON.parse(localStorage.getItem(PKEY)); } catch {}
+function setPlayer(name) {
+  player = { id: player?.id ?? Math.random().toString(36).slice(2, 10), name: name.trim().slice(0, 40) };
+  try { localStorage.setItem(PKEY, JSON.stringify(player)); } catch {}
+}
+let syncTimer;
+function scheduleSync() { if (!SYNC_URL || !player) return; clearTimeout(syncTimer); syncTimer = setTimeout(sync, 3000); }
+function sync() {
+  if (!SYNC_URL || !player) return;
+  clearTimeout(syncTimer);
+  fetch(`${SYNC_URL}/w/${world.id}/${player.id}`, { method: "PUT", keepalive: true,
+    headers: { "content-type": "application/json" }, body: JSON.stringify({ player, state: S }) }).catch(() => {});
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && syncTimer) sync(); });
 
 // ---------- dom ----------
 const $ = (id) => document.getElementById(id);
@@ -312,3 +332,19 @@ setInterval(() => {
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
 render();
+
+// First launch with uploading on: ask who's playing, then upload whatever is already saved.
+if (SYNC_URL && !player) {
+  el.reveal.className = "reveal";
+  el.reveal.innerHTML = `
+    <div class="icon">👋</div>
+    <h2>Who's playing?</h2>
+    <p>Your name goes on the play log, so we know whose discoveries are whose. Nothing else is collected.</p>
+    <form id="nameForm"><input id="nameInput" maxlength="40" placeholder="your name" autocomplete="off" required> <button type="submit">Play</button></form>`;
+  el.overlay.classList.add("show");
+  el.overlay.onclick = null;
+  $("nameForm").onsubmit = (e) => { e.preventDefault(); setPlayer($("nameInput").value); closeReveal(); sync(); };
+  $("nameInput").focus();
+} else if (SYNC_URL) {
+  sync();
+}
