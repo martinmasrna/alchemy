@@ -32,6 +32,7 @@ try {
   if (!Array.isArray(records)) throw new Error("unexpected response: " + JSON.stringify(records));
   mkdirSync("playlogs", { recursive: true });
   for (const rec of records) {
+    if (rec.player?.id === "smoketest") continue; // the headless test uploads too
     const name = (rec.player?.name ?? "anon").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "anon";
     const file = join("playlogs", `${rec.world}-${name}-${rec.player?.id ?? "x"}.json`);
     writeFileSync(file, JSON.stringify(rec));

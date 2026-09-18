@@ -2,9 +2,8 @@ name = "alchemy-logs"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 
-# Created with: npx wrangler kv namespace create LOGS   (paste the id below)
 [[kv_namespaces]]
 binding = "LOGS"
-id = "REPLACE_ME"
+id = "0b184d430f96417ea537d089d3db0705"
 
 # Set with: npx wrangler secret put ADMIN_KEY
