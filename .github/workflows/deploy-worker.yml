@@ -1,0 +1,42 @@
+# Deploys the log store worker. Runs on GitHub because the work PC's proxy can't reach Cloudflare.
+# Needs repo secrets: CLOUDFLARE_API_TOKEN (template "Edit Cloudflare Workers"), ADMIN_KEY.
+# Optional: CLOUDFLARE_ACCOUNT_ID, only if the token can see more than one account.
+name: deploy-worker
+on:
+  push:
+    branches: [main]
+    paths: ["worker/**", ".github/workflows/deploy-worker.yml"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Account id, if given
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then echo "CLOUDFLARE_ACCOUNT_ID=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" >> "$GITHUB_ENV"; fi
+      - run: npx wrangler@4 whoami
+      - name: KV namespace, created once and reused
+        run: |
+          pick='let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s);const n=a.find(x=>x.title.endsWith("LOGS"));console.log(n?n.id:"")})'
+          id=$(npx wrangler@4 kv namespace list | node -e "$pick")
+          if [ -z "$id" ]; then
+            npx wrangler@4 kv namespace create LOGS
+            id=$(npx wrangler@4 kv namespace list | node -e "$pick")
+          fi
+          echo "KV namespace: $id"
+          sed -i "s/REPLACE_ME/$id/" wrangler.toml
+      - run: npx wrangler@4 deploy
+      - name: Admin key
+        run: echo "$ADMIN_KEY" | npx wrangler@4 secret put ADMIN_KEY
+        env:
+          ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
