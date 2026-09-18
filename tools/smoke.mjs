@@ -44,7 +44,7 @@ const check = (cond, msg) => { if (!cond) fails.push(msg); console.log(`${cond ?
 const HELPERS = `
   window.__card = n => [...document.querySelectorAll('#grid .card')].find(c => c.querySelector('.name').textContent === n);
   window.__names = () => [...document.querySelectorAll('#grid .card .name')].map(n => n.textContent);
-  window.__combine = (a, b) => { __card(a).click(); __card(b).click(); const o = document.getElementById('overlay'); const shown = o.classList.contains('show'); if (shown) document.getElementById('closeReveal').click(); return shown; };
+  window.__combine = (a, b) => { __card(a).click(); if (a === b) document.getElementById('slotB').click(); else __card(b).click(); const o = document.getElementById('overlay'); const shown = o.classList.contains('show'); if (shown) document.getElementById('closeReveal').click(); return shown; };
   window.__state = () => JSON.parse(localStorage.getItem('alchemy.${world.id}'));
   window.__credits = () => +document.getElementById('credits').textContent;
   window.__toast = () => document.getElementById('toast').textContent;
@@ -76,10 +76,14 @@ try {
   await evalJs("__card('Energy').click()");
   check((await evalJs("__card('Energy').classList.contains('tried')")), "tried pair is dimmed when first card selected");
   await evalJs("__card('Energy').click()");
+  check((await evalJs("document.querySelectorAll('#grid .card.selected').length")) === 0, "tapping the picked card again puts it down");
+  await evalJs("__card('Space').click(); document.getElementById('slotA').click()");
+  check((await evalJs("document.querySelectorAll('#grid .card.selected').length")) === 0, "tapping the first slot puts the card down");
 
   // a hit earns a credit
   check((await evalJs("__combine('Energy','Matter')")) === true, "Energy + Matter shows a reveal");
   check((await evalJs("__names().includes('Particle')")), "Particle appears in the grid");
+  check((await evalJs("document.querySelectorAll('#grid .card.selected').length")) === 0, "nothing stays highlighted after a combine");
   check((await evalJs("__credits()")) === c0 + 1, "a discovery earns one credit");
   check((await evalJs("document.querySelectorAll('#hidden .card.unknown').length")) === total - 2, "its ? square disappears");
 
