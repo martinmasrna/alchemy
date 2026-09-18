@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bench on top · the discovery moment</title>
+<link rel="stylesheet" href="../../_context/tokens.css">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { max-width: 480px; margin: 0 auto; padding: 0 16px 32px; user-select: none; }
+
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 16px 0 12px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; line-height: 1.15; }
+  .meta { display: flex; gap: 12px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .meta .credits { color: var(--accent); }
+  .goal { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--accent); color: var(--accent); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+  .goal button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+
+  /* mockup-only switcher */
+  .switch { display: flex; gap: 8px; align-items: center; margin-top: 16px; font-size: 12px; color: var(--muted); }
+  .switch button { height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 12px; cursor: pointer; }
+  .switch button.on { color: var(--accent); border-color: var(--accent); }
+  .switch .replay { margin-left: auto; color: var(--text); }
+
+  .bench { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 20px 1fr 20px 1fr; align-items: center; gap: 4px; }
+  .op { text-align: center; color: var(--muted); }
+  .slot { height: 64px; border: 1px dashed var(--line); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted); font-size: 12px; cursor: pointer; }
+  .slot .i { font-size: 28px; line-height: 1; }
+  .slot .n { font-size: 12px; color: var(--text); }
+  .slot.filled { border-style: solid; background: var(--panel-2); }
+  .slot.result.found { border-color: var(--accent); background: var(--panel-2); }
+  .slot.result.dud { border-color: var(--bad); color: var(--bad); }
+  .shake { animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+  .label { margin: 24px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: transform .08s, border-color .15s; }
+  .card:active { transform: scale(.96); }
+  .card .i { font-size: 28px; line-height: 1; }
+  .card .n { font-size: 14px; line-height: 1.15; text-align: center; }
+  .card.picked { border-color: var(--accent); background: var(--panel-2); }
+  .card.new { animation: pop .4s; }
+  @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--line); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+  .chip .r { color: var(--muted); }
+  .chip button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+  .chip.new { animation: pop .4s; }
+  .squares { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .sq { aspect-ratio: 1; border: 1px dashed var(--line); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; cursor: pointer; }
+  .sq.armed { border-style: solid; border-color: var(--accent); color: var(--accent); font-size: 12px; }
+  .note { font-size: 14px; color: var(--muted); margin-top: 8px; min-height: 20px; }
+
+  /* ---------- the discovery moment ---------- */
+  .stage { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 24px; cursor: pointer; }
+  .stage.show { display: flex; }
+  .backdrop { position: absolute; inset: 0; background: rgba(5,6,10,.88); animation: fadein .25s; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .who { position: relative; text-align: center; max-width: 360px; width: 100%; }
+  .pair { font-size: 14px; color: var(--muted); }
+  .name { font-size: 32px; font-weight: 600; line-height: 1.15; margin-top: 8px; }
+  .blurb { font-size: 16px; color: var(--text); margin-top: 16px; text-align: left; }
+  .credit { display: inline-block; margin-top: 16px; font-size: 12px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; }
+  .in { opacity: 0; animation: rise .5s forwards; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* A · burst */
+  .burst .big { position: relative; width: 160px; height: 160px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+  .burst .glow { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, rgba(245,196,81,.55), rgba(245,196,81,0) 70%); animation: glow 1.2s ease-out forwards; }
+  @keyframes glow { 0% { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } 100% { transform: scale(1.6); opacity: .35; } }
+  .burst .icon { font-size: 96px; line-height: 1; animation: land .6s cubic-bezier(.2,1.4,.4,1) forwards; }
+  @keyframes land { 0% { transform: scale(.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  .burst .spark { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: var(--accent); animation: fly .9s ease-out forwards; }
+  @keyframes fly { 0% { transform: rotate(var(--a)) translateX(0); opacity: 1; } 100% { transform: rotate(var(--a)) translateX(110px); opacity: 0; } }
+
+  /* B · card */
+  .flip .scene { perspective: 900px; width: 200px; height: 200px; margin: 0 auto; }
+  .flip .cardbox { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; animation: turn .8s cubic-bezier(.4,0,.2,1) forwards; }
+  @keyframes turn { from { transform: rotateY(180deg) scale(.7); } to { transform: rotateY(0) scale(1); } }
+  .flip .face { position: absolute; inset: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; backface-visibility: hidden; border: 1px solid var(--line); }
+  .flip .front { background: var(--panel-2); border-color: var(--accent); font-size: 96px; box-shadow: 0 24px 48px rgba(0,0,0,.5); }
+  .flip .back { background: var(--panel); transform: rotateY(180deg); color: var(--muted); font-size: 48px; }
+
+  /* C · curtain */
+  .curtain .backdrop { background: rgba(3,4,7,.96); }
+  .curtain .line { height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); margin: 0 auto 24px; animation: sweep .7s ease-out forwards; }
+  @keyframes sweep { from { width: 0; opacity: 0; } to { width: 100%; opacity: 1; } }
+  .curtain .icon { font-size: 64px; line-height: 1; }
+  .curtain .name { letter-spacing: .04em; min-height: 37px; }
+  .curtain .name span { opacity: 0; animation: letter .05s forwards; }
+  @keyframes letter { to { opacity: 1; } }
+</style>
+</head>
+<body>
+  <header><h1 id="title"></h1><div class="meta"><span class="credits">⬡ <span id="credits"></span></span><span><span id="found"></span> / <span id="total"></span></span></div></header>
+  <div class="goal" id="goal"></div>
+
+  <div class="switch">reveal <button data-v="burst" class="on">burst</button><button data-v="flip">card</button><button data-v="curtain">curtain</button><button class="replay" id="replay">replay ▶</button></div>
+
+  <section class="bench" id="bench">
+    <div class="row">
+      <div class="slot" id="slotA"><span>tap a card</span></div><div class="op">+</div>
+      <div class="slot" id="slotB"><span>then another</span></div><div class="op">=</div>
+      <div class="slot result" id="result"><span>?</span></div>
+    </div>
+  </section>
+
+  <div class="label">You have · <span id="ownCount"></span></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="label">Undiscovered · <span id="unkCount"></span></div>
+  <div class="chips" id="chips"></div>
+  <div class="squares" id="squares"></div>
+  <div class="note" id="note"></div>
+
+  <div class="stage" id="stage"></div>
+
+<script type="module">
+  import { world, goal, owned, discovery, named as named0, makeable as makeable0, unknownCount, key, state } from "../../_context/fixture.js";
+  const $ = (id) => document.getElementById(id);
+  let items = [...owned], picked = null, credits = world.credits, found = world.found, unknown = unknownCount, newId = null;
+  let named = [...named0], makeable = [...makeable0], armed = false, armTimer, newChip = null;
+  let result = { kind: "idle" }, variant = "burst", discovered = false;
+
+  $("title").textContent = world.name; $("total").textContent = world.total;
+  $("goal").innerHTML = `<span>${goal.icon} ${goal.name}</span><button>how? · 5</button>`;
+
+  function render() {
+    $("credits").textContent = credits; $("found").textContent = found; $("ownCount").textContent = items.length; $("unkCount").textContent = unknown + named.length;
+    const p = items.find((i) => i.id === picked);
+    $("slotA").className = "slot" + (p ? " filled" : "");
+    $("slotA").innerHTML = p ? `<span class="i">${p.icon}</span><span class="n">${p.name}</span>` : `<span>tap a card</span>`;
+    const r = $("result");
+    r.className = "slot result " + (result.kind === "found" ? "found" : result.kind === "dud" ? "dud" : "");
+    r.innerHTML = result.kind === "found" ? `<span class="i">${discovery.icon}</span><span class="n">${discovery.name}</span>` : result.kind === "dud" ? `<span>nothing</span>` : `<span>?</span>`;
+    $("grid").innerHTML = items.map((i) => `<div class="card ${i.id === picked ? "picked" : ""} ${i.id === newId ? "new" : ""}" data-id="${i.id}"><span class="i">${i.icon}</span><span class="n">${i.name}</span></div>`).join("");
+    newId = null;
+    $("chips").innerHTML = named.map((n) => `<div class="chip ${n.name === newChip ? "new" : ""}"><span>${n.icon} ${n.name}</span>${n.recipe ? `<span class="r">= ${n.recipe}</span>` : `<button>how? · 5</button>`}</div>`).join("");
+    newChip = null;
+    $("squares").innerHTML = Array.from({ length: unknown }, (_, i) => `<div class="sq ${i === 0 && armed ? "armed" : ""}">${i === 0 && armed ? "⬡ 1" : "?"}</div>`).join("");
+    for (const c of document.querySelectorAll(".card")) c.onclick = () => tap(c.dataset.id);
+    for (const s of document.querySelectorAll(".sq")) s.onclick = () => square();
+  }
+
+  // ? squares: the first tap arms, the second buys the name of something you can make right now
+  function square() {
+    if (!armed) { armed = true; clearTimeout(armTimer); armTimer = setTimeout(() => { armed = false; render(); }, 3000); render(); return; }
+    armed = false; clearTimeout(armTimer);
+    if (!makeable.length) { $("note").textContent = "Everything you could make right now, you already know about."; render(); return; }
+    if (credits < 1) { $("note").textContent = "No credits. Guess something first."; render(); return; }
+    const m = makeable.shift(); credits--; unknown--; named.push({ ...m, recipe: null }); newChip = m.name;
+    $("note").textContent = `${m.icon} ${m.name} can be made from what you have.`;
+    render();
+  }
+
+  function tap(id) {
+    $("note").textContent = "";
+    if (!picked) { picked = id; render(); return; }
+    const a = picked; picked = null;
+    if (key(a, id) === key(discovery.a, discovery.b) && !discovered) {
+      discovered = true; credits++; found++; unknown--; result = { kind: "found" };
+      makeable = makeable.filter((m) => m.name !== discovery.name);
+      render(); reveal();
+    } else {
+      result = { kind: "dud" }; render();
+      $("bench").classList.remove("shake"); void $("bench").offsetWidth; $("bench").classList.add("shake");
+    }
+  }
+
+  // the discovery moment, three ways
+  function reveal() {
+    const st = $("stage"), A = items.find((i) => i.id === discovery.a), B = items.find((i) => i.id === discovery.b);
+    const text = (delay) => `<div class="pair in" style="animation-delay:${delay}ms">${A.icon} ${A.name} + ${B.icon} ${B.name}</div>
+      <div class="name in" style="animation-delay:${delay + 100}ms">${discovery.name}</div>
+      <div class="blurb in" style="animation-delay:${delay + 250}ms">${discovery.blurb}</div>
+      <div class="credit in" style="animation-delay:${delay + 450}ms">+1 credit</div>`;
+    st.className = "stage show " + variant;
+    if (variant === "burst") {
+      const sparks = Array.from({ length: 14 }, (_, i) => `<span class="spark" style="--a:${i * 26}deg; animation-delay:${.15 + (i % 3) * .05}s"></span>`).join("");
+      st.innerHTML = `<div class="backdrop"></div><div class="who"><div class="big"><div class="glow"></div>${sparks}<div class="icon">${discovery.icon}</div></div>${text(400)}</div>`;
+    } else if (variant === "flip") {
+      st.innerHTML = `<div class="backdrop"></div><div class="who"><div class="scene"><div class="cardbox"><div class="face front">${discovery.icon}</div><div class="face back">?</div></div></div>${text(600)}</div>`;
+    } else {
+      const letters = [...discovery.name].map((ch, i) => `<span style="animation-delay:${.7 + i * .08}s">${ch === " " ? "&nbsp;" : ch}</span>`).join("");
+      st.innerHTML = `<div class="backdrop"></div><div class="who"><div class="line"></div><div class="icon in" style="animation-delay:.5s">${discovery.icon}</div>
+        <div class="name">${letters}</div><div class="pair in" style="animation-delay:1.4s">${A.icon} ${A.name} + ${B.icon} ${B.name}</div>
+        <div class="blurb in" style="animation-delay:1.6s">${discovery.blurb}</div><div class="credit in" style="animation-delay:1.9s">+1 credit</div></div>`;
+    }
+    st.onclick = () => { st.className = "stage"; if (!items.find((i) => i.id === discovery.id)) { items.push(discovery); newId = discovery.id; render(); } };
+  }
+
+  for (const b of document.querySelectorAll(".switch [data-v]")) b.onclick = () => { variant = b.dataset.v; for (const x of document.querySelectorAll(".switch [data-v]")) x.classList.toggle("on", x === b); };
+  $("replay").onclick = () => { if (!discovered) { tap("nebula"); tap("gravity"); } else reveal(); };
+
+  render();
+  if (state === "picked") tap("nebula");
+  if (state === "found") { tap("nebula"); tap("gravity"); }
+  if (state === "dud") { tap("energy"); tap("energy"); }
+  if (state === "flip" || state === "curtain") { variant = state; tap("nebula"); tap("gravity"); }
+</script>
+</body>
+</html>

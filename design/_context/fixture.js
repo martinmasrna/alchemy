@@ -17,6 +17,11 @@ export const named = [
   { icon: "🌊", name: "Ocean", recipe: null },
   { icon: "🌬️", name: "Air", recipe: "🌋 Volcano + 🌀 Gravity" },
 ];
+// Things the player could make right now from what they own. A ? square reveals one of these.
+export const makeable = [
+  { icon: "🌈", name: "Rainbow" },
+  { icon: "🧊", name: "Comet" },
+];
 export const unknownCount = 15;
 export const tried = ["energy+energy", "space+time", "gravity+time", "matter+space", "nebula+time", "light+water"];
 export const key = (a, b) => [a, b].sort().join("+");
