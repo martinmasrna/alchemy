@@ -30,7 +30,7 @@ for (const e of events) {
   const gap = (e.t - last) / 60000;
   if (gap > 2) console.log(`      … ${gap.toFixed(1)} min gap`);
   if (e.kind === "try" && e.result && !e.repeat) console.log(`${mm(e.t)}  ${N(e.a)} + ${N(e.b)} = ${N(e.result)}`);
-  if (e.kind === "hint") console.log(`${mm(e.t)}  HINT ${e.type} ${N(e.target ?? e.from)}${e.revealed ? " → " + N(e.revealed) : ""}${e.partner ? " ↔ " + N(e.partner) : ""}${e.partner === null && e.type === "pairs" ? " (dead end)" : ""}${e.revealed === null && e.type === "leads" ? " (dead end)" : ""}`);
+  if (e.kind === "hint") console.log(`${mm(e.t)}  HINT ${e.type} ${e.type === "name" ? "" : N(e.target ?? e.from)}${e.revealed ? " → " + N(e.revealed) : ""}${e.partner ? " ↔ " + N(e.partner) : ""}${e.partner === null && e.type === "pairs" ? " (dead end)" : ""}${e.revealed === null && e.type === "leads" ? " (dead end)" : ""}`);
   last = e.t;
 }
 
