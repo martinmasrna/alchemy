@@ -76,8 +76,8 @@ function render() {
   const sel = selected ? byId.get(selected) : null;
   el.slotA.className = "slot" + (sel ? " filled" : "");
   el.slotA.innerHTML = sel ? `<span class="icon">${sel.icon}</span>${sel.name}` : "tap a card";
-  el.slotB.className = "slot" + (sel ? " offer" : "");
-  el.slotB.innerHTML = sel ? `<span class="icon">${sel.icon}</span><span class="dim">tap for 2× ${sel.name}</span>` : "then another";
+  el.slotB.className = "slot";
+  el.slotB.textContent = sel ? "then another, or the same again" : "then another";
   el.hintLeads.disabled = !sel || S.credits < COST.leads;
   el.hintPairs.disabled = !sel || S.credits < COST.pairs;
 
@@ -158,17 +158,15 @@ function targetChip(t, reached) {
 }
 
 // ---------- play ----------
-// Tap a card to pick it up, tap it again to put it down, tap another to combine.
-// Tap the empty second slot to combine the picked card with itself.
+// Tap a card to pick it up, tap another (or the same one again) to combine.
+// Tap the first slot to put the card back down.
 function pick(id) {
   disarm();
   if (!selected) { selected = id; render(); return; }
-  if (selected === id) { selected = null; render(); return; }
   const a = selected; selected = null;
   combine(a, id);
 }
 el.slotA.onclick = () => { if (selected) { selected = null; render(); } };
-el.slotB.onclick = () => { if (selected) { const a = selected; selected = null; combine(a, a); } };
 
 function combine(a, b) {
   const k = pairKey(a, b);

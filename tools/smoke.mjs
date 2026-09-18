@@ -44,7 +44,7 @@ const check = (cond, msg) => { if (!cond) fails.push(msg); console.log(`${cond ?
 const HELPERS = `
   window.__card = n => [...document.querySelectorAll('#grid .card')].find(c => c.querySelector('.name').textContent === n);
   window.__names = () => [...document.querySelectorAll('#grid .card .name')].map(n => n.textContent);
-  window.__combine = (a, b) => { __card(a).click(); if (a === b) document.getElementById('slotB').click(); else __card(b).click(); const o = document.getElementById('overlay'); const shown = o.classList.contains('show'); if (shown) document.getElementById('closeReveal').click(); return shown; };
+  window.__combine = (a, b) => { __card(a).click(); __card(b).click(); const o = document.getElementById('overlay'); const shown = o.classList.contains('show'); if (shown) document.getElementById('closeReveal').click(); return shown; };
   window.__state = () => JSON.parse(localStorage.getItem('alchemy.${world.id}'));
   window.__credits = () => +document.getElementById('credits').textContent;
   window.__toast = () => document.getElementById('toast').textContent;
@@ -75,8 +75,7 @@ try {
   check((await evalJs("__state().tried.includes('energy+energy')")), "dud is remembered as tried");
   await evalJs("__card('Energy').click()");
   check((await evalJs("__card('Energy').classList.contains('tried')")), "tried pair is dimmed when first card selected");
-  await evalJs("__card('Energy').click()");
-  check((await evalJs("document.querySelectorAll('#grid .card.selected').length")) === 0, "tapping the picked card again puts it down");
+  await evalJs("__card('Energy').click()"); // completes Energy + Energy again, a dud, clears the pick
   await evalJs("__card('Space').click(); document.getElementById('slotA').click()");
   check((await evalJs("document.querySelectorAll('#grid .card.selected').length")) === 0, "tapping the first slot puts the card down");
 
