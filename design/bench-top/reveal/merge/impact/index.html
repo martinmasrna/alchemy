@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bench on top · impact</title>
+<link rel="stylesheet" href="../../../../_context/tokens.css">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { max-width: 480px; margin: 0 auto; padding: 0 16px 32px; user-select: none; }
+
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 16px 0 12px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; line-height: 1.15; }
+  .meta { display: flex; gap: 12px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .meta .credits { color: var(--accent); }
+  .goal { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--accent); color: var(--accent); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+  .goal button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+
+  .switch { display: flex; gap: 8px; align-items: center; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .switch button { height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 12px; cursor: pointer; }
+  .switch button.on { color: var(--accent); border-color: var(--accent); }
+  .switch .replay { margin-left: auto; color: var(--text); }
+
+  .bench { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 20px 1fr 20px 1fr; align-items: center; gap: 4px; }
+  .op { text-align: center; color: var(--muted); }
+  .slot { height: 64px; border: 1px dashed var(--line); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted); font-size: 12px; cursor: pointer; }
+  .slot .i { font-size: 28px; line-height: 1; }
+  .slot .n { font-size: 12px; color: var(--text); }
+  .slot.filled { border-style: solid; background: var(--panel-2); }
+  .slot.result.found { border-color: var(--accent); background: var(--panel-2); }
+  .slot.result.dud { border-color: var(--bad); color: var(--bad); }
+  .shake { animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+  .label { margin: 24px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: transform .08s, border-color .15s; }
+  .card:active { transform: scale(.96); }
+  .card .i { font-size: 28px; line-height: 1; }
+  .card .n { font-size: 14px; line-height: 1.15; text-align: center; }
+  .card.picked { border-color: var(--accent); background: var(--panel-2); }
+  .card.new { animation: pop .4s; }
+  @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--line); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+  .chip .r { color: var(--muted); }
+  .chip button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+  .chip.new { animation: pop .4s; }
+  .squares { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .sq { aspect-ratio: 1; border: 1px dashed var(--line); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; cursor: pointer; }
+  .sq.armed { border-style: solid; border-color: var(--accent); color: var(--accent); font-size: 12px; }
+  .note { font-size: 14px; color: var(--muted); margin-top: 8px; min-height: 20px; }
+
+  /* ---------- the discovery moment ---------- */
+  .stage { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 24px; cursor: pointer; overflow: hidden; }
+  .stage.show { display: flex; }
+  .backdrop { position: absolute; inset: 0; background: rgba(5,6,10,.9); animation: fadein .2s; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .who { position: relative; text-align: center; max-width: 360px; width: 100%; }
+  .who.kick { animation: kick .3s var(--t) cubic-bezier(.2,.8,.2,1); }
+  @keyframes kick { 0% { transform: none; } 20% { transform: translate(calc(var(--k) * -1), calc(var(--k) * .6)); } 45% { transform: translate(calc(var(--k) * .7), calc(var(--k) * -.4)); } 70% { transform: translate(calc(var(--k) * -.3), calc(var(--k) * .2)); } 100% { transform: none; } }
+  .pair { font-size: 14px; color: var(--muted); }
+  .name { font-size: 32px; font-weight: 600; line-height: 1.15; margin-top: 8px; }
+  .blurb { font-size: 16px; color: var(--text); margin-top: 16px; text-align: left; }
+  .credit { display: inline-block; margin-top: 16px; font-size: 12px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; }
+  .in { opacity: 0; animation: rise .5s forwards; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* arena: every actor is a zero-size anchor at the centre with a flex-centred box inside,
+     so a wide emoji glyph stays centred whatever its advance width */
+  .arena { position: relative; width: 100%; height: 180px; }
+  .anchor { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+  .anchor > div { position: absolute; display: flex; align-items: center; justify-content: center; }
+  .ing > div { width: 120px; height: 120px; margin: -60px; font-size: 56px; line-height: 1; }
+  .out > div { width: 200px; height: 200px; margin: -100px; font-size: 96px; line-height: 1; }
+  .flash > div { width: 24px; height: 24px; margin: -12px; border-radius: 50%; background: #fff; box-shadow: 0 0 40px 20px rgba(245,196,81,.8); }
+  .ring > div { width: 60px; height: 60px; margin: -30px; border-radius: 50%; border: 2px solid var(--accent); }
+  .glow > div { width: 160px; height: 160px; margin: -80px; border-radius: 50%; background: radial-gradient(circle, rgba(245,196,81,.55), rgba(245,196,81,0) 70%); }
+  .spark > div { width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: var(--accent); }
+
+  /* the approach: ingredients start where their slots are (--ax/--ay, --bx/--by), pull back, then go */
+  .collide .ing.a { animation: cA var(--dur) cubic-bezier(.7,-.3,1,.5) forwards; }
+  .collide .ing.b { animation: cB var(--dur) cubic-bezier(.7,-.3,1,.5) forwards; }
+  @keyframes cA { 0% { transform: translate(var(--ax), var(--ay)); opacity: 1; } 95% { opacity: 1; } 100% { transform: translate(0,0) scale(.5); opacity: 0; } }
+  @keyframes cB { 0% { transform: translate(var(--bx), var(--by)); opacity: 1; } 95% { opacity: 1; } 100% { transform: translate(0,0) scale(.5); opacity: 0; } }
+  .orbit .ing.a { animation: oA var(--dur) cubic-bezier(.5,0,.9,.4) forwards; }
+  .orbit .ing.b { animation: oB var(--dur) cubic-bezier(.5,0,.9,.4) forwards; }
+  @keyframes oA { 0% { transform: translate(var(--ax), var(--ay)); opacity: 1; } 30% { transform: rotate(0deg) translateX(80px) rotate(0deg); } 95% { opacity: 1; } 100% { transform: rotate(540deg) translateX(0) rotate(-540deg) scale(.5); opacity: 0; } }
+  @keyframes oB { 0% { transform: translate(var(--bx), var(--by)); opacity: 1; } 30% { transform: rotate(180deg) translateX(80px) rotate(-180deg); } 95% { opacity: 1; } 100% { transform: rotate(720deg) translateX(0) rotate(-720deg) scale(.5); opacity: 0; } }
+
+  /* the impact: flash and ring at --t, then a hit-stop of --stop before the result lands */
+  .flash > div { opacity: 0; animation: flash .3s ease-out var(--t) forwards; }
+  @keyframes flash { 0% { transform: scale(.2); opacity: 1; } 100% { transform: scale(var(--f)); opacity: 0; } }
+  .ring > div { opacity: 0; animation: ring .6s ease-out var(--t) forwards; }
+  @keyframes ring { 0% { transform: scale(.2); opacity: 1; } 100% { transform: scale(var(--r)); opacity: 0; } }
+  .glow > div { opacity: 0; animation: glow 1.2s ease-out calc(var(--t) + var(--stop)) forwards; }
+  @keyframes glow { 0% { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } 100% { transform: scale(1.6); opacity: .35; } }
+  .spark > div { opacity: 0; animation: fly .9s ease-out calc(var(--t) + var(--stop) + var(--d)) forwards; }
+  @keyframes fly { 0% { transform: rotate(var(--a)) translateX(0); opacity: 1; } 100% { transform: rotate(var(--a)) translateX(var(--fl)); opacity: 0; } }
+  .out > div { opacity: 0; animation: land .6s cubic-bezier(.2,1.6,.4,1) calc(var(--t) + var(--stop)) forwards; }
+  @keyframes land { 0% { transform: scale(.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+</style>
+</head>
+<body>
+  <header><h1 id="title"></h1><div class="meta"><span class="credits">⬡ <span id="credits"></span></span><span><span id="found"></span> / <span id="total"></span></span></div></header>
+  <div class="goal" id="goal"></div>
+
+  <div class="switch">approach <button data-v="collide" class="on">collide</button><button data-v="orbit">orbit</button><button class="replay" id="replay">replay ▶</button></div>
+  <div class="switch">impact <button data-i="soft">soft</button><button data-i="medium" class="on">medium</button><button data-i="hard">hard</button></div>
+
+  <section class="bench" id="bench">
+    <div class="row">
+      <div class="slot" id="slotA"><span>tap a card</span></div><div class="op">+</div>
+      <div class="slot" id="slotB"><span>then another</span></div><div class="op">=</div>
+      <div class="slot result" id="result"><span>?</span></div>
+    </div>
+  </section>
+
+  <div class="label">You have · <span id="ownCount"></span></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="label">Undiscovered · <span id="unkCount"></span></div>
+  <div class="chips" id="chips"></div>
+  <div class="squares" id="squares"></div>
+  <div class="note" id="note"></div>
+
+  <div class="stage" id="stage"></div>
+
+<script type="module">
+  import { world, goal, owned, recipes, named as named0, unknownCount, key, state } from "../../../../_context/fixture.js";
+  const $ = (id) => document.getElementById(id);
+  const byKey = new Map(recipes.map((r) => [key(r.a, r.b), r]));
+  let items = [...owned], picked = null, credits = world.credits, found = world.found, unknown = unknownCount, newId = null;
+  let named = [...named0], armed = false, armTimer, newChip = null, last = null, lastB = null;
+  let result = { kind: "idle" }, variant = "collide", intensity = "medium";
+  // intensity: approach duration, hit-stop, kick amplitude, flash scale, ring scale, spark flight, spark count
+  const I = {
+    soft:   { dur: .7,  stop: .06, kick: 3,  flash: 2,   ring: 3, fly: 80,  sparks: 8 },
+    medium: { dur: .65, stop: .1,  kick: 7,  flash: 3,   ring: 4, fly: 110, sparks: 14 },
+    hard:   { dur: .6,  stop: .16, kick: 14, flash: 4.5, ring: 6, fly: 150, sparks: 22 },
+  };
+
+  $("title").textContent = world.name; $("total").textContent = world.total;
+  $("goal").innerHTML = `<span>${goal.icon} ${goal.name}</span><button>how? · 5</button>`;
+  const has = (id) => items.some((i) => i.id === id);
+  const makeableNow = () => recipes.filter((r) => has(r.a) && has(r.b) && !has(r.id) && !named.some((n) => n.name === r.name));
+
+  function render() {
+    $("credits").textContent = credits; $("found").textContent = found; $("ownCount").textContent = items.length; $("unkCount").textContent = unknown + named.length;
+    const p = items.find((i) => i.id === picked);
+    $("slotA").className = "slot" + (p ? " filled" : "");
+    $("slotA").innerHTML = p ? `<span class="i">${p.icon}</span><span class="n">${p.name}</span>` : `<span>tap a card</span>`;
+    const r = $("result");
+    r.className = "slot result " + (result.kind === "found" ? "found" : result.kind === "dud" ? "dud" : "");
+    r.innerHTML = result.kind === "found" ? `<span class="i">${last.icon}</span><span class="n">${last.name}</span>` : result.kind === "dud" ? `<span>nothing</span>` : `<span>?</span>`;
+    $("grid").innerHTML = items.map((i) => `<div class="card ${i.id === picked ? "picked" : ""} ${i.id === newId ? "new" : ""}" data-id="${i.id}"><span class="i">${i.icon}</span><span class="n">${i.name}</span></div>`).join("");
+    newId = null;
+    $("chips").innerHTML = named.map((n) => `<div class="chip ${n.name === newChip ? "new" : ""}"><span>${n.icon} ${n.name}</span>${n.recipe ? `<span class="r">= ${n.recipe}</span>` : `<button>how? · 5</button>`}</div>`).join("");
+    newChip = null;
+    $("squares").innerHTML = Array.from({ length: unknown }, (_, i) => `<div class="sq ${i === 0 && armed ? "armed" : ""}">${i === 0 && armed ? "⬡ 1" : "?"}</div>`).join("");
+    for (const s of document.querySelectorAll(".sq")) s.onclick = () => square();
+  }
+
+  function square() {
+    if (!armed) { armed = true; clearTimeout(armTimer); armTimer = setTimeout(() => { armed = false; render(); }, 3000); render(); return; }
+    armed = false; clearTimeout(armTimer);
+    const m = makeableNow();
+    if (!m.length) { $("note").textContent = "Everything you could make right now, you already know about."; render(); return; }
+    if (credits < 1) { $("note").textContent = "No credits. Guess something first."; render(); return; }
+    const pick = m[0]; credits--; unknown--; named.push({ icon: pick.icon, name: pick.name, recipe: null }); newChip = pick.name;
+    $("note").textContent = `${pick.icon} ${pick.name} can be made from what you have.`;
+    render();
+  }
+
+  function tap(id, el) {
+    $("note").textContent = "";
+    if (!picked) { picked = id; render(); return; }
+    const a = picked; picked = null;
+    const rec = byKey.get(key(a, id));
+    if (rec && !has(rec.id)) {
+      last = rec; lastB = el ?? null; credits++; found++;
+      const wasNamed = named.some((n) => n.name === rec.name);
+      if (wasNamed) named = named.filter((n) => n.name !== rec.name); else unknown--;
+      result = { kind: "found" }; render(); reveal(rec, lastB);
+    } else {
+      result = { kind: "dud" }; render();
+      $("bench").classList.remove("shake"); void $("bench").offsetWidth; $("bench").classList.add("shake");
+    }
+  }
+
+  // ingredient A leaves the first slot, ingredient B leaves the card that was just tapped
+  function reveal(rec, fromCard) {
+    const st = $("stage"), A = items.find((i) => i.id === rec.a), B = items.find((i) => i.id === rec.b), k = I[intensity];
+    const ra = $("slotA").getBoundingClientRect();
+    const rb = (fromCard ?? $("slotB")).getBoundingClientRect();
+    const sparks = Array.from({ length: k.sparks }, (_, i) => `<div class="anchor spark" style="--a:${Math.round(i * 360 / k.sparks)}deg; --d:${(i % 3) * .05}s"><div></div></div>`).join("");
+    const t = k.dur, d0 = Math.round((t + k.stop + .5) * 1000);
+    st.className = "stage show " + variant;
+    st.innerHTML = `<div class="backdrop"></div><div class="who kick" style="--t:${t}s; --k:${k.kick}px">
+      <div class="arena" id="arena" style="--t:${t}s; --dur:${t}s; --stop:${k.stop}s; --f:${k.flash}; --r:${k.ring}; --fl:${k.fly}px">
+        <div class="anchor ing a"><div>${A.icon}</div></div><div class="anchor ing b"><div>${B.icon}</div></div>
+        <div class="anchor flash"><div></div></div><div class="anchor ring"><div></div></div><div class="anchor glow"><div></div></div>${sparks}
+        <div class="anchor out"><div>${rec.icon}</div></div>
+      </div>
+      <div class="pair in" style="animation-delay:${d0}ms">${A.icon} ${A.name} + ${B.icon} ${B.name}</div>
+      <div class="name in" style="animation-delay:${d0 + 100}ms">${rec.name}</div>
+      <div class="blurb in" style="animation-delay:${d0 + 250}ms">${rec.blurb}</div>
+      <div class="credit in" style="animation-delay:${d0 + 450}ms">+1 credit</div></div>`;
+    // now that the arena is laid out, aim the ingredients from their real starting points
+    const ar = $("arena").getBoundingClientRect(), ax = ar.left + ar.width / 2, ay = ar.top + ar.height / 2;
+    const arena = $("arena");
+    arena.style.setProperty("--ax", `${ra.left + ra.width / 2 - ax}px`); arena.style.setProperty("--ay", `${ra.top + ra.height / 2 - ay}px`);
+    arena.style.setProperty("--bx", `${rb.left + rb.width / 2 - ax}px`); arena.style.setProperty("--by", `${rb.top + rb.height / 2 - ay}px`);
+    st.onclick = () => { st.className = "stage"; if (!has(rec.id)) { items.push({ id: rec.id, icon: rec.icon, name: rec.name }); newId = rec.id; render(); } };
+  }
+
+  for (const b of document.querySelectorAll(".switch [data-v]")) b.onclick = () => { variant = b.dataset.v; for (const x of document.querySelectorAll(".switch [data-v]")) x.classList.toggle("on", x === b); };
+  for (const b of document.querySelectorAll(".switch [data-i]")) b.onclick = () => { intensity = b.dataset.i; for (const x of document.querySelectorAll(".switch [data-i]")) x.classList.toggle("on", x === b); };
+  $("replay").onclick = () => { if (last) reveal(last, lastB); else { tap("nebula"); tap("gravity"); } };
+
+  render();
+  // taps pass the card element so B can fly from where the thumb was
+  document.getElementById("grid").addEventListener("click", (e) => { const c = e.target.closest(".card"); if (c) tap(c.dataset.id, c); });
+  if (state === "found" || state === "collide") { tap("nebula"); tap("gravity"); }
+  if (state === "orbit") { document.querySelector('[data-v="orbit"]').click(); tap("hydrogen"); tap("oxygen"); }
+  if (state === "hard") { document.querySelector('[data-i="hard"]').click(); tap("hydrogen"); tap("oxygen"); }
+  if (state === "dud") { tap("energy"); tap("energy"); }
+</script>
+</body>
+</html>
