@@ -112,7 +112,7 @@
   const $ = (id) => document.getElementById(id);
   const byKey = new Map(recipes.map((r) => [key(r.a, r.b), r]));
   let items = [...owned], picked = null, credits = world.credits, found = world.found, unknown = unknownCount, newId = null;
-  let named = [...named0], armed = false, armTimer, newChip = null, last = null, lastB = null;
+  let named = [...named0], armed = false, armTimer, newChip = null, last = null;
   let result = { kind: "idle" }, variant = "collide", intensity = "medium";
   // intensity: approach duration, hit-stop, kick amplitude, flash scale, ring scale, spark flight, spark count
   const I = {
@@ -153,28 +153,25 @@
     render();
   }
 
-  function tap(id, el) {
+  function tap(id) {
     $("note").textContent = "";
     if (!picked) { picked = id; render(); return; }
     const a = picked; picked = null;
     const rec = byKey.get(key(a, id));
     if (rec && !has(rec.id)) {
-      last = rec; lastB = el ?? null; credits++; found++;
+      last = rec; credits++; found++;
       const wasNamed = named.some((n) => n.name === rec.name);
       if (wasNamed) named = named.filter((n) => n.name !== rec.name); else unknown--;
-      result = { kind: "found" }; render(); reveal(rec, lastB);
+      result = { kind: "found" }; render(); reveal(rec);
     } else {
       result = { kind: "dud" }; render();
       $("bench").classList.remove("shake"); void $("bench").offsetWidth; $("bench").classList.add("shake");
     }
   }
 
-  // ingredient A leaves the first slot, ingredient B leaves the card that was just tapped.
   // All motion is Web Animations with pixel values: CSS variables inside keyframes are unreliable on iOS.
-  function reveal(rec, fromCard) {
+  function reveal(rec) {
     const st = $("stage"), A = items.find((i) => i.id === rec.a), B = items.find((i) => i.id === rec.b), k = I[intensity];
-    const ra = $("slotA").getBoundingClientRect();
-    const rb = (fromCard ?? $("slotB")).getBoundingClientRect();
     const T = k.dur * 1000, STOP = k.stop * 1000, d0 = Math.round(T + STOP + 500);
     const sparks = Array.from({ length: k.sparks }, () => `<div class="anchor spark"><div></div></div>`).join("");
     st.className = "stage show";
@@ -189,10 +186,8 @@
       <div class="blurb in" style="animation-delay:${d0 + 250}ms">${rec.blurb}</div>
       <div class="credit in" style="animation-delay:${d0 + 450}ms">+1 credit</div></div>`;
 
-    // where the actors start, relative to the arena centre
-    const ar = $("arena").getBoundingClientRect(), cx = ar.left + ar.width / 2, cy = ar.top + ar.height / 2;
-    const a0 = { x: ra.left + ra.width / 2 - cx, y: ra.top + ra.height / 2 - cy };
-    const b0 = { x: rb.left + rb.width / 2 - cx, y: rb.top + rb.height / 2 - cy };
+    // the ingredients start left and right of the centre
+    const a0 = { x: -120, y: 0 }, b0 = { x: 120, y: 0 };
     const q = (sel) => st.querySelector(sel);
     const fwd = (duration, delay = 0, easing = "ease-out") => ({ duration, delay, easing, fill: "forwards" });
 
@@ -224,11 +219,10 @@
 
   for (const b of document.querySelectorAll(".switch [data-v]")) b.onclick = () => { variant = b.dataset.v; for (const x of document.querySelectorAll(".switch [data-v]")) x.classList.toggle("on", x === b); };
   for (const b of document.querySelectorAll(".switch [data-i]")) b.onclick = () => { intensity = b.dataset.i; for (const x of document.querySelectorAll(".switch [data-i]")) x.classList.toggle("on", x === b); };
-  $("replay").onclick = () => { if (last) reveal(last, lastB); else { tap("nebula"); tap("gravity"); } };
+  $("replay").onclick = () => { if (last) reveal(last); else { tap("nebula"); tap("gravity"); } };
 
   render();
-  // taps pass the card element so B can fly from where the thumb was
-  document.getElementById("grid").addEventListener("click", (e) => { const c = e.target.closest(".card"); if (c) tap(c.dataset.id, c); });
+  document.getElementById("grid").addEventListener("click", (e) => { const c = e.target.closest(".card"); if (c) tap(c.dataset.id); });
   if (state === "found" || state === "collide") { tap("nebula"); tap("gravity"); }
   if (state === "orbit") { document.querySelector('[data-v="orbit"]').click(); tap("hydrogen"); tap("oxygen"); }
   if (state === "hard") { document.querySelector('[data-i="hard"]').click(); tap("hydrogen"); tap("oxygen"); }
