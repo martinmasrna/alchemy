@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grid only</title>
+<link rel="stylesheet" href="../_context/tokens.css">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { max-width: 480px; margin: 0 auto; padding: 0 16px 32px; user-select: none; }
+
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 16px 0 12px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; line-height: 1.15; }
+  .meta { display: flex; gap: 12px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .meta .credits { color: var(--accent); }
+  .goal { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--accent); color: var(--accent); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+  .goal button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+
+  /* the notice strip: where results and hints appear, never blocking */
+  .notice { margin-top: 24px; min-height: 44px; }
+  .banner { background: var(--panel); border: 1px solid var(--accent); border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; animation: pop .3s; }
+  .banner .i { font-size: 40px; line-height: 1; }
+  .banner .name { font-size: 20px; font-weight: 600; line-height: 1.15; display: flex; justify-content: space-between; }
+  .banner .name small { font-size: 12px; font-weight: 400; color: var(--accent); }
+  .banner .blurb { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  .dud { height: 44px; display: flex; align-items: center; color: var(--muted); font-size: 14px; }
+  .actions { height: 44px; display: flex; gap: 8px; align-items: center; }
+  .actions .held { flex: 1; font-size: 14px; color: var(--muted); }
+  .actions .held b { color: var(--text); font-weight: 600; }
+  .actions button { height: 36px; padding: 0 12px; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; font-size: 14px; cursor: pointer; }
+  .actions button.quiet { width: 36px; padding: 0; color: var(--muted); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: transform .12s, box-shadow .12s, opacity .15s, border-color .15s; }
+  .card:active { transform: scale(.96); }
+  .card .i { font-size: 28px; line-height: 1; }
+  .card .n { font-size: 14px; line-height: 1.15; text-align: center; }
+  .card.picked { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.45); background: var(--panel-2); }
+  .card.tried { opacity: .35; }
+  .card.new { animation: pop .4s; }
+  .card.shake { animation: shake .3s; }
+  @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  .label { margin: 24px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--line); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+  .chip .r { color: var(--muted); }
+  .chip button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+  .dots { display: flex; flex-wrap: wrap; gap: 8px; }
+  .dot { width: 44px; height: 44px; border: 1px dashed var(--line); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+  <header><h1 id="title"></h1><div class="meta"><span class="credits">⬡ <span id="credits"></span></span><span><span id="found"></span> / <span id="total"></span></span></div></header>
+  <div class="goal" id="goal"></div>
+
+  <div class="notice" id="notice"></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="label">Undiscovered · <span id="unkCount"></span></div>
+  <div class="chips" id="chips"></div>
+  <div class="dots" id="dots"></div>
+
+<script type="module">
+  import { world, goal, owned, discovery, named, unknownCount, tried, key, state } from "../_context/fixture.js";
+  const $ = (id) => document.getElementById(id);
+  let items = [...owned], picked = null, credits = world.credits, found = world.found, unknown = unknownCount, triedSet = new Set(tried), newId = null, shakeIds = [];
+  let notice = { kind: "idle" };
+
+  $("title").textContent = world.name; $("total").textContent = world.total;
+  $("goal").innerHTML = `<span>${goal.icon} ${goal.name}</span><button>how? · 5</button>`;
+  $("chips").innerHTML = named.map((n) => `<div class="chip"><span>${n.icon} ${n.name}</span>${n.recipe ? `<span class="r">= ${n.recipe}</span>` : `<button>how? · 5</button>`}</div>`).join("");
+
+  function render() {
+    $("credits").textContent = credits; $("found").textContent = found; $("unkCount").textContent = unknown + named.length;
+    const n = $("notice"), p = items.find((i) => i.id === picked);
+    if (p) n.innerHTML = `<div class="actions"><span class="held">holding <b>${p.icon} ${p.name}</b></span><button>leads to · 2</button><button>goes with · 2</button><button class="quiet" id="down">✕</button></div>`;
+    else if (notice.kind === "found") n.innerHTML = `<div class="banner"><span class="i">${discovery.icon}</span><div><div class="name">${discovery.name}<small>+1 credit</small></div><div class="blurb">${discovery.blurb}</div></div></div>`;
+    else if (notice.kind === "dud") n.innerHTML = `<div class="dud">Nothing happens.</div>`;
+    else n.innerHTML = "";
+    if (p) $("down").onclick = () => { picked = null; render(); };
+    $("grid").innerHTML = items.map((i) => `<div class="card ${i.id === picked ? "picked" : ""} ${picked && triedSet.has(key(picked, i.id)) ? "tried" : ""} ${i.id === newId ? "new" : ""} ${shakeIds.includes(i.id) ? "shake" : ""}" data-id="${i.id}"><span class="i">${i.icon}</span><span class="n">${i.name}</span></div>`).join("");
+    newId = null; shakeIds = [];
+    $("dots").innerHTML = Array.from({ length: unknown }, () => `<div class="dot">?</div>`).join("");
+    for (const c of document.querySelectorAll(".card")) c.onclick = () => tap(c.dataset.id);
+  }
+  function tap(id) {
+    if (!picked) { picked = id; notice = { kind: "idle" }; render(); return; }
+    const a = picked; picked = null;
+    if (key(a, id) === key(discovery.a, discovery.b) && !items.find((i) => i.id === discovery.id)) {
+      items.push(discovery); newId = discovery.id; credits++; found++; unknown--; notice = { kind: "found" }; render();
+    } else {
+      triedSet.add(key(a, id)); notice = { kind: "dud" }; shakeIds = [a, id]; render();
+      setTimeout(() => { if (notice.kind === "dud") { notice = { kind: "idle" }; render(); } }, 1500);
+    }
+  }
+  render();
+  if (state === "picked") tap("nebula");
+  if (state === "found") { tap("nebula"); tap("gravity"); }
+  if (state === "dud") { tap("energy"); tap("energy"); }
+</script>
+</body>
+</html>

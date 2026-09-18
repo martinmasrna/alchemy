@@ -1,0 +1,30 @@
+What it is
+A combine-to-discover game played on a phone, one thumb, short sessions. You own a handful of things (Energy, Matter, Star, Water...), you tap two of them, and either a new thing appears with a line of dry, funny, true text, or nothing happens. A world has one visible goal (Earth) and 27 things to find on the way. Hints cost credits, credits come from guessing.
+
+The single screen has to carry
+- your credits and progress (⬡ 4 · 12 / 27)
+- the goal, with its recipe once bought (🌍 Earth = 🌊 Ocean + 🌬️ Air)
+- the two-slot workbench where the pick and the combine happen
+- two bottom-up hint buttons that only make sense while a card is held
+- the grid of things you own, growing from 4 to 31 cards over a session, newest last
+- the undiscovered: 26 unknown squares shrinking to 0, plus named-but-unmade items with a "how? · 5" button
+- the discovery moment: icon, name, the pair that made it, the blurb, whether it earned a credit
+- quiet feedback: "Nothing happens", "You already made Water this way", hint answers like "Star leads to Supernova", "Black Hole goes with nothing. A dead end."
+- rarely: the summit reached, with a stats line; the first-launch name question
+
+Real content to use in mockups
+Seeds: ✨ Energy, ⚛️ Matter, ⬛ Space, ⏳ Time.
+Mid-game owned set (14): the seeds plus 🔹 Particle, 💡 Light, 🌀 Gravity, 🎈 Hydrogen, 🌫️ Nebula, ⭐ Star, 🎈 Helium, ⚫ Carbon, 🫧 Oxygen, 💧 Water.
+Longest names: Solar System, Black Hole, Supernova, Lightyear.
+A discovery: ⭐ Star = 🌫️ Nebula + 🌀 Gravity. "The cloud squeezes until the middle gets so hot that atoms start fusing. It ignites. The dark ages are over."
+Named targets: 🌊 Ocean (how? · 5), 🌬️ Air = 🌋 Volcano + 🌀 Gravity.
+
+What matters
+The tap-tap-result loop is the whole game and it happens two hundred times a session. Every extra tap, every second of blocking, every thing that needs reading is paid two hundred times.
+Discovery is the reward. It should feel like something, but not stop the player.
+Failure is information, not punishment. It should be visible and light.
+The grid is where the thinking happens: scanning what you own for the pair that makes sense.
+Undiscovered squares are a promise of more, and a hint entry point. They are not content.
+
+Known clunk in the current build
+Every discovery needs a dismiss tap. Toasts vanish or are missed. Selection feel is flat. The ? squares read as noise. Emoji icons vary in shape and weight, so the grid has no visual rhythm.

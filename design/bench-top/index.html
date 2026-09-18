@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bench on top</title>
+<link rel="stylesheet" href="../_context/tokens.css">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { max-width: 480px; margin: 0 auto; padding: 0 16px 32px; user-select: none; }
+
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 16px 0 12px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; line-height: 1.15; }
+  .meta { display: flex; gap: 12px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .meta .credits { color: var(--accent); }
+
+  .goal { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--accent); color: var(--accent); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+  .goal button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+
+  /* bench */
+  .bench { margin-top: 24px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 20px 1fr 20px 1fr; align-items: center; gap: 4px; }
+  .op { text-align: center; color: var(--muted); font-size: 16px; }
+  .slot { height: 64px; border: 1px dashed var(--line); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted); font-size: 12px; cursor: pointer; }
+  .slot .i { font-size: 28px; line-height: 1; }
+  .slot .n { font-size: 12px; color: var(--text); }
+  .slot.filled { border-style: solid; background: var(--panel-2); }
+  .slot.result.found { border-color: var(--accent); background: var(--panel-2); }
+  .slot.result.dud { border-color: var(--bad); color: var(--bad); }
+  .below { overflow: hidden; max-height: 0; transition: max-height .25s ease; }
+  .below.open { max-height: 200px; }
+  .found-panel { padding-top: 12px; }
+  .found-panel .name { font-size: 28px; font-weight: 600; line-height: 1.15; display: flex; align-items: baseline; gap: 8px; }
+  .found-panel .name small { font-size: 12px; font-weight: 400; color: var(--accent); }
+  .found-panel .blurb { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .hints { display: flex; gap: 8px; padding-top: 12px; }
+  .hints button { flex: 1; height: 40px; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; font-size: 14px; cursor: pointer; }
+  .hints button.quiet { flex: 0 0 40px; color: var(--muted); }
+  .shake { animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+  .label { margin: 24px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: transform .08s, opacity .15s, border-color .15s; }
+  .card:active { transform: scale(.96); }
+  .card .i { font-size: 28px; line-height: 1; }
+  .card .n { font-size: 14px; line-height: 1.15; text-align: center; }
+  .card.picked { border-color: var(--accent); background: var(--panel-2); }
+  .card.tried { opacity: .35; }
+  .card.new { animation: pop .4s; }
+  @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--line); border-radius: 999px; padding: 6px 12px; font-size: 14px; color: var(--text); }
+  .chip .r { color: var(--muted); }
+  .chip button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+  .squares { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .sq { aspect-ratio: 1; border: 1px dashed var(--line); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+  <header><h1 id="title"></h1><div class="meta"><span class="credits">⬡ <span id="credits"></span></span><span><span id="found"></span> / <span id="total"></span></span></div></header>
+  <div class="goal" id="goal"></div>
+
+  <section class="bench" id="bench">
+    <div class="row">
+      <div class="slot" id="slotA"><span>tap a card</span></div><div class="op">+</div>
+      <div class="slot" id="slotB"><span>then another</span></div><div class="op">=</div>
+      <div class="slot result" id="result"><span>?</span></div>
+    </div>
+    <div class="below" id="below"></div>
+  </section>
+
+  <div class="label">You have · <span id="ownCount"></span></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="label">Undiscovered · <span id="unkCount"></span></div>
+  <div class="chips" id="chips"></div>
+  <div class="squares" id="squares"></div>
+
+<script type="module">
+  import { world, goal, owned, discovery, named, unknownCount, tried, key, state } from "../_context/fixture.js";
+  const $ = (id) => document.getElementById(id);
+  let items = [...owned], picked = null, credits = world.credits, found = world.found, unknown = unknownCount, triedSet = new Set(tried), newId = null;
+  let below = "";   // "", "hints", "found"
+  let result = { kind: "idle" };
+
+  $("title").textContent = world.name; $("total").textContent = world.total;
+  $("goal").innerHTML = `<span>${goal.icon} ${goal.name}</span><button>how? · 5</button>`;
+  $("chips").innerHTML = named.map((n) => `<div class="chip"><span>${n.icon} ${n.name}</span>${n.recipe ? `<span class="r">= ${n.recipe}</span>` : `<button>how? · 5</button>`}</div>`).join("");
+
+  function render() {
+    $("credits").textContent = credits; $("found").textContent = found; $("ownCount").textContent = items.length; $("unkCount").textContent = unknown + named.length;
+    const p = items.find((i) => i.id === picked);
+    $("slotA").className = "slot" + (p ? " filled" : "");
+    $("slotA").innerHTML = p ? `<span class="i">${p.icon}</span><span class="n">${p.name}</span>` : `<span>tap a card</span>`;
+    $("slotB").className = "slot"; $("slotB").innerHTML = `<span>${p ? "then another" : "then another"}</span>`;
+    const r = $("result");
+    r.className = "slot result " + (result.kind === "found" ? "found" : result.kind === "dud" ? "dud" : "");
+    r.innerHTML = result.kind === "found" ? `<span class="i">${discovery.icon}</span>` : result.kind === "dud" ? `<span>nothing</span>` : `<span>?</span>`;
+    const b = $("below");
+    if (below === "found") { b.className = "below open"; b.innerHTML = `<div class="found-panel"><div class="name">${discovery.name} <small>+1 credit</small></div><div class="blurb">${discovery.blurb}</div></div>`; }
+    else if (below === "hints") { b.className = "below open"; b.innerHTML = `<div class="hints"><button>leads to · 2</button><button>goes with · 2</button><button class="quiet" id="down">✕</button></div>`; $("down").onclick = () => { picked = null; below = ""; render(); }; }
+    else { b.className = "below"; }
+    $("grid").innerHTML = items.map((i) => `<div class="card ${i.id === picked ? "picked" : ""} ${picked && triedSet.has(key(picked, i.id)) ? "tried" : ""} ${i.id === newId ? "new" : ""}" data-id="${i.id}"><span class="i">${i.icon}</span><span class="n">${i.name}</span></div>`).join("");
+    newId = null;
+    $("squares").innerHTML = Array.from({ length: unknown }, () => `<div class="sq">?</div>`).join("");
+    for (const c of document.querySelectorAll(".card")) c.onclick = () => tap(c.dataset.id);
+  }
+  function tap(id) {
+    if (!picked) { picked = id; below = "hints"; result = { kind: "idle" }; render(); return; }
+    const a = picked; picked = null;
+    if (key(a, id) === key(discovery.a, discovery.b) && !items.find((i) => i.id === discovery.id)) {
+      items.push(discovery); newId = discovery.id; credits++; found++; unknown--; result = { kind: "found" }; below = "found"; render();
+    } else {
+      triedSet.add(key(a, id)); result = { kind: "dud" }; below = ""; render();
+      $("bench").classList.remove("shake"); void $("bench").offsetWidth; $("bench").classList.add("shake");
+    }
+  }
+  render();
+  if (state === "picked") tap("nebula");
+  if (state === "found") { tap("nebula"); tap("gravity"); }
+  if (state === "dud") { tap("energy"); tap("energy"); }
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+/* Extracted verbatim from index.html :root. These are the first playable's placeholder tokens,
+   not a design decision. The UI pass may replace them wholesale. */
+:root {
+  --bg: #0b0d12; --panel: #151924; --panel-2: #1c2130; --line: #2a3145;
+  --text: #e8eaf0; --muted: #8b93a7; --accent: #f5c451; --good: #6fd08c; --bad: #e07a7a;
+}
