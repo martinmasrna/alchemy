@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bench on top · impact</title>
+<link rel="stylesheet" href="../../../../../_context/tokens.css">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { max-width: 480px; margin: 0 auto; padding: 0 16px 32px; user-select: none; }
+
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 16px 0 12px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; line-height: 1.15; }
+  .meta { display: flex; gap: 12px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .meta .credits { color: var(--accent); }
+  .goal { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--accent); color: var(--accent); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+  .goal button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+
+  .switch { display: flex; gap: 8px; align-items: center; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .switch button { height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 12px; cursor: pointer; }
+  .switch button.on { color: var(--accent); border-color: var(--accent); }
+  .switch .replay { margin-left: auto; color: var(--text); }
+
+  .bench { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 20px 1fr 20px 1fr; align-items: center; gap: 4px; }
+  .op { text-align: center; color: var(--muted); }
+  .slot { height: 64px; border: 1px dashed var(--line); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted); font-size: 12px; cursor: pointer; }
+  .slot .i { font-size: 28px; line-height: 1; }
+  .slot .n { font-size: 12px; color: var(--text); }
+  .slot.filled { border-style: solid; background: var(--panel-2); }
+  .slot.result.found { border-color: var(--accent); background: var(--panel-2); }
+  .slot.result.dud { border-color: var(--bad); color: var(--bad); }
+  .shake { animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+  .label { margin: 24px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: transform .08s, border-color .15s; }
+  .card:active { transform: scale(.96); }
+  .card .i { font-size: 28px; line-height: 1; }
+  .card .n { font-size: 14px; line-height: 1.15; text-align: center; }
+  .card.picked { border-color: var(--accent); background: var(--panel-2); }
+  .card.new { animation: pop .4s; }
+  @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--line); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+  .chip .r { color: var(--muted); }
+  .chip button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+  .chip.new { animation: pop .4s; }
+  .squares { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .sq { aspect-ratio: 1; border: 1px dashed var(--line); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; cursor: pointer; }
+  .sq.armed { border-style: solid; border-color: var(--accent); color: var(--accent); font-size: 12px; }
+  .note { font-size: 14px; color: var(--muted); margin-top: 8px; min-height: 20px; }
+
+  /* ---------- the discovery moment ---------- */
+  .stage { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 24px; cursor: pointer; overflow: hidden; }
+  .stage.show { display: flex; }
+  .backdrop { position: absolute; inset: 0; background: rgba(5,6,10,.9); animation: fadein .2s; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .who { position: relative; text-align: center; max-width: 360px; width: 100%; }
+  .pair { font-size: 14px; color: var(--muted); }
+  .name { font-size: 32px; font-weight: 600; line-height: 1.15; margin-top: 8px; }
+  .blurb { font-size: 16px; color: var(--text); margin-top: 16px; text-align: left; }
+  .credit { display: inline-block; margin-top: 16px; font-size: 12px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; }
+  .in { opacity: 0; animation: rise .5s forwards; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* arena: every actor is a zero-size anchor at the centre with a flex-centred box inside,
+     so a wide emoji glyph stays centred whatever its advance width */
+  .arena { position: relative; width: 100%; height: 180px; }
+  .anchor { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+  .anchor > div { position: absolute; display: flex; align-items: center; justify-content: center; }
+  .ing > div { width: 120px; height: 120px; margin: -60px; font-size: 56px; line-height: 1; }
+  .out > div { width: 200px; height: 200px; margin: -100px; font-size: 96px; line-height: 1; }
+  .flash > div { width: 24px; height: 24px; margin: -12px; border-radius: 50%; background: #fff; box-shadow: 0 0 40px 20px rgba(245,196,81,.8); }
+  .ring > div { width: 60px; height: 60px; margin: -30px; border-radius: 50%; border: 2px solid var(--accent); }
+  .glow > div { width: 160px; height: 160px; margin: -80px; border-radius: 50%; background: radial-gradient(circle, rgba(245,196,81,.55), rgba(245,196,81,0) 70%); }
+  .spark > div { width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: var(--accent); }
+  .ing > div, .out > div, .flash > div, .ring > div, .glow > div, .spark > div { opacity: 0; } /* every actor starts hidden; JS animates with real pixel values */
+
+</style>
+</head>
+<body>
+  <header><h1 id="title"></h1><div class="meta"><span class="credits">⬡ <span id="credits"></span></span><span><span id="found"></span> / <span id="total"></span></span></div></header>
+  <div class="goal" id="goal"></div>
+
+  <div class="switch">approach <button data-v="collide" class="on">collide</button><button data-v="orbit">orbit</button><button class="replay" id="replay">replay ▶</button></div>
+  <div class="switch">impact <button data-i="soft">soft</button><button data-i="medium" class="on">medium</button><button data-i="hard">hard</button></div>
+
+  <section class="bench" id="bench">
+    <div class="row">
+      <div class="slot" id="slotA"><span>tap a card</span></div><div class="op">+</div>
+      <div class="slot" id="slotB"><span>then another</span></div><div class="op">=</div>
+      <div class="slot result" id="result"><span>?</span></div>
+    </div>
+  </section>
+
+  <div class="label">You have · <span id="ownCount"></span></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="label">Undiscovered · <span id="unkCount"></span></div>
+  <div class="chips" id="chips"></div>
+  <div class="squares" id="squares"></div>
+  <div class="note" id="note"></div>
+
+  <div class="stage" id="stage"></div>
+
+<script type="module">
+  import { world, goal, owned, recipes, named as named0, unknownCount, key, state } from "../../../../../_context/fixture.js";
+  const $ = (id) => document.getElementById(id);
+  const byKey = new Map(recipes.map((r) => [key(r.a, r.b), r]));
+  let items = [...owned], picked = null, credits = world.credits, found = world.found, unknown = unknownCount, newId = null;
+  let named = [...named0], armed = false, armTimer, newChip = null, last = null;
+  let result = { kind: "idle" }, variant = "collide", intensity = "medium";
+  // intensity: approach duration, hit-stop, kick amplitude, flash scale, ring scale, spark flight, spark count
+  const I = {
+    soft:   { dur: .7,  stop: .06, kick: 3,  flash: 2,   ring: 3, fly: 80,  sparks: 8 },
+    medium: { dur: .65, stop: .1,  kick: 7,  flash: 3,   ring: 4, fly: 110, sparks: 14 },
+    hard:   { dur: .6,  stop: .16, kick: 14, flash: 4.5, ring: 6, fly: 150, sparks: 22 },
+  };
+
+  $("title").textContent = world.name; $("total").textContent = world.total;
+  $("goal").innerHTML = `<span>${goal.icon} ${goal.name}</span><button>how? · 5</button>`;
+  const has = (id) => items.some((i) => i.id === id);
+  const makeableNow = () => recipes.filter((r) => has(r.a) && has(r.b) && !has(r.id) && !named.some((n) => n.name === r.name));
+
+  function render() {
+    $("credits").textContent = credits; $("found").textContent = found; $("ownCount").textContent = items.length; $("unkCount").textContent = unknown + named.length;
+    const p = items.find((i) => i.id === picked);
+    $("slotA").className = "slot" + (p ? " filled" : "");
+    $("slotA").innerHTML = p ? `<span class="i">${p.icon}</span><span class="n">${p.name}</span>` : `<span>tap a card</span>`;
+    const r = $("result");
+    r.className = "slot result " + (result.kind === "found" ? "found" : result.kind === "dud" ? "dud" : "");
+    r.innerHTML = result.kind === "found" ? `<span class="i">${last.icon}</span><span class="n">${last.name}</span>` : result.kind === "dud" ? `<span>nothing</span>` : `<span>?</span>`;
+    $("grid").innerHTML = items.map((i) => `<div class="card ${i.id === picked ? "picked" : ""} ${i.id === newId ? "new" : ""}" data-id="${i.id}"><span class="i">${i.icon}</span><span class="n">${i.name}</span></div>`).join("");
+    newId = null;
+    $("chips").innerHTML = named.map((n) => `<div class="chip ${n.name === newChip ? "new" : ""}"><span>${n.icon} ${n.name}</span>${n.recipe ? `<span class="r">= ${n.recipe}</span>` : `<button>how? · 5</button>`}</div>`).join("");
+    newChip = null;
+    $("squares").innerHTML = Array.from({ length: unknown }, (_, i) => `<div class="sq ${i === 0 && armed ? "armed" : ""}">${i === 0 && armed ? "⬡ 1" : "?"}</div>`).join("");
+    for (const s of document.querySelectorAll(".sq")) s.onclick = () => square();
+  }
+
+  function square() {
+    if (!armed) { armed = true; clearTimeout(armTimer); armTimer = setTimeout(() => { armed = false; render(); }, 3000); render(); return; }
+    armed = false; clearTimeout(armTimer);
+    const m = makeableNow();
+    if (!m.length) { $("note").textContent = "Everything you could make right now, you already know about."; render(); return; }
+    if (credits < 1) { $("note").textContent = "No credits. Guess something first."; render(); return; }
+    const pick = m[0]; credits--; unknown--; named.push({ icon: pick.icon, name: pick.name, recipe: null }); newChip = pick.name;
+    $("note").textContent = `${pick.icon} ${pick.name} can be made from what you have.`;
+    render();
+  }
+
+  function tap(id) {
+    $("note").textContent = "";
+    if (!picked) { picked = id; render(); return; }
+    const a = picked; picked = null;
+    const rec = byKey.get(key(a, id));
+    if (rec && !has(rec.id)) {
+      last = rec; credits++; found++;
+      const wasNamed = named.some((n) => n.name === rec.name);
+      if (wasNamed) named = named.filter((n) => n.name !== rec.name); else unknown--;
+      result = { kind: "found" }; render(); reveal(rec);
+    } else {
+      result = { kind: "dud" }; render();
+      $("bench").classList.remove("shake"); void $("bench").offsetWidth; $("bench").classList.add("shake");
+    }
+  }
+
+  // All motion is Web Animations with pixel values: CSS variables inside keyframes are unreliable on iOS.
+  function reveal(rec) {
+    const st = $("stage"), A = items.find((i) => i.id === rec.a), B = items.find((i) => i.id === rec.b), k = I[intensity];
+    const T = k.dur * 1000, STOP = k.stop * 1000;
+    const M = variant === "orbit" ? T * 1.4 : T; // when the ingredients meet
+    const d0 = Math.round(M + STOP + 500);
+    const sparks = Array.from({ length: k.sparks }, () => `<div class="anchor spark"><div></div></div>`).join("");
+    st.className = "stage show";
+    st.innerHTML = `<div class="backdrop"></div><div class="who" id="who">
+      <div class="arena" id="arena">
+        <div class="anchor ing a"><div>${A.icon}</div></div><div class="anchor ing b"><div>${B.icon}</div></div>
+        <div class="anchor flash"><div></div></div><div class="anchor ring"><div></div></div><div class="anchor glow"><div></div></div>${sparks}
+        <div class="anchor out"><div>${rec.icon}</div></div>
+      </div>
+      <div class="pair in" style="animation-delay:${d0}ms">${A.icon} ${A.name} + ${B.icon} ${B.name}</div>
+      <div class="name in" style="animation-delay:${d0 + 100}ms">${rec.name}</div>
+      <div class="blurb in" style="animation-delay:${d0 + 250}ms">${rec.blurb}</div>
+      <div class="credit in" style="animation-delay:${d0 + 450}ms">+1 credit</div></div>`;
+
+    // the ingredients start left and right of the centre
+    const a0 = { x: -120, y: 0 }, b0 = { x: 120, y: 0 };
+    const q = (sel) => st.querySelector(sel);
+    const fwd = (duration, delay = 0, easing = "ease-out") => ({ duration, delay, easing, fill: "forwards" });
+
+    // the approach
+    const meet = { transform: "translate(0px, 0px) scale(.5)", opacity: 0, offset: 1 };
+    if (variant === "collide") {
+      const ease = "cubic-bezier(.7,-.3,1,.5)"; // negative overshoot = the pull-back before the flight
+      q(".ing.a > div").animate([{ transform: `translate(${a0.x}px, ${a0.y}px)`, opacity: 1 }, { opacity: 1, offset: .95 }, meet], fwd(T, 0, ease));
+      q(".ing.b > div").animate([{ transform: `translate(${b0.x}px, ${b0.y}px)`, opacity: 1 }, { opacity: 1, offset: .95 }, meet], fwd(T, 0, ease));
+    } else {
+      const ease = "cubic-bezier(.5,0,.9,.4)";
+      // same transform functions from first frame to last, so the browser interpolates the angle, not a straight line
+      const r = Math.abs(a0.x);
+      q(".ing.a > div").animate([{ transform: `rotate(180deg) translateX(${r}px) rotate(-180deg)`, opacity: 1 }, { opacity: 1, offset: .95 }, { transform: "rotate(720deg) translateX(0px) rotate(-720deg) scale(.5)", opacity: 0 }], fwd(T * 1.4, 0, ease));
+      q(".ing.b > div").animate([{ transform: `rotate(0deg) translateX(${r}px) rotate(0deg)`, opacity: 1 }, { opacity: 1, offset: .95 }, { transform: "rotate(540deg) translateX(0px) rotate(-540deg) scale(.5)", opacity: 0 }], fwd(T * 1.4, 0, ease));
+    }
+    // the impact: flash and ring on contact, the stage kicks, then a hit-stop before the result lands
+    q(".flash > div").animate([{ transform: "scale(.2)", opacity: 1 }, { transform: `scale(${k.flash})`, opacity: 0 }], fwd(300, M));
+    q(".ring > div").animate([{ transform: "scale(.2)", opacity: 1 }, { transform: `scale(${k.ring})`, opacity: 0 }], fwd(600, M));
+    const kk = k.kick;
+    q("#who").animate([{ transform: "none" }, { transform: `translate(${-kk}px, ${kk * .6}px)`, offset: .2 }, { transform: `translate(${kk * .7}px, ${-kk * .4}px)`, offset: .45 }, { transform: `translate(${-kk * .3}px, ${kk * .2}px)`, offset: .7 }, { transform: "none" }], { duration: 300, delay: M, easing: "cubic-bezier(.2,.8,.2,1)" });
+    q(".glow > div").animate([{ transform: "scale(.2)", opacity: 0 }, { opacity: 1, offset: .4 }, { transform: "scale(1.6)", opacity: .35 }], fwd(1200, M + STOP));
+    st.querySelectorAll(".spark > div").forEach((s, i) => {
+      const a = Math.round(i * 360 / k.sparks);
+      s.animate([{ transform: `rotate(${a}deg) translateX(0px)`, opacity: 1 }, { transform: `rotate(${a}deg) translateX(${k.fly}px)`, opacity: 0 }], fwd(900, M + STOP + (i % 3) * 50));
+    });
+    q(".out > div").animate([{ transform: "scale(.2)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], fwd(600, M + STOP, "cubic-bezier(.2,1.6,.4,1)"));
+
+    st.onclick = () => { st.className = "stage"; if (!has(rec.id)) { items.push({ id: rec.id, icon: rec.icon, name: rec.name }); newId = rec.id; render(); } };
+  }
+
+  for (const b of document.querySelectorAll(".switch [data-v]")) b.onclick = () => { variant = b.dataset.v; for (const x of document.querySelectorAll(".switch [data-v]")) x.classList.toggle("on", x === b); };
+  for (const b of document.querySelectorAll(".switch [data-i]")) b.onclick = () => { intensity = b.dataset.i; for (const x of document.querySelectorAll(".switch [data-i]")) x.classList.toggle("on", x === b); };
+  $("replay").onclick = () => { if (last) reveal(last); else { tap("nebula"); tap("gravity"); } };
+
+  render();
+  document.getElementById("grid").addEventListener("click", (e) => { const c = e.target.closest(".card"); if (c) tap(c.dataset.id); });
+  if (state === "found" || state === "collide") { tap("nebula"); tap("gravity"); }
+  if (state === "orbit") { document.querySelector('[data-v="orbit"]').click(); tap("hydrogen"); tap("oxygen"); }
+  if (state === "hard") { document.querySelector('[data-i="hard"]').click(); tap("hydrogen"); tap("oxygen"); }
+  if (state === "dud") { tap("energy"); tap("energy"); }
+  // ?freeze=<ms> holds every animation at that moment, for screenshots
+  const freeze = new URLSearchParams(location.search).get("freeze");
+  if (freeze !== null) requestAnimationFrame(() => document.getAnimations().forEach((a) => { a.pause(); a.currentTime = +freeze; }));
+</script>
+</body>
+</html>

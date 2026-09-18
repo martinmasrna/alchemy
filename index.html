@@ -16,114 +16,122 @@
     --text: #e8eaf0; --muted: #8b93a7; --accent: #f5c451; --good: #6fd08c; --bad: #e07a7a;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-  body { padding: env(safe-area-inset-top) 16px calc(16px + env(safe-area-inset-bottom)); max-width: 640px; margin: 0 auto; user-select: none; overflow-x: hidden; }
-  .slot, .target, footer span { min-width: 0; }
-  footer { flex-wrap: wrap; }
-  header { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0 6px; }
-  header h1 { font-size: 18px; margin: 0; font-weight: 600; }
-  header .meta { display: flex; gap: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  header .credits { color: var(--accent); }
-  .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-  .label .sub { text-transform: none; letter-spacing: 0; margin-left: 6px; opacity: .7; }
-  .hiddenwrap { margin-top: 22px; }
-  .hiddenwrap .targets { margin: 8px 0 10px; }
-  .squares { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; }
-  .sq { aspect-ratio: 1; border: 1px dashed var(--line); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 16px; cursor: pointer; background: var(--panel); }
-  .sq.armed { border-style: solid; border-color: var(--accent); color: var(--accent); background: var(--panel-2); }
-  .sq.armed span::before { content: "⬡ "; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { max-width: 480px; margin: 0 auto; padding: env(safe-area-inset-top) 16px calc(32px + env(safe-area-inset-bottom)); user-select: none; overflow-x: hidden; }
 
-  .goal { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 8px 0; }
-  .targets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-  .target { display: inline-flex; align-items: center; gap: 6px; background: var(--panel-2); border: 1px dashed var(--line); border-radius: 999px; padding: 4px 6px 4px 10px; font-size: 14px; }
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 16px 0 12px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; line-height: 1.15; }
+  .meta { display: flex; gap: 12px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .meta .credits { color: var(--accent); }
+
+  .target { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--line); border-radius: 999px; padding: 6px 12px; font-size: 14px; max-width: 100%; }
   .target.summit { border-color: var(--accent); color: var(--accent); }
-  .target button { background: transparent; color: var(--muted); border: 0; font-size: 12px; padding: 2px 6px; cursor: pointer; }
-  .target .recipe { color: var(--text); font-size: 13px; }
+  .target .r { color: var(--muted); }
+  .target button { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0; cursor: pointer; }
+  .target.new { animation: pop .4s; }
 
-  .bench { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin: 14px 0 8px; }
-  .slot { height: 64px; border: 1px dashed var(--line); border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 15px; }
-  .slot.filled { border-style: solid; background: var(--panel); color: var(--text); }
-  .slot .icon { font-size: 24px; }
-  .plus { color: var(--muted); font-size: 22px; }
+  .bench { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 20px 1fr 20px 1fr; align-items: center; gap: 4px; }
+  .op { text-align: center; color: var(--muted); }
+  .slot { height: 64px; border: 1px dashed var(--line); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted); font-size: 12px; cursor: pointer; text-align: center; padding: 0 4px; }
+  .slot .i { font-size: 28px; line-height: 1; }
+  .slot .n { font-size: 12px; color: var(--text); }
+  .slot.filled { border-style: solid; background: var(--panel-2); }
+  .slot.result.found { border-color: var(--accent); background: var(--panel-2); }
+  .slot.result.dud { border-color: var(--bad); color: var(--bad); }
   .bench.shake { animation: shake .3s; }
   @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 
-  .hints { display: flex; gap: 8px; margin: 0 0 10px; min-height: 34px; }
-  .hints button { flex: 1; min-width: 0; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 13px; cursor: pointer; }
-  .hints button:disabled { opacity: .35; }
-
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px 8px; text-align: center; cursor: pointer; position: relative; transition: transform .08s, opacity .15s; }
+  .label { margin: 24px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: transform .08s, border-color .15s; }
   .card:active { transform: scale(.96); }
-  .card .icon { font-size: 28px; line-height: 1.1; }
-  .card .name { font-size: 13px; margin-top: 4px; }
-  .card.selected { border-color: var(--accent); background: var(--panel-2); }
+  .card .i { font-size: 28px; line-height: 1; }
+  .card .n { font-size: 14px; line-height: 1.15; text-align: center; }
+  .card.picked { border-color: var(--accent); background: var(--panel-2); }
   .card.new { animation: pop .4s; }
   @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
 
-  .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); padding: 8px 14px; border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chips:empty { display: none; }
+  .squares { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .sq { aspect-ratio: 1; border: 1px dashed var(--line); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; cursor: pointer; }
+  .sq.armed { border-style: solid; border-color: var(--accent); color: var(--accent); font-size: 12px; }
+  .note { font-size: 14px; color: var(--muted); margin-top: 8px; min-height: 20px; }
+
+  footer { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; margin-top: 32px; color: var(--muted); font-size: 12px; }
+  footer span { min-width: 0; }
+  footer button { background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); padding: 8px 14px; border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: calc(100% - 32px); text-align: center; }
   .toast.show { opacity: 1; }
 
-  .overlay { position: fixed; inset: 0; background: rgba(5,6,10,.85); display: none; align-items: center; justify-content: center; padding: 24px; }
-  .overlay.show { display: flex; }
-  .reveal { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px 20px; max-width: 420px; width: 100%; text-align: center; animation: pop .35s; }
-  .reveal .icon { font-size: 64px; }
-  .reveal h2 { margin: 8px 0 4px; font-size: 24px; }
-  .reveal .made { color: var(--muted); font-size: 13px; }
-  .reveal p { color: var(--text); margin: 14px 0 18px; text-align: left; }
-  .reveal.summit { border-color: var(--accent); }
-  .reveal button { background: var(--accent); color: #1a1400; border: 0; border-radius: 10px; padding: 10px 20px; font-size: 15px; font-weight: 600; cursor: pointer; }
-  .reveal .stats { color: var(--muted); font-size: 13px; margin-top: 12px; }
-  .reveal form { display: flex; gap: 8px; }
-  .reveal input { flex: 1; min-width: 0; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 16px; }
+  /* ---------- the discovery moment ---------- */
+  .stage { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 24px; cursor: pointer; overflow: hidden; }
+  .stage.show { display: flex; }
+  .backdrop { position: absolute; inset: 0; background: rgba(5,6,10,.9); animation: fadein .2s; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .who { position: relative; text-align: center; max-width: 360px; width: 100%; }
+  .pair { font-size: 14px; color: var(--muted); }
+  .name { font-size: 32px; font-weight: 600; line-height: 1.15; margin-top: 8px; }
+  .blurb { font-size: 16px; color: var(--text); margin-top: 16px; text-align: left; }
+  .credit { display: inline-block; margin-top: 16px; font-size: 12px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; }
+  .credit.none { color: var(--muted); border-color: var(--line); }
+  .stats { font-size: 14px; color: var(--muted); margin-top: 16px; }
+  .in { opacity: 0; animation: rise .5s forwards; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
-  footer { display: flex; gap: 8px; justify-content: space-between; margin-top: 28px; color: var(--muted); font-size: 12px; }
-  footer button { background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+  .arena { position: relative; width: 100%; height: 180px; }
+  .anchor { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+  .anchor > div { position: absolute; display: flex; align-items: center; justify-content: center; opacity: 0; }
+  .ing > div { width: 120px; height: 120px; margin: -60px; font-size: 56px; line-height: 1; }
+  .out > div { width: 200px; height: 200px; margin: -100px; font-size: 96px; line-height: 1; }
+  .flash > div { width: 24px; height: 24px; margin: -12px; border-radius: 50%; background: #fff; box-shadow: 0 0 40px 20px rgba(245,196,81,.8); }
+  .ring > div { width: 60px; height: 60px; margin: -30px; border-radius: 50%; border: 2px solid var(--accent); }
+  .glow > div { width: 160px; height: 160px; margin: -80px; border-radius: 50%; background: radial-gradient(circle, rgba(245,196,81,.55), rgba(245,196,81,0) 70%); }
+  .spark > div { width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: var(--accent); }
+
+  /* first launch: who's playing */
+  .stage.form { cursor: default; }
+  .stage.form .who { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px 20px; animation: pop .35s; }
+  .stage.form .icon { font-size: 64px; line-height: 1; }
+  .stage.form h2 { margin: 8px 0 4px; font-size: 24px; }
+  .stage.form p { color: var(--muted); font-size: 14px; margin: 8px 0 16px; }
+  .stage.form form { display: flex; gap: 8px; }
+  .stage.form input { flex: 1; min-width: 0; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 16px; }
+  .stage.form button { background: var(--accent); color: #1a1400; border: 0; border-radius: 10px; padding: 10px 20px; font-size: 15px; font-weight: 600; cursor: pointer; }
 </style>
 </head>
 <body>
   <header>
     <h1 id="worldName">…</h1>
-    <div class="meta">
-      <span class="credits" title="hint credits">⬡ <span id="credits">0</span></span>
-      <span class="count"><span id="count">0</span> / <span id="total">0</span></span>
-    </div>
+    <div class="meta"><span class="credits">⬡ <span id="credits">0</span></span><span><span id="count">0</span> / <span id="total">0</span></span></div>
   </header>
-
-  <section class="goal">
-    <div class="label">Goal</div>
-    <div class="targets" id="goal"></div>
-  </section>
+  <div id="goal"></div>
 
   <section class="bench" id="bench">
-    <div class="slot" id="slotA">tap a card</div>
-    <div class="plus">+</div>
-    <div class="slot" id="slotB">then another</div>
+    <div class="row">
+      <div class="slot" id="slotA"><span>tap a card</span></div><div class="op">+</div>
+      <div class="slot" id="slotB"><span>then another</span></div><div class="op">=</div>
+      <div class="slot result" id="result"><span>?</span></div>
+    </div>
   </section>
 
-  <section class="hints" id="hints">
-    <button id="hintLeads" disabled>What does this lead to?</button>
-    <button id="hintPairs" disabled>What goes with this?</button>
-  </section>
+  <div class="label">You have · <span id="ownCount">0</span></div>
+  <div class="grid" id="grid"></div>
 
-  <section class="grid" id="grid"></section>
-
-  <section class="hiddenwrap">
-    <div class="label">Undiscovered · <span id="hiddenCount">0</span> <span class="sub">tap a square twice to learn its name</span></div>
-    <div class="targets" id="named"></div>
-    <div class="squares" id="hidden"></div>
-  </section>
+  <div class="label">Undiscovered · <span id="hiddenCount">0</span></div>
+  <div class="chips" id="named"></div>
+  <div class="squares" id="hidden"></div>
+  <div class="note" id="note"></div>
 
   <footer>
     <span id="elapsed"></span>
-    <span>
-      <button id="copyLog">Copy play log</button>
-      <button id="reset">Reset</button>
-    </span>
+    <span><button id="copyLog">Copy play log</button> <button id="reset">Reset</button></span>
   </footer>
 
   <div class="toast" id="toast"></div>
-  <div class="overlay" id="overlay"><div class="reveal" id="reveal"></div></div>
+  <div class="stage" id="stage"></div>
 
   <script type="module" src="app.js"></script>
 </body>

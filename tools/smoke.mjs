@@ -42,12 +42,13 @@ const fails = [];
 const check = (cond, msg) => { if (!cond) fails.push(msg); console.log(`${cond ? "ok " : "FAIL"} ${msg}`); };
 
 const HELPERS = `
-  window.__card = n => [...document.querySelectorAll('#grid .card')].find(c => c.querySelector('.name').textContent === n);
-  window.__names = () => [...document.querySelectorAll('#grid .card .name')].map(n => n.textContent);
-  window.__combine = (a, b) => { __card(a).click(); __card(b).click(); const o = document.getElementById('overlay'); const shown = o.classList.contains('show'); if (shown) document.getElementById('closeReveal').click(); return shown; };
+  window.__card = n => [...document.querySelectorAll('#grid .card')].find(c => c.querySelector('.n').textContent === n);
+  window.__names = () => [...document.querySelectorAll('#grid .card .n')].map(n => n.textContent);
+  window.__combine = (a, b) => { __card(a).click(); __card(b).click(); const st = document.getElementById('stage'); const shown = st.classList.contains('show'); if (shown) st.click(); return shown; };
   window.__state = () => JSON.parse(localStorage.getItem('alchemy.${world.id}'));
   window.__credits = () => +document.getElementById('credits').textContent;
   window.__toast = () => document.getElementById('toast').textContent;
+  window.__squares = () => document.querySelectorAll('#hidden .sq').length;
   true`;
 
 try {
@@ -69,72 +70,55 @@ try {
   const byId = new Map(world.items.map((i) => [i.id, i]));
   check((await evalJs("__names().length")) === 4, "starts with 4 seeds");
   check((await evalJs("document.getElementById('total').textContent")) === String(total), "total counter matches table");
-  check((await evalJs("document.querySelectorAll('#hidden .sq').length")) === total - 1, "one ? square per undiscovered item, summit excluded");
+  check((await evalJs("__squares()")) === total - 1, "one ? square per unknown item, the named summit excluded");
   const widths = await evalJs(`JSON.stringify({ viewport: innerWidth, page: document.documentElement.scrollWidth })`);
   check(JSON.parse(widths).page <= JSON.parse(widths).viewport, `no horizontal overflow at 390px ${widths}`);
   const c0 = await evalJs("__credits()");
 
-  // a dud
+  // a dud: tap the same card twice
   check((await evalJs("__combine('Energy','Energy')")) === false, "Energy + Energy makes nothing");
-  check((await evalJs("__state().tried.includes('energy+energy')")), "dud is remembered as tried");
-  await evalJs("__card('Energy').click()");
-  check(!(await evalJs("__card('Energy').classList.contains('tried')")) && !(await evalJs("document.querySelector('#grid .card.made')")), "tried pairs leave no visible trace");
-  await evalJs("__card('Energy').click()"); // completes Energy + Energy again, a dud, clears the pick
+  check((await evalJs("document.getElementById('result').classList.contains('dud')")), "result slot shows the dud");
+  check((await evalJs("__state().tried.includes('energy+energy')")), "dud is remembered in the log");
+  check((await evalJs("document.querySelectorAll('#grid .card.picked').length")) === 0, "nothing stays picked after a combine");
   await evalJs("__card('Space').click(); document.getElementById('slotA').click()");
-  check((await evalJs("document.querySelectorAll('#grid .card.selected').length")) === 0, "tapping the first slot puts the card down");
+  check((await evalJs("document.querySelectorAll('#grid .card.picked').length")) === 0, "tapping the first slot puts the card down");
 
-  // a hit earns a credit
-  check((await evalJs("__combine('Energy','Matter')")) === true, "Energy + Matter shows a reveal");
+  // a hit: full-screen moment, credit, square count
+  check((await evalJs("__combine('Energy','Matter')")) === true, "Energy + Matter shows the discovery moment");
   check((await evalJs("__names().includes('Particle')")), "Particle appears in the grid");
-  check((await evalJs("document.querySelectorAll('#grid .card.selected').length")) === 0, "nothing stays highlighted after a combine");
-  check((await evalJs("__credits()")) === c0 + 1, "a discovery earns one credit");
-  check((await evalJs("document.querySelectorAll('#hidden .sq').length")) === total - 2, "its ? square disappears");
+  check((await evalJs("document.getElementById('result').textContent")).includes("Particle"), "result slot shows the last discovery");
+  check((await evalJs("__credits()")) === c0 + 1, "a guessed discovery earns one credit");
+  check((await evalJs("__squares()")) === total - 2, "one ? square fewer");
 
   // too poor for a recipe yet
   await evalJs("document.querySelector('#goal .target.summit button').click()");
   check((await evalJs("__toast()")).includes("Not enough"), "refuses a hint you can't afford");
 
-  // earn up, then the summit recipe costs 5
-  await evalJs("__combine('Particle','Particle')"); // Hydrogen, +1
-  await evalJs("__combine('Matter','Matter')");     // Gravity, +1
-  await evalJs("__combine('Energy','Space')");      // Light, +1
+  // earn up, then the summit recipe costs 5 and names its ingredients
+  await evalJs("__combine('Particle','Particle')"); // Hydrogen
+  await evalJs("__combine('Matter','Matter')");     // Gravity
+  await evalJs("__combine('Energy','Space')");      // Light
   check((await evalJs("__credits()")) === c0 + 4, "four guessed discoveries, four credits");
   await evalJs("document.querySelector('#goal .target.summit button').click()");
-  check((await evalJs("document.querySelector('#goal .target.summit .recipe').textContent")).includes("Ocean"), "summit 'how?' reveals Ocean + Air");
+  check((await evalJs("document.querySelector('#goal .target.summit .r').textContent")).includes("Ocean"), "summit 'how?' reveals Ocean + Air");
   check((await evalJs("__credits()")) === c0 + 4 - 5, "recipe hint cost 5");
-  check((await evalJs("document.querySelectorAll('#named .target').length")) === 2, "Ocean and Air show as named squares");
+  check((await evalJs("document.querySelectorAll('#named .target').length")) === 2, "Ocean and Air show as named chips");
 
-  // buy a name with two taps
+  // a ? square names something makeable right now
   const before = await evalJs("__credits()");
   await evalJs("document.querySelector('#hidden .sq').click()");
   check((await evalJs("document.querySelectorAll('#hidden .sq.armed').length")) === 1, "first tap arms a ? square");
   await evalJs("document.querySelector('#hidden .sq.armed').click()");
-  check((await evalJs("__credits()")) === before - 1, "second tap buys the name for 1");
-  check((await evalJs("__state().named.length")) === 4, "named list grew by one");
-
-  // bottom-up hint prefers the path to the summit
-  await evalJs("__combine('Hydrogen','Gravity')"); // Nebula, +1
-  await evalJs("__combine('Nebula','Gravity')");   // Star, +1
-  const c1 = await evalJs("__credits()");
-  await evalJs("__card('Hydrogen').click(); document.getElementById('hintLeads').click()");
-  const named = await evalJs("__state().named");
-  check(["helium", "water"].some((id) => named.includes(id)), "'leads to' on Hydrogen names something on the path to the summit");
-  check((await evalJs("__credits()")) === c1 - 2, "bottom-up hint cost 2");
-
-  // a "goes with" hint hands over a pair, and that discovery earns nothing
-  await evalJs("__combine('Star','Time')");        // Supernova, +1
-  await evalJs("__combine('Star','Hydrogen')");    // Helium, +1
-  const c2 = await evalJs("__credits()");
-  await evalJs("__card('Supernova').click(); document.getElementById('hintPairs').click()");
-  const hp = await evalJs("__state().hintedPairs");
-  check(hp.length === 1, "'goes with' records the pair it gave away");
-  const [pa, pb] = hp[0].split("+").map((id) => byId.get(id).name);
-  await evalJs(`__combine(${JSON.stringify(pa)}, ${JSON.stringify(pb)})`);
-  check((await evalJs("__credits()")) === c2 - 2, "the handed-over discovery earned no credit");
+  check((await evalJs("__credits()")) === before - 1, "second tap buys a name for 1");
+  const st1 = await evalJs("__state()");
+  const namedNow = st1.named.filter((id) => !st1.owned.includes(id) && id !== world.summit && !["ocean", "air"].includes(id));
+  check(namedNow.length === 1 && byId.get(namedNow[0]).recipe.every((p) => st1.owned.includes(p)), `the name is something makeable now (${namedNow.map((id) => byId.get(id).name)})`);
+  check((await evalJs("document.querySelectorAll('#named .target').length")) === 3, "it joins the named chips");
 
   // persistence across reload
   await send("Page.reload"); await sleep(1200); await evalJs(HELPERS);
   check((await evalJs("__names().includes('Hydrogen')")), "progress survives reload");
+  check((await evalJs("document.querySelectorAll('#named .target').length")) === 3, "named chips survive reload");
 
   // play to the summit; everything left is guessed except Earth, whose recipe was bought
   const c3 = await evalJs("__credits()");
@@ -146,7 +130,7 @@ try {
     for (const it of world.items) if (it.recipe && !owned.has(it.id) && it.recipe.every((p) => owned.has(p))) {
       const [a, b] = it.recipe.map((p) => byId.get(p).name);
       const shown = await evalJs(`__combine(${JSON.stringify(a)}, ${JSON.stringify(b)})`);
-      if (!shown) fails.push(`${a} + ${b} did not reveal ${it.name}`);
+      if (!shown) fails.push(`${a} + ${b} did not show a discovery for ${it.name}`);
       owned.add(it.id); grew = true;
     }
   }
@@ -155,9 +139,9 @@ try {
   check((await evalJs("__credits()")) === c3 + (world.items.length - ownedNow.length - 1), "every guessed discovery earned, the bought summit did not");
   check(st.owned.length === world.items.length, `every item discovered (${st.owned.length}/${world.items.length})`);
   check(!!st.finishedAt, "finish time recorded");
-  check((await evalJs("document.querySelectorAll('#hidden .sq, #named .target').length")) === 0, "no undiscovered squares left");
+  check((await evalJs("__squares() + document.querySelectorAll('#named .target').length")) === 0, "nothing undiscovered left");
   check((await evalJs("document.querySelector('#goal .target.summit').textContent")).includes("reached"), "goal chip shows reached");
-  check((await evalJs("__combine('Energy','Matter')")) === false, "repeat combination shows no reveal");
+  check((await evalJs("__combine('Energy','Matter')")) === false, "repeat combination shows no discovery");
 } catch (e) {
   fails.push(String(e));
   console.error(e);

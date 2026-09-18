@@ -6,30 +6,22 @@ const byId = new Map(world.items.map((i) => [i.id, i]));
 const pairKey = (a, b) => [a, b].sort().join("+");
 const recipes = new Map(); // pairKey -> result id
 for (const it of world.items) if (it.recipe) recipes.set(pairKey(...it.recipe), it.id);
-const children = (id) => world.items.filter((i) => i.recipe?.includes(id));
 const discoveries = world.items.filter((i) => !i.seed);
-const isDeadEnd = (id) => id !== world.summit && children(id).length === 0;
-const critical = new Set([world.summit]);
-(function walk(id) { for (const p of byId.get(id).recipe ?? []) if (!critical.has(p)) { critical.add(p); walk(p); } })(world.summit);
 
-// Hints cost credits. Only a discovery you guessed earns one; anything a hint pointed at earns nothing.
+// Hints cost credits. Only a discovery you guessed earns one.
 const START_CREDITS = 2;
 const EARN = 1;
-const COST = { name: 1, leads: 2, pairs: 2, recipe: 5 };
-
-// Undiscovered squares sit in a fixed shuffled order so position leaks nothing.
-const hash = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
-const hiddenOrder = discoveries.map((i) => i.id).filter((id) => id !== world.summit).sort((a, b) => hash(a + world.id) - hash(b + world.id));
+const COST = { name: 1, recipe: 5 };
 
 // ---------- state ----------
 const KEY = `alchemy.${world.id}`;
 const fresh = () => ({
   version: world.version,
   owned: [...world.seeds],
-  tried: [],               // pairKeys that produced nothing
+  tried: [],               // pairKeys that produced nothing (for the log, never shown)
   named: [world.summit],   // undiscovered ids whose name the player knows
   recipesKnown: [],        // ids whose recipe was revealed
-  hintedPairs: [],         // pairKeys a "goes with" hint handed over
+  hintedPairs: [],         // kept for older saves; no hint hands over pairs any more
   credits: START_CREDITS,
   startedAt: Date.now(),
   finishedAt: null,
@@ -47,7 +39,6 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {}
 const owned = () => new Set(S.owned);
 
 // ---------- who is playing, and uploading the play ----------
-// One id per device, a name typed once. Every save uploads the whole state, debounced.
 const PKEY = "alchemy.player";
 let player = null;
 try { player = JSON.parse(localStorage.getItem(PKEY)); } catch {}
@@ -57,8 +48,7 @@ function setPlayer(name) {
 }
 let syncTimer;
 function scheduleSync() { if (!SYNC_URL || !player) return; clearTimeout(syncTimer); syncTimer = setTimeout(sync, 3000); }
-// keepalive lets the request outlive a closing tab, but browsers cap keepalive bodies at 64 KB,
-// so it is only used for the last-moment flush when the body is small enough.
+// keepalive lets the request outlive a closing tab, but browsers cap keepalive bodies at 64 KB
 function sync(leaving = false) {
   if (!SYNC_URL || !player) return;
   clearTimeout(syncTimer); syncTimer = null;
@@ -70,118 +60,91 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 
 // ---------- dom ----------
 const $ = (id) => document.getElementById(id);
-const el = { grid: $("grid"), hidden: $("hidden"), named: $("named"), hiddenCount: $("hiddenCount"), goal: $("goal"), slotA: $("slotA"), slotB: $("slotB"), bench: $("bench"),
-  hintLeads: $("hintLeads"), hintPairs: $("hintPairs"), count: $("count"), total: $("total"), credits: $("credits"),
-  toast: $("toast"), overlay: $("overlay"), reveal: $("reveal"), elapsed: $("elapsed") };
+const el = { goal: $("goal"), slotA: $("slotA"), slotB: $("slotB"), result: $("result"), bench: $("bench"), grid: $("grid"), ownCount: $("ownCount"),
+  named: $("named"), hidden: $("hidden"), hiddenCount: $("hiddenCount"), note: $("note"), count: $("count"), total: $("total"), credits: $("credits"),
+  toast: $("toast"), stage: $("stage"), elapsed: $("elapsed") };
 
-let selected = null;   // id of first pick
-let justMade = null;   // id to animate
-let armed = null;      // hidden id waiting for a second tap to buy its name
-let armTimer;
+let selected = null;      // id of the card in the first slot
+let justMade = null;      // id to pop into the grid
+let justNamed = null;     // id to pop into the chips
+let lastResult = null;    // id shown in the result slot
+let resultState = "idle"; // idle | found | dud
+let armed = false, armTimer;
 
 $("worldName").textContent = world.name;
 document.title = `${world.name} · Alchemy`;
 el.total.textContent = discoveries.length;
-el.hintLeads.textContent = `What does this lead to? · ${COST.leads}`;
-el.hintPairs.textContent = `What goes with this? · ${COST.pairs}`;
 
 // ---------- rendering ----------
 function render() {
   const own = owned();
-  el.count.textContent = S.owned.filter((id) => !byId.get(id).seed).length;
+  const found = S.owned.filter((id) => !byId.get(id).seed).length;
+  el.count.textContent = found;
   el.credits.textContent = S.credits;
+  el.ownCount.textContent = S.owned.length;
+  el.hiddenCount.textContent = discoveries.length - found;
 
   // goal
-  const summit = byId.get(world.summit);
   el.goal.innerHTML = "";
-  el.goal.appendChild(targetChip(summit, own.has(world.summit)));
+  el.goal.appendChild(chip(byId.get(world.summit), own.has(world.summit)));
 
   // bench
   const sel = selected ? byId.get(selected) : null;
   el.slotA.className = "slot" + (sel ? " filled" : "");
-  el.slotA.innerHTML = sel ? `<span class="icon">${sel.icon}</span>${sel.name}` : "tap a card";
-  el.slotB.className = "slot";
-  el.slotB.textContent = sel ? "then another, or the same again" : "then another";
-  el.hintLeads.disabled = !sel || S.credits < COST.leads;
-  el.hintPairs.disabled = !sel || S.credits < COST.pairs;
+  el.slotA.innerHTML = sel ? `<span class="i">${sel.icon}</span><span class="n">${sel.name}</span>` : `<span>tap a card</span>`;
+  el.slotB.innerHTML = `<span>${sel ? "then another, or the same again" : "then another"}</span>`;
+  const r = byId.get(lastResult);
+  el.result.className = "slot result " + (resultState === "found" ? "found" : resultState === "dud" ? "dud" : "");
+  el.result.innerHTML = resultState === "found" && r ? `<span class="i">${r.icon}</span><span class="n">${r.name}</span>` : resultState === "dud" ? `<span>nothing</span>` : `<span>?</span>`;
 
   // owned grid: seeds first, then in discovery order
   el.grid.innerHTML = "";
   for (const id of S.owned) {
     const it = byId.get(id);
     const card = document.createElement("div");
-    card.className = "card";
-    if (id === selected) card.classList.add("selected");
-    // Tried pairs are remembered for the log but never shown: a checklist invites brute force.
-    if (id === justMade) card.classList.add("new");
-    card.innerHTML = `<div class="icon">${it.icon}</div><div class="name">${it.name}</div>`;
+    card.className = "card" + (id === selected ? " picked" : "") + (id === justMade ? " new" : "");
+    card.innerHTML = `<span class="i">${it.icon}</span><span class="n">${it.name}</span>`;
     card.onclick = () => pick(id);
     el.grid.appendChild(card);
   }
   justMade = null;
 
-  // named-but-unmade items as chips, the rest as small ? squares
+  // named-but-unmade items as chips, everything else as ? squares
   el.named.innerHTML = "";
+  for (const id of S.named) if (!own.has(id) && id !== world.summit) el.named.appendChild(chip(byId.get(id), false));
+  justNamed = null;
+  const unknown = discoveries.filter((d) => !own.has(d.id) && !S.named.includes(d.id)).length;
   el.hidden.innerHTML = "";
-  let remaining = 0;
-  for (const id of hiddenOrder) {
-    if (own.has(id)) continue;
-    remaining++;
-    const it = byId.get(id);
-    if (S.named.includes(id)) {
-      const chip = document.createElement("div");
-      chip.className = "target";
-      const known = S.recipesKnown.includes(id);
-      chip.innerHTML = `<span>${it.icon} ${it.name}</span>`;
-      if (known) {
-        const [a, b] = it.recipe.map((x) => byId.get(x));
-        chip.innerHTML += `<span class="recipe">= ${a.icon} ${a.name} + ${b.icon} ${b.name}</span>`;
-      } else {
-        const btn = document.createElement("button");
-        btn.textContent = `how? · ${COST.recipe}`;
-        btn.onclick = (e) => { e.stopPropagation(); revealRecipe(id); };
-        chip.appendChild(btn);
-      }
-      el.named.appendChild(chip);
-      continue;
-    }
+  for (let i = 0; i < unknown; i++) {
     const sq = document.createElement("div");
-    if (id === armed) {
-      sq.className = "sq armed";
-      sq.innerHTML = `<span>${COST.name}</span>`;
-      sq.onclick = () => revealName(id);
-    } else {
-      sq.className = "sq";
-      sq.textContent = "?";
-      sq.onclick = () => arm(id);
-    }
+    sq.className = "sq" + (i === 0 && armed ? " armed" : "");
+    sq.textContent = i === 0 && armed ? `⬡ ${COST.name}` : "?";
+    sq.onclick = square;
     el.hidden.appendChild(sq);
   }
-  el.hiddenCount.textContent = remaining;
 }
 
-function targetChip(t, reached) {
-  const chip = document.createElement("div");
-  chip.className = "target summit";
-  if (reached) { chip.innerHTML = `<span>${t.icon} ${t.name} — reached</span>`; return chip; }
-  chip.innerHTML = `<span>${t.icon} ${t.name}</span>`;
+function chip(t, reached) {
+  const c = document.createElement("div");
+  c.className = "target" + (t.id === world.summit ? " summit" : "") + (t.id === justNamed ? " new" : "");
+  if (reached) { c.innerHTML = `<span>${t.icon} ${t.name} — reached</span>`; return c; }
+  c.innerHTML = `<span>${t.icon} ${t.name}</span>`;
   if (S.recipesKnown.includes(t.id)) {
     const [a, b] = t.recipe.map((x) => byId.get(x));
-    chip.innerHTML += `<span class="recipe">= ${a.icon} ${a.name} + ${b.icon} ${b.name}</span>`;
+    c.innerHTML += `<span class="r">= ${a.icon} ${a.name} + ${b.icon} ${b.name}</span>`;
   } else {
     const btn = document.createElement("button");
     btn.textContent = `how? · ${COST.recipe}`;
     btn.onclick = (e) => { e.stopPropagation(); revealRecipe(t.id); };
-    chip.appendChild(btn);
+    c.appendChild(btn);
   }
-  return chip;
+  return c;
 }
 
 // ---------- play ----------
-// Tap a card to pick it up, tap another (or the same one again) to combine.
-// Tap the first slot to put the card back down.
+// Tap a card to pick it up, tap another (or the same one again) to combine. Tap the first slot to put it back.
 function pick(id) {
-  disarm();
+  disarm(); el.note.textContent = "";
   if (!selected) { selected = id; render(); return; }
   const a = selected; selected = null;
   combine(a, id);
@@ -198,9 +161,9 @@ function combine(a, b) {
     if (guessed) S.credits += EARN;
     S.log.push({ t: Date.now(), kind: "try", a, b, result, guessed });
     if (result === world.summit && !S.finishedAt) S.finishedAt = Date.now();
-    justMade = result;
+    lastResult = result; resultState = "found";
     save(); render();
-    showReveal(result, a, b, guessed);
+    reveal(result, a, b, guessed);
   } else if (result) {
     S.log.push({ t: Date.now(), kind: "try", a, b, result, repeat: true });
     save(); render();
@@ -208,36 +171,59 @@ function combine(a, b) {
   } else {
     if (!S.tried.includes(k)) S.tried.push(k);
     S.log.push({ t: Date.now(), kind: "try", a, b, result: null });
+    resultState = "dud";
     save(); render();
     el.bench.classList.remove("shake"); void el.bench.offsetWidth; el.bench.classList.add("shake");
-    toast("Nothing happens.");
   }
 }
 
-function showReveal(id, a, b, guessed) {
-  const it = byId.get(id);
+// ---------- the discovery moment: collide, medium ----------
+// All motion is Web Animations with pixel values. CSS variables inside keyframes are unreliable on iOS.
+const K = { dur: 650, stop: 100, kick: 7, flash: 3, ring: 4, fly: 110, sparks: 14 };
+function reveal(id, a, b, guessed) {
+  const it = byId.get(id), A = byId.get(a), B = byId.get(b), st = el.stage;
   const isSummit = id === world.summit;
-  const A = byId.get(a), B = byId.get(b);
+  const T = K.dur, STOP = K.stop, d0 = T + STOP + 500;
   let stats = "";
   if (isSummit) {
     const mins = Math.round((S.finishedAt - S.startedAt) / 60000);
     const tries = S.log.filter((e) => e.kind === "try").length;
     const hints = S.log.filter((e) => e.kind === "hint").length;
     const found = S.owned.filter((x) => !byId.get(x).seed).length;
-    stats = `<div class="stats">${mins} min · ${tries} attempts · ${hints} hints · ${found} of ${discoveries.length} found<br>World 2 is not built yet. You can keep exploring this one.</div>`;
+    stats = `<div class="stats in" style="animation-delay:${d0 + 650}ms">${mins} min · ${tries} attempts · ${hints} hints · ${found} of ${discoveries.length} found<br>World 2 is not built yet. You can keep exploring this one.</div>`;
   }
-  el.reveal.className = "reveal" + (isSummit ? " summit" : "");
-  el.reveal.innerHTML = `
-    <div class="icon">${it.icon}</div>
-    <h2>${it.name}</h2>
-    <div class="made">${A.icon} ${A.name} + ${B.icon} ${B.name}${guessed ? ` · +${EARN} credit` : " · hinted, no credit"}</div>
-    <p>${it.blurb}</p>
-    <button id="closeReveal">${isSummit ? "Home." : "Go on"}</button>${stats}`;
-  el.overlay.classList.add("show");
-  $("closeReveal").onclick = closeReveal;
-  el.overlay.onclick = (e) => { if (e.target === el.overlay) closeReveal(); };
+  const sparks = Array.from({ length: K.sparks }, () => `<div class="anchor spark"><div></div></div>`).join("");
+  st.className = "stage show";
+  st.innerHTML = `<div class="backdrop"></div><div class="who" id="who">
+    <div class="arena">
+      <div class="anchor ing a"><div>${A.icon}</div></div><div class="anchor ing b"><div>${B.icon}</div></div>
+      <div class="anchor flash"><div></div></div><div class="anchor ring"><div></div></div><div class="anchor glow"><div></div></div>${sparks}
+      <div class="anchor out"><div>${it.icon}</div></div>
+    </div>
+    <div class="pair in" style="animation-delay:${d0}ms">${A.icon} ${A.name} + ${B.icon} ${B.name}</div>
+    <div class="name in" style="animation-delay:${d0 + 100}ms">${it.name}</div>
+    <div class="blurb in" style="animation-delay:${d0 + 250}ms">${it.blurb}</div>
+    <div class="credit in ${guessed ? "" : "none"}" style="animation-delay:${d0 + 450}ms">${guessed ? `+${EARN} credit` : "hinted · no credit"}</div>${stats}</div>`;
+
+  const q = (sel) => st.querySelector(sel);
+  const fwd = (duration, delay = 0, easing = "ease-out") => ({ duration, delay, easing, fill: "forwards" });
+  const ease = "cubic-bezier(.7,-.3,1,.5)"; // negative overshoot: the pull-back before the flight
+  const meet = { transform: "translate(0px, 0px) scale(.5)", opacity: 0 };
+  q(".ing.a > div").animate([{ transform: "translate(-120px, 0px)", opacity: 1 }, { opacity: 1, offset: .95 }, meet], fwd(T, 0, ease));
+  q(".ing.b > div").animate([{ transform: "translate(120px, 0px)", opacity: 1 }, { opacity: 1, offset: .95 }, meet], fwd(T, 0, ease));
+  q(".flash > div").animate([{ transform: "scale(.2)", opacity: 1 }, { transform: `scale(${K.flash})`, opacity: 0 }], fwd(300, T));
+  q(".ring > div").animate([{ transform: "scale(.2)", opacity: 1 }, { transform: `scale(${K.ring})`, opacity: 0 }], fwd(600, T));
+  const kk = K.kick;
+  q("#who").animate([{ transform: "none" }, { transform: `translate(${-kk}px, ${kk * .6}px)`, offset: .2 }, { transform: `translate(${kk * .7}px, ${-kk * .4}px)`, offset: .45 }, { transform: `translate(${-kk * .3}px, ${kk * .2}px)`, offset: .7 }, { transform: "none" }], { duration: 300, delay: T, easing: "cubic-bezier(.2,.8,.2,1)" });
+  q(".glow > div").animate([{ transform: "scale(.2)", opacity: 0 }, { opacity: 1, offset: .4 }, { transform: "scale(1.6)", opacity: .35 }], fwd(1200, T + STOP));
+  st.querySelectorAll(".spark > div").forEach((s, i) => {
+    const ang = Math.round(i * 360 / K.sparks);
+    s.animate([{ transform: `rotate(${ang}deg) translateX(0px)`, opacity: 1 }, { transform: `rotate(${ang}deg) translateX(${K.fly}px)`, opacity: 0 }], fwd(900, T + STOP + (i % 3) * 50));
+  });
+  q(".out > div").animate([{ transform: "scale(.2)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], fwd(600, T + STOP, "cubic-bezier(.2,1.6,.4,1)"));
+
+  st.onclick = () => { st.className = "stage"; st.innerHTML = ""; justMade = id; render(); };
 }
-function closeReveal() { el.overlay.classList.remove("show"); }
 
 let toastTimer;
 function toast(msg, ms = 3000) {
@@ -253,67 +239,32 @@ function pay(type) {
 }
 function nameIt(id) { if (!S.named.includes(id) && !owned().has(id)) S.named.push(id); }
 
-// Prefer what moves the player toward the summit; point at a dead end only when nothing else is left.
-function pickChild(from) {
+// A ? square, tapped twice, names something the player can make right now from what they own.
+function arm() { armed = true; clearTimeout(armTimer); armTimer = setTimeout(disarm, 3000); render(); }
+function disarm() { if (armed) { armed = false; clearTimeout(armTimer); render(); } }
+function square() {
+  if (selected) { selected = null; }
+  if (!armed) { arm(); return; }
+  armed = false; clearTimeout(armTimer);
   const own = owned();
-  const cands = children(from).filter((c) => !own.has(c.id));
-  const rank = (c) => (critical.has(c.id) ? 0 : isDeadEnd(c.id) ? 2 : 1);
-  cands.sort((a, b) => rank(a) - rank(b));
-  return cands.length ? cands.filter((c) => rank(c) === rank(cands[0])) : [];
-}
-const oneOf = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-function arm(id) { armed = id; clearTimeout(armTimer); armTimer = setTimeout(disarm, 3000); render(); }
-function disarm() { if (armed) { armed = null; render(); } }
-
-function revealName(id) {
-  armed = null; clearTimeout(armTimer);
+  const cands = discoveries.filter((d) => !own.has(d.id) && !S.named.includes(d.id) && d.recipe.every((p) => own.has(p)));
+  if (!cands.length) { el.note.textContent = "Everything you could make right now, you already know about."; render(); return; }
   if (!pay("name")) { render(); return; }
-  nameIt(id);
-  S.log.push({ t: Date.now(), kind: "hint", type: "name", revealed: id });
+  const c = cands[Math.floor(Math.random() * cands.length)];
+  nameIt(c.id); justNamed = c.id;
+  S.log.push({ t: Date.now(), kind: "hint", type: "name", revealed: c.id });
+  el.note.textContent = `${c.icon} ${c.name} can be made from what you have.`;
   save(); render();
-  toast(`That one is ${byId.get(id).name}.`);
 }
 
 function revealRecipe(tid) {
-  if (S.recipesKnown.includes(tid)) return;
-  if (!pay("recipe")) return;
+  if (S.recipesKnown.includes(tid) || !pay("recipe")) return;
   const t = byId.get(tid);
   S.recipesKnown.push(tid);
   for (const p of t.recipe) nameIt(p);
   S.log.push({ t: Date.now(), kind: "hint", type: "recipe", target: tid });
   save(); render();
 }
-
-el.hintLeads.onclick = () => {
-  const from = selected; const name = byId.get(from).name;
-  const cands = pickChild(from);
-  if (!children(from).length) { if (!pay("leads")) return; S.log.push({ t: Date.now(), kind: "hint", type: "leads", from, revealed: null }); toast(`${name} leads nowhere further. A dead end.`); }
-  else if (!cands.length) { toast(`You've already made everything ${name} leads to.`); }
-  else {
-    const unnamed = cands.filter((c) => !S.named.includes(c.id));
-    if (!unnamed.length) { toast(`${name} leads to ${cands.map((c) => c.name).join(", ")}. You knew that.`); }
-    else { if (!pay("leads")) return; const c = oneOf(unnamed); nameIt(c.id); S.log.push({ t: Date.now(), kind: "hint", type: "leads", from, revealed: c.id }); toast(`${name} leads to ${c.name}.`); }
-  }
-  selected = null; save(); render();
-};
-
-el.hintPairs.onclick = () => {
-  const from = selected; const name = byId.get(from).name;
-  const cands = pickChild(from);
-  if (!children(from).length) { if (!pay("pairs")) return; S.log.push({ t: Date.now(), kind: "hint", type: "pairs", from, partner: null }); toast(`${name} goes with nothing. A dead end.`); }
-  else if (!cands.length) { toast(`You've already made everything ${name} leads to.`); }
-  else {
-    if (!pay("pairs")) return;
-    const c = oneOf(cands);
-    const partner = c.recipe[0] === from ? c.recipe[1] : c.recipe[0];
-    if (partner === from) toast(`${name} goes with itself.`);
-    else { nameIt(partner); toast(`${name} goes with ${byId.get(partner).name}.`); }
-    S.hintedPairs.push(pairKey(from, partner));
-    S.log.push({ t: Date.now(), kind: "hint", type: "pairs", from, partner });
-  }
-  selected = null; save(); render();
-};
 
 // ---------- footer ----------
 $("copyLog").onclick = async () => {
@@ -323,7 +274,7 @@ $("copyLog").onclick = async () => {
 };
 $("reset").onclick = () => {
   if (!confirm("Start over? This wipes your progress in this world.")) return;
-  S = fresh(); selected = null; save(); render();
+  S = fresh(); selected = null; lastResult = null; resultState = "idle"; save(); render();
 };
 setInterval(() => {
   const end = S.finishedAt ?? Date.now();
@@ -337,15 +288,14 @@ render();
 
 // First launch with uploading on: ask who's playing, then upload whatever is already saved.
 if (SYNC_URL && !player) {
-  el.reveal.className = "reveal";
-  el.reveal.innerHTML = `
+  el.stage.className = "stage show form";
+  el.stage.innerHTML = `<div class="backdrop"></div><div class="who">
     <div class="icon">👋</div>
     <h2>Who's playing?</h2>
     <p>Your name goes on the play log, so we know whose discoveries are whose. Nothing else is collected.</p>
-    <form id="nameForm"><input id="nameInput" maxlength="40" placeholder="your name" autocomplete="off" required> <button type="submit">Play</button></form>`;
-  el.overlay.classList.add("show");
-  el.overlay.onclick = null;
-  $("nameForm").onsubmit = (e) => { e.preventDefault(); setPlayer($("nameInput").value); closeReveal(); sync(); };
+    <form id="nameForm"><input id="nameInput" maxlength="40" placeholder="your name" autocomplete="off" required> <button type="submit">Play</button></form></div>`;
+  el.stage.onclick = null;
+  $("nameForm").onsubmit = (e) => { e.preventDefault(); setPlayer($("nameInput").value); el.stage.className = "stage"; el.stage.innerHTML = ""; sync(); };
   $("nameInput").focus();
 } else if (SYNC_URL) {
   sync();

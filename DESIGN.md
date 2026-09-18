@@ -12,9 +12,9 @@ Martin owns feel, systems and mechanics. Writing is shared. Code is the agent's 
 Four seeds, one visible summit, everything between is dark. Tap two owned things, get one thing or nothing.
 Always two ingredients. Ingredients are never consumed. Exactly one recipe per result.
 A world is 25 to 40 discoveries and takes 30 to 60 minutes. It ends when the summit is reached and should leave you wanting the next one.
-Hints cost credits and the balance is always visible. Free hints turned into the game itself in the first play; cheap ones let the second play buy the whole planet half. Current tunable: start with 2. Only a guessed discovery earns 1: if its recipe was bought or a "goes with" hint handed over the pair, it earns nothing, so hints cannot fund hints. "What is it?" (tap an undiscovered square for its name) costs 1, "what does this lead to?" and "what goes with this?" cost 2, "how is it made?" costs 5.
-Undiscovered items show as ? squares in a fixed shuffled order, so position leaks nothing. Named ones show their name and offer the recipe hint.
-Name hints prefer items on the path to the summit and point at a dead end only when nothing else is left. In the first play a hint named Comet, a dead end, and it ate 20 attempts.
+Hints cost credits and the balance is always visible. Free hints turned into the game itself in the first play; cheap ones let the second play buy the whole planet half. Current tunable: start with 2. Only a guessed discovery earns 1: if its recipe was bought, it earns nothing, so hints cannot fund hints.
+Two hints only. Tap an undiscovered ? square twice and it names something you can make right now from what you own, for 1 credit: a puzzle you can solve immediately, never a dead end you cannot reach. "How is it made?" on a named item or the goal costs 5 and shows the recipe. The bottom-up hints ("what does this lead to", "what goes with this") were cut after the second play: they were spammable and did not feel like thinking.
+Undiscovered items show as a count of ? squares (no fixed identity). Named ones show as chips with their name and the recipe hint.
 On the shelf: dead ends announcing themselves when found. Try it only if the grind returns in a later log.
 
 ## The big game
@@ -31,6 +31,14 @@ Seeds earn their keep in the first minutes. Players stop reaching for seeds once
 Chains with a repeating pattern (Star + Hydrogen, Star + Helium, Star + Carbon) are a highlight, not filler. Keep them.
 Fewer dead ends. Eight of 28 was too many when they are indistinguishable from unfinished business.
 The grid never shows which pairs were tried or which already made something. A checklist invites brute force; the game should reward thinking. Tried pairs are still recorded for the log.
+
+## The screen
+Converged through mockups in `design/` (the folder tree is the decision history, each node has a notes.md). Winner: `design/bench-top/reveal/merge/impact/collide-medium`.
+Bench on top: two slots and a result slot pinned above the grid of what you own. Tap a card, tap another (or the same again) to combine. Tap the first slot to put a card back. A dud turns the result slot red and shakes the bench.
+Discovery is the highlight and gets a full-screen moment: the two ingredients collide (pull-back, then a 650ms flight), a flash and a ring at contact, a 100ms hit-stop, a 7px kick, sparks, the result lands with overshoot, then the pair, the name, the blurb and the credit rise in. Dismissed by tapping anywhere. Reaching the summit adds a stats line to the same moment.
+The grid never shows which pairs were tried or which already made something.
+Animation rule from the iOS bug: no CSS variables inside keyframes. Motion that depends on data runs through the Web Animations API with pixel values.
+Palette and type have not been designed yet; the dark navy and amber are placeholders.
 
 ## Platform
 Browser, phone-first, installable to the home screen. No build step, no framework.
