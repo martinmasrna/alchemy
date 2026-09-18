@@ -47,6 +47,9 @@ Progress must survive closing the tab, clearing history and switching phones. Br
 ## Process
 Martin plays each new world blind. The table stays hidden from him until after the play, because "would I have guessed it" can only be tested once. Then the table is cut and rewritten together.
 
+## Where we are
+World 1 (Big Bang to Earth, 27 discoveries) is live at https://martinmasrna.github.io/alchemy/ with the converged screen and the credit economy. Martin has played it twice (logs in `playlogs/`); the planet half has never been played blind, so the next real data point is a friend's log. Next design round, if wanted: palette and type. Next content: world 2 (Sun, Water, Rock, Air to Life).
+
 ## Parked
 Hint cost (candidates: earned currency, scarcity per world, slow recharge, a quiz). How a finished world seeds the next ones. What happens at the end of a world.
 
