@@ -30,6 +30,7 @@ Self-pairs (X + X) only when "many of these" is obvious: Rock + Rock, Planet + P
 Seeds earn their keep in the first minutes. Players stop reaching for seeds once they have real things, so late recipes should not depend on a seed (Time is the exception, "give it time" stays intuitive).
 Chains with a repeating pattern (Star + Hydrogen, Star + Helium, Star + Carbon) are a highlight, not filler. Keep them.
 Fewer dead ends. Eight of 28 was too many when they are indistinguishable from unfinished business.
+The grid never shows which pairs were tried or which already made something. A checklist invites brute force; the game should reward thinking. Tried pairs are still recorded for the log.
 
 ## Platform
 Browser, phone-first, installable to the home screen. No build step, no framework.

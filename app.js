@@ -112,11 +112,7 @@ function render() {
     const card = document.createElement("div");
     card.className = "card";
     if (id === selected) card.classList.add("selected");
-    if (selected) {
-      const k = pairKey(selected, id);
-      if (S.tried.includes(k)) card.classList.add("tried");
-      else if (recipes.has(k) && own.has(recipes.get(k))) card.classList.add("made");
-    }
+    // Tried pairs are remembered for the log but never shown: a checklist invites brute force.
     if (id === justMade) card.classList.add("new");
     card.innerHTML = `<div class="icon">${it.icon}</div><div class="name">${it.name}</div>`;
     card.onclick = () => pick(id);

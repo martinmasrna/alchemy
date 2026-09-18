@@ -37,7 +37,6 @@
   .card .i { font-size: 28px; line-height: 1; }
   .card .n { font-size: 14px; line-height: 1.15; text-align: center; }
   .card.picked { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.45); background: var(--panel-2); }
-  .card.tried { opacity: .35; }
   .card.new { animation: pop .4s; }
   .card.shake { animation: shake .3s; }
   @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
@@ -81,7 +80,7 @@
     else if (notice.kind === "dud") n.innerHTML = `<div class="dud">Nothing happens.</div>`;
     else n.innerHTML = "";
     if (p) $("down").onclick = () => { picked = null; render(); };
-    $("grid").innerHTML = items.map((i) => `<div class="card ${i.id === picked ? "picked" : ""} ${picked && triedSet.has(key(picked, i.id)) ? "tried" : ""} ${i.id === newId ? "new" : ""} ${shakeIds.includes(i.id) ? "shake" : ""}" data-id="${i.id}"><span class="i">${i.icon}</span><span class="n">${i.name}</span></div>`).join("");
+    $("grid").innerHTML = items.map((i) => `<div class="card ${i.id === picked ? "picked" : ""} ${i.id === newId ? "new" : ""} ${shakeIds.includes(i.id) ? "shake" : ""}" data-id="${i.id}"><span class="i">${i.icon}</span><span class="n">${i.name}</span></div>`).join("");
     newId = null; shakeIds = [];
     $("dots").innerHTML = Array.from({ length: unknown }, () => `<div class="dot">?</div>`).join("");
     for (const c of document.querySelectorAll(".card")) c.onclick = () => tap(c.dataset.id);

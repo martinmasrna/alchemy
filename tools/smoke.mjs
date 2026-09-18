@@ -78,7 +78,7 @@ try {
   check((await evalJs("__combine('Energy','Energy')")) === false, "Energy + Energy makes nothing");
   check((await evalJs("__state().tried.includes('energy+energy')")), "dud is remembered as tried");
   await evalJs("__card('Energy').click()");
-  check((await evalJs("__card('Energy').classList.contains('tried')")), "tried pair is dimmed when first card selected");
+  check(!(await evalJs("__card('Energy').classList.contains('tried')")) && !(await evalJs("document.querySelector('#grid .card.made')")), "tried pairs leave no visible trace");
   await evalJs("__card('Energy').click()"); // completes Energy + Energy again, a dud, clears the pick
   await evalJs("__card('Space').click(); document.getElementById('slotA').click()");
   check((await evalJs("document.querySelectorAll('#grid .card.selected').length")) === 0, "tapping the first slot puts the card down");
