@@ -46,7 +46,7 @@ const owned = () => new Set(S.owned);
 
 // ---------- dom ----------
 const $ = (id) => document.getElementById(id);
-const el = { grid: $("grid"), hidden: $("hidden"), hiddenCount: $("hiddenCount"), goal: $("goal"), slotA: $("slotA"), slotB: $("slotB"), bench: $("bench"),
+const el = { grid: $("grid"), hidden: $("hidden"), named: $("named"), hiddenCount: $("hiddenCount"), goal: $("goal"), slotA: $("slotA"), slotB: $("slotB"), bench: $("bench"),
   hintLeads: $("hintLeads"), hintPairs: $("hintPairs"), count: $("count"), total: $("total"), credits: $("credits"),
   toast: $("toast"), overlay: $("overlay"), reveal: $("reveal"), elapsed: $("elapsed") };
 
@@ -100,31 +100,42 @@ function render() {
   }
   justMade = null;
 
-  // hidden grid: ? squares and named-but-unmade items
+  // named-but-unmade items as chips, the rest as small ? squares
+  el.named.innerHTML = "";
   el.hidden.innerHTML = "";
   let remaining = 0;
   for (const id of hiddenOrder) {
     if (own.has(id)) continue;
     remaining++;
     const it = byId.get(id);
-    const card = document.createElement("div");
     if (S.named.includes(id)) {
-      card.className = "card named";
+      const chip = document.createElement("div");
+      chip.className = "target";
       const known = S.recipesKnown.includes(id);
-      const [a, b] = known ? it.recipe.map((x) => byId.get(x)) : [];
-      card.innerHTML = `<div class="icon">${it.icon}</div><div class="name">${it.name}</div>` +
-        (known ? `<div class="how">${a.icon} + ${b.icon}</div>` : `<button class="how">how? · ${COST.recipe}</button>`);
-      if (!known) card.querySelector("button").onclick = (e) => { e.stopPropagation(); revealRecipe(id); };
-    } else if (id === armed) {
-      card.className = "card unknown armed";
-      card.innerHTML = `<div class="icon">?</div><div class="name">name it · ${COST.name}</div>`;
-      card.onclick = () => revealName(id);
-    } else {
-      card.className = "card unknown";
-      card.innerHTML = `<div class="icon">?</div><div class="name">&nbsp;</div>`;
-      card.onclick = () => arm(id);
+      chip.innerHTML = `<span>${it.icon} ${it.name}</span>`;
+      if (known) {
+        const [a, b] = it.recipe.map((x) => byId.get(x));
+        chip.innerHTML += `<span class="recipe">= ${a.icon} ${a.name} + ${b.icon} ${b.name}</span>`;
+      } else {
+        const btn = document.createElement("button");
+        btn.textContent = `how? · ${COST.recipe}`;
+        btn.onclick = (e) => { e.stopPropagation(); revealRecipe(id); };
+        chip.appendChild(btn);
+      }
+      el.named.appendChild(chip);
+      continue;
     }
-    el.hidden.appendChild(card);
+    const sq = document.createElement("div");
+    if (id === armed) {
+      sq.className = "sq armed";
+      sq.innerHTML = `<span>${COST.name}</span>`;
+      sq.onclick = () => revealName(id);
+    } else {
+      sq.className = "sq";
+      sq.textContent = "?";
+      sq.onclick = () => arm(id);
+    }
+    el.hidden.appendChild(sq);
   }
   el.hiddenCount.textContent = remaining;
 }

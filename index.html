@@ -27,14 +27,11 @@
   .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
   .label .sub { text-transform: none; letter-spacing: 0; margin-left: 6px; opacity: .7; }
   .hiddenwrap { margin-top: 22px; }
-  .hiddenwrap .grid { margin-top: 8px; }
-  .card.unknown { border-style: dashed; color: var(--muted); }
-  .card.unknown .icon { color: var(--muted); }
-  .card.armed { border-color: var(--accent); color: var(--accent); border-style: solid; }
-  .card.armed .icon { color: var(--accent); }
-  .card.named { border-style: dashed; opacity: .85; }
-  .card .how { font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .card button.how { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; cursor: pointer; }
+  .hiddenwrap .targets { margin: 8px 0 10px; }
+  .squares { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; }
+  .sq { aspect-ratio: 1; border: 1px dashed var(--line); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 16px; cursor: pointer; background: var(--panel); }
+  .sq.armed { border-style: solid; border-color: var(--accent); color: var(--accent); background: var(--panel-2); }
+  .sq.armed span::before { content: "⬡ "; }
 
   .goal { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 8px 0; }
   .targets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
@@ -116,7 +113,8 @@
 
   <section class="hiddenwrap">
     <div class="label">Undiscovered · <span id="hiddenCount">0</span> <span class="sub">tap a square twice to learn its name</span></div>
-    <div class="grid" id="hidden"></div>
+    <div class="targets" id="named"></div>
+    <div class="squares" id="hidden"></div>
   </section>
 
   <footer>

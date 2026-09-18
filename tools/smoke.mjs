@@ -65,7 +65,7 @@ try {
   const total = world.items.filter((i) => !i.seed).length;
   check((await evalJs("__names().length")) === 4, "starts with 4 seeds");
   check((await evalJs("document.getElementById('total').textContent")) === String(total), "total counter matches table");
-  check((await evalJs("document.querySelectorAll('#hidden .card.unknown').length")) === total - 1, "one ? square per undiscovered item, summit excluded");
+  check((await evalJs("document.querySelectorAll('#hidden .sq').length")) === total - 1, "one ? square per undiscovered item, summit excluded");
   const widths = await evalJs(`JSON.stringify({ viewport: innerWidth, page: document.documentElement.scrollWidth })`);
   check(JSON.parse(widths).page <= JSON.parse(widths).viewport, `no horizontal overflow at 390px ${widths}`);
   const c0 = await evalJs("__credits()");
@@ -85,24 +85,24 @@ try {
   check((await evalJs("__names().includes('Particle')")), "Particle appears in the grid");
   check((await evalJs("document.querySelectorAll('#grid .card.selected').length")) === 0, "nothing stays highlighted after a combine");
   check((await evalJs("__credits()")) === c0 + 1, "a discovery earns one credit");
-  check((await evalJs("document.querySelectorAll('#hidden .card.unknown').length")) === total - 2, "its ? square disappears");
+  check((await evalJs("document.querySelectorAll('#hidden .sq').length")) === total - 2, "its ? square disappears");
 
   // recipe hint on the summit costs 3
   await evalJs("document.querySelector('#goal .target.summit button').click()");
   check((await evalJs("document.querySelector('#goal .target.summit .recipe').textContent")).includes("Ocean"), "summit 'how?' reveals Ocean + Air");
   check((await evalJs("__credits()")) === c0 + 1 - 3, "recipe hint cost 3");
-  check((await evalJs("document.querySelectorAll('#hidden .card.named').length")) === 2, "Ocean and Air show as named squares");
+  check((await evalJs("document.querySelectorAll('#named .target').length")) === 2, "Ocean and Air show as named squares");
 
   // not enough credits for another recipe
-  await evalJs("document.querySelector('#hidden .card.named button').click()");
+  await evalJs("document.querySelector('#named .target button').click()");
   check((await evalJs("__toast()")).includes("Not enough"), "refuses a hint you can't afford");
 
   // earn, then buy a name with two taps
   await evalJs("__combine('Particle','Particle')"); // Hydrogen, +1
   const before = await evalJs("__credits()");
-  await evalJs("document.querySelector('#hidden .card.unknown').click()");
-  check((await evalJs("document.querySelectorAll('#hidden .card.armed').length")) === 1, "first tap arms a ? square");
-  await evalJs("document.querySelector('#hidden .card.armed').click()");
+  await evalJs("document.querySelector('#hidden .sq').click()");
+  check((await evalJs("document.querySelectorAll('#hidden .sq.armed').length")) === 1, "first tap arms a ? square");
+  await evalJs("document.querySelector('#hidden .sq.armed').click()");
   check((await evalJs("__credits()")) === before - 1, "second tap buys the name for 1");
   check((await evalJs("__state().named.length")) === 4, "named list grew by one");
 
@@ -136,7 +136,7 @@ try {
   check(st.owned.includes(world.summit), "summit reached");
   check(st.owned.length === world.items.length, `every item discovered (${st.owned.length}/${world.items.length})`);
   check(!!st.finishedAt, "finish time recorded");
-  check((await evalJs("document.querySelectorAll('#hidden .card').length")) === 0, "no undiscovered squares left");
+  check((await evalJs("document.querySelectorAll('#hidden .sq, #named .target').length")) === 0, "no undiscovered squares left");
   check((await evalJs("document.querySelector('#goal .target.summit').textContent")).includes("reached"), "goal chip shows reached");
   check((await evalJs("__combine('Energy','Matter')")) === false, "repeat combination shows no reveal");
 } catch (e) {

@@ -5,7 +5,7 @@
 
 export default {
   id: "w1",
-  version: 2,
+  version: 3,
   name: "In the Beginning",
   subtitle: "From nothing to a wet rock with a sky.",
   seeds: ["energy", "matter", "space", "time"],
