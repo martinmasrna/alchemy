@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../_context/lab.css">
+<style>
+  /* ---------------------------------------------------------------
+     PAPER — the opposite bet. Emoji are drawn to sit on white, so put
+     them there. A warm paper ground, tiles instead of panels, ink-black
+     type, and one rust accent. The mood stops being a space sim and
+     becomes a field notebook.
+     Sizes and steps from _context/system.md.
+     --------------------------------------------------------------- */
+  .phone {
+    --bg: #f4f0e8;
+    --plate: #ffffff;
+    --plate-2: #fbf6ea;
+    --line: #e2dccd;
+    --line-strong: #b9b1a0;
+    --text: #17150f;
+    --muted: #6f6857;
+    --rust: #b1521f;
+    --bad: #b1521f;
+    background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .phone * { box-sizing: border-box; }
+  .app { padding: 16px 16px 32px; }
+
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0 12px; }
+  h1 { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.15; color: var(--muted); }
+  .meta { display: flex; gap: 12px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .credits { color: var(--rust); font-weight: 600; }
+
+  .goalrow { margin-bottom: 16px; }
+  .target { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-strong);
+    border-radius: 999px; padding: 6px 8px 6px 6px; font-size: 14px; background: var(--plate); }
+  .target .i { font-size: 20px; line-height: 1; }
+  .target .cn { font-weight: 600; }
+  .how { background: var(--plate-2); border: 1px solid var(--line); color: var(--muted); font: inherit;
+    font-size: 12px; border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+
+  .bench { background: var(--plate); border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+    box-shadow: 0 1px 2px rgba(23,21,15,.05); }
+  .row { display: grid; grid-template-columns: 1fr 20px 1fr 20px 1fr; align-items: center; gap: 4px; }
+  .op { text-align: center; color: var(--muted); font-size: 14px; }
+  .slot { height: 76px; border-radius: 8px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 4px; text-align: center; padding: 0 4px;
+    background: var(--plate-2); border: 1px dashed var(--line-strong); }
+  .slot .i { font-size: 28px; line-height: 1; }
+  .slot .n { font-size: 12px; }
+  .slot .ph { font-size: 12px; color: var(--muted); }
+  .slot.filled { border-style: solid; border-color: var(--line-strong); background: var(--plate); }
+  .slot.dud { border-color: var(--bad); border-style: solid; background: #fbe9e1; }
+  .slot.dud .n { color: var(--bad); }
+
+  .label { margin: 24px 0 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card { background: var(--plate); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    box-shadow: 0 1px 2px rgba(23,21,15,.05); }
+  .well { width: 44px; height: 44px; display: grid; place-items: center; }
+  .well .i { font-size: 26px; line-height: 1; }
+  .card .n { font-size: 14px; line-height: 1.15; text-align: center; font-weight: 600; }
+  .card.picked { border-color: var(--rust); box-shadow: 0 0 0 1px var(--rust); background: #fdf3ec; }
+
+  .chips { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--line-strong);
+    border-radius: 999px; padding: 6px 8px 6px 10px; font-size: 14px; max-width: 100%; }
+  .chip .i { font-size: 18px; line-height: 1; }
+  .chip .r { color: var(--muted); font-size: 12px; }
+
+  .squares { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .sq { aspect-ratio: 1; border-radius: 8px; background: #e9e3d6; display: grid; place-items: center;
+    color: #a79f8d; font-size: 14px; }
+  .sq.armed { background: #fdf3ec; border: 1px solid var(--rust); color: var(--rust); font-size: 10px;
+    grid-column: span 2; aspect-ratio: auto; height: 100%; }
+
+  footer { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    margin-top: 32px; color: var(--muted); font-size: 12px; }
+  footer .acts { display: flex; gap: 8px; }
+  footer button { background: var(--plate); color: var(--muted); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 12px; }
+
+  .stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .backdrop { position: absolute; inset: 0; background: rgba(244,240,232,.985); backdrop-filter: blur(3px); }
+  .who { position: relative; text-align: center; max-width: 330px; }
+  .pair { font-size: 14px; color: var(--muted); }
+  .bigicon { font-size: 72px; line-height: 1; margin: 16px 0 8px; }
+  /* The one display move: a name set in the system serif, because on paper it belongs. */
+  .name { font-size: 28px; font-weight: 600; line-height: 1.15;
+    font-family: Georgia, "Times New Roman", serif; }
+  .blurb { font-size: 16px; line-height: 1.4; margin-top: 16px; text-align: left; color: #3a362c; }
+  .credit { display: inline-block; margin-top: 24px; font-size: 12px; color: var(--rust);
+    border: 1px solid var(--rust); border-radius: 999px; padding: 4px 12px; }
+</style>
+</head>
+<body>
+<script type="module">
+  import { lab } from "../../_context/screen.js";
+  lab("Paper", "The opposite bet. Emoji are drawn to sit on white, so put them there: a warm paper ground, tiles instead of panels, ink-black type and one rust accent. The mood stops being a space sim and becomes a field notebook.");
+</script>
+</body>
+</html>
