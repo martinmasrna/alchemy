@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Icon style</title>
+<style>
+  /* Comparison sheet, not a design. The chrome is the agreed dark palette from `drawn`
+     so the marks are judged in the place they will live. Only the style varies. */
+  :root {
+    --bg: #0a0b0f; --plate: #14161d; --plate-2: #1d212b;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.28);
+    --text: #eef0f5; --muted: #7b8294; --ink: #aeb6c6; --amber: #f0b429;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  svg { display: block; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 20px; font-weight: 600; line-height: 1.15; margin: 0 0 8px; }
+  .lede { color: var(--muted); margin: 0 0 32px; max-width: 70ch; }
+  h2 { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    font-weight: 600; margin: 32px 0 12px; }
+
+  /* --- the matrix: every subject in every style, big enough to see the drawing --- */
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 12px 8px; text-align: center; vertical-align: middle; }
+  thead th { font-size: 14px; font-weight: 600; border-bottom: 1px solid var(--line); }
+  thead th small { display: block; font-size: 12px; font-weight: 400; color: var(--muted);
+    margin-top: 4px; line-height: 1.4; }
+  tbody th { font-size: 14px; font-weight: 400; color: var(--muted); text-align: left; width: 100px; }
+  tbody tr + tr td, tbody tr + tr th { border-top: 1px solid rgba(255,255,255,.05); }
+  .big { color: var(--ink); display: grid; place-items: center; }
+  .big svg { width: 52px; height: 52px; }
+
+  /* --- in situ: the real card at the real size --- */
+  .situ { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .col > .name { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card { background: var(--plate); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .card .well { width: 44px; height: 44px; display: grid; place-items: center; color: var(--ink); }
+  .card .well svg { width: 28px; height: 28px; }
+  .card .n { font-size: 14px; line-height: 1.15; text-align: center; }
+  .card.picked { border-color: var(--line-strong); background: var(--plate-2); }
+  .card.picked .well { color: var(--text); }
+
+  /* --- the discovery size, where a mark is the whole screen --- */
+  .heroes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .hero { background: var(--plate); border: 1px solid var(--line); border-radius: 12px;
+    padding: 24px 12px; text-align: center; }
+  .hero .mark { color: var(--amber); display: grid; place-items: center; }
+  .hero .mark svg { width: 84px; height: 84px; }
+  .hero .n { font-size: 20px; font-weight: 600; margin-top: 12px; }
+  @media (max-width: 900px) { .situ, .heroes { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap"></div>
+<script type="module">
+  import { styles, styleNotes, subjects } from "../../../_context/icon-styles.js";
+  const names = Object.keys(styles);
+  const wrap = document.querySelector(".wrap");
+
+  const head = `<h1>Which hand draws the set?</h1>
+    <p class="lede">The same eight subjects in four styles. They are the eight that stress a set rather than flatter it: two pure abstractions with no agreed picture, one mechanism, one technical, one that has to stay iconic at 28px, one soft and organic, one everyday object, and the most detailed thing in the world. Whatever wins here gets drawn for all thirty-one.</p>`;
+
+  const matrix = `<h2>The drawing, at 52px</h2><table>
+    <thead><tr><th></th>${names.map(n => `<th>${n}<small>${styleNotes[n]}</small></th>`).join("")}</tr></thead>
+    <tbody>${subjects.map(([id, label]) => `<tr><th>${label}</th>${
+      names.map(n => `<td><span class="big">${styles[n][id]}</span></td>`).join("")
+    }</tr>`).join("")}</tbody></table>`;
+
+  const situ = `<h2>In the grid, at the size you actually play with</h2><div class="situ">${
+    names.map(n => `<div class="col"><div class="name">${n}</div><div class="grid">${
+      subjects.map(([id, label], i) => `<div class="card${i === 4 ? " picked" : ""}">
+        <span class="well">${styles[n][id]}</span><span class="n">${label}</span></div>`).join("")
+    }</div></div>`).join("")}</div>`;
+
+  const heroes = `<h2>At discovery size, in the accent</h2><div class="heroes">${
+    names.map(n => `<div class="hero"><div class="mark">${styles[n].star}</div><div class="n">Star</div></div>`).join("")
+  }</div>`;
+
+  wrap.innerHTML = head + matrix + situ + heroes;
+</script>
+</body>
+</html>
