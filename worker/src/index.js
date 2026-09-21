@@ -1,6 +1,7 @@
-// Alchemy log store. One KV entry per (world, player): the player's full save, log included.
-//   PUT  /w/:world/:player          body = { player: {id, name}, state }   (from the game)
-//   GET  /w/:world/:player          the stored save (future: restore on another phone)
+// Alchemy log store. One KV entry per play: that play's full save, log included.
+// The id in the path is the play's own id, so a player who starts over keeps their earlier logs.
+//   PUT  /w/:world/:play            body = { player: {id, name}, state }   (from the game)
+//   GET  /w/:world/:play            the stored save (future: restore on another phone)
 //   GET  /dump?key=ADMIN_KEY        every save, for analysis
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-methods": "GET,PUT,OPTIONS", "access-control-allow-headers": "content-type" };
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json", ...CORS } });

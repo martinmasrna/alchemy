@@ -15,8 +15,10 @@ const COST = { name: 1, recipe: 5 };
 
 // ---------- state ----------
 const KEY = `alchemy.${world.id}`;
+const rid = () => Math.random().toString(36).slice(2, 10);
 const fresh = () => ({
   version: world.version,
+  playId: rid(),           // this run of this world; one uploaded log per play, so a replay never overwrites an earlier one
   owned: [...world.seeds],
   tried: [],               // pairKeys that produced nothing (for the log, never shown)
   named: [world.summit],   // undiscovered ids whose name the player knows
@@ -31,7 +33,14 @@ let S = load();
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) { const s = JSON.parse(raw); if (s.version === world.version) return { ...fresh(), ...s }; }
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s.version === world.version) {
+        const merged = { ...fresh(), ...s };
+        if (!s.playId) { merged.playId = rid(); try { localStorage.setItem(KEY, JSON.stringify(merged)); } catch {} }
+        return merged;
+      }
+    }
   } catch {}
   return fresh();
 }
@@ -47,13 +56,14 @@ function setPlayer(name) {
   try { localStorage.setItem(PKEY, JSON.stringify(player)); } catch {}
 }
 let syncTimer;
-function scheduleSync() { if (!SYNC_URL || !player) return; clearTimeout(syncTimer); syncTimer = setTimeout(sync, 3000); }
+const SYNC_ON = SYNC_URL && !new URLSearchParams(location.search).has("nolog");   // ?nolog plays without uploading
+function scheduleSync() { if (!SYNC_ON || !player) return; clearTimeout(syncTimer); syncTimer = setTimeout(sync, 3000); }
 // keepalive lets the request outlive a closing tab, but browsers cap keepalive bodies at 64 KB
 function sync(leaving = false) {
-  if (!SYNC_URL || !player) return;
+  if (!SYNC_ON || !player) return;
   clearTimeout(syncTimer); syncTimer = null;
   const body = JSON.stringify({ player, state: S });
-  fetch(`${SYNC_URL}/w/${world.id}/${player.id}`, { method: "PUT", keepalive: leaving && body.length < 60_000,
+  fetch(`${SYNC_URL}/w/${world.id}/${S.playId}`, { method: "PUT", keepalive: leaving && body.length < 60_000,
     headers: { "content-type": "application/json" }, body }).catch(() => {});
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && syncTimer) sync(true); });
@@ -287,7 +297,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
 render();
 
 // First launch with uploading on: ask who's playing, then upload whatever is already saved.
-if (SYNC_URL && !player) {
+if (SYNC_ON && !player) {
   el.stage.className = "stage show form";
   el.stage.innerHTML = `<div class="backdrop"></div><div class="who">
     <div class="icon">👋</div>
@@ -297,6 +307,6 @@ if (SYNC_URL && !player) {
   el.stage.onclick = null;
   $("nameForm").onsubmit = (e) => { e.preventDefault(); setPlayer($("nameInput").value); el.stage.className = "stage"; el.stage.innerHTML = ""; sync(); };
   $("nameInput").focus();
-} else if (SYNC_URL) {
+} else if (SYNC_ON) {
   sync();
 }

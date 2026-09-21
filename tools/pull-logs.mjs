@@ -1,4 +1,4 @@
-// Downloads every uploaded play into playlogs/<world>-<name>-<id>.json.
+// Downloads every uploaded play into playlogs/<world>-<name>-<date>-<playId>.json, one file per play.
 // Usage: ADMIN_KEY=... node tools/pull-logs.mjs [syncUrl]
 // The company proxy blocks plain fetch from the terminal, so this goes through headless Chrome.
 import { spawn } from "node:child_process";
@@ -34,7 +34,9 @@ try {
   for (const rec of records) {
     if (rec.player?.id === "smoketest") continue; // the headless test uploads too
     const name = (rec.player?.name ?? "anon").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "anon";
-    const file = join("playlogs", `${rec.world}-${name}-${rec.player?.id ?? "x"}.json`);
+    const started = rec.state?.startedAt ? new Date(rec.state.startedAt).toISOString().slice(0, 10) : "undated";
+    const play = rec.state?.playId ?? rec.player?.id ?? "x";
+    const file = join("playlogs", `${rec.world}-${name}-${started}-${play}.json`);
     writeFileSync(file, JSON.stringify(rec));
     const st = rec.state ?? {};
     const found = (st.owned ?? []).length; const tries = (st.log ?? []).filter((e) => e.kind === "try").length;

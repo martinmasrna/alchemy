@@ -1,6 +1,6 @@
 // Minimal offline cache so the game works as a home-screen app.
 // Bump VERSION whenever any file changes.
-const VERSION = "w1-10";
+const VERSION = "w1-11";
 const FILES = ["./", "./index.html", "./app.js", "./config.js", "./worlds/world1.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (e) => {
