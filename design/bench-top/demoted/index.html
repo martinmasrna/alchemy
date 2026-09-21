@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../_context/lab.css">
+<style>
+  /* ---------------------------------------------------------------
+     DEMOTED — what Infinite Craft did. It cannot commission art, because
+     its elements are invented at runtime, so it refuses to treat the
+     emoji as a picture: the icon is 1em, inline, ahead of the name, on a
+     plain pill. The word is the object; the glyph is punctuation. Thirty
+     unrelated palettes stop mattering once none of them has any area.
+     Note: this changes the card from a tile to a pill, so the grid goes
+     with it. That is not a side effect, it is the same decision.
+     Sizes and steps from _context/system.md.
+     --------------------------------------------------------------- */
+  .phone {
+    --bg: #0a0b0f;
+    --plate: #161920;
+    --plate-2: #222732;
+    --line: rgba(255,255,255,.1);
+    --line-strong: rgba(255,255,255,.34);
+    --text: #eef0f5;
+    --muted: #7b8294;
+    --amber: #f0b429;      /* credits only */
+    --bad: #e8756f;
+    background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .phone * { box-sizing: border-box; }
+  .app { padding: 16px 16px 32px; }
+
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0 12px; }
+  h1 { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.15; color: var(--muted); }
+  .meta { display: flex; gap: 12px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .credits { color: var(--amber); }
+
+  /* One rule does the whole idea: every icon is text-sized, wherever it appears. */
+  .i { font-size: 1em; line-height: 1; }
+  .well { display: inline; }
+
+  .goalrow { margin-bottom: 16px; }
+  .target { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line-strong);
+    border-radius: 8px; padding: 6px 8px 6px 10px; font-size: 16px; background: var(--plate); }
+  .target .cn { font-weight: 600; }
+  .how { background: var(--plate-2); border: 0; color: var(--muted); font: inherit; font-size: 12px;
+    border-radius: 6px; padding: 4px 8px; cursor: pointer; margin-left: 2px; }
+
+  .bench { background: var(--plate); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 20px 1fr 20px 1fr; align-items: center; gap: 4px; }
+  .op { text-align: center; color: var(--muted); font-size: 14px; }
+  .slot { height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    gap: 6px; text-align: center; padding: 0 8px; background: rgba(255,255,255,.02);
+    border: 1px dashed var(--line); font-size: 14px; }
+  .slot .n { font-size: 14px; color: var(--text); }
+  .slot .ph { font-size: 12px; color: var(--muted); }
+  .slot.filled { border-style: solid; border-color: var(--line-strong); background: var(--plate-2); }
+  .slot.dud { border-color: var(--bad); border-style: solid; }
+  .slot.dud .n { color: var(--bad); }
+
+  .label { margin: 24px 0 8px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+
+  /* Pills in a flow, not tiles in a grid: a name wants to be as wide as it is. */
+  .grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .card { background: var(--plate); border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 16px; }
+  .card .n { line-height: 1.15; }
+  .card.picked { border-color: var(--line-strong); background: var(--plate-2); }
+
+  .chips { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; border: 1px dashed var(--line);
+    border-radius: 8px; padding: 8px 10px; font-size: 16px; max-width: 100%; }
+  .chip .r { color: var(--muted); font-size: 14px; }
+  .ii { display: inline-flex; align-items: center; gap: 4px; }
+
+  .squares { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .sq { aspect-ratio: 1; border-radius: 8px; background: rgba(255,255,255,.04);
+    display: grid; place-items: center; color: #545a66; font-size: 14px; }
+  .sq.armed { background: var(--plate-2); border: 1px solid var(--line-strong); color: var(--text);
+    font-size: 10px; grid-column: span 2; aspect-ratio: auto; height: 100%; }
+
+  footer { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    margin-top: 32px; color: var(--muted); font-size: 12px; }
+  footer .acts { display: flex; gap: 8px; }
+  footer button { background: transparent; color: var(--muted); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 12px; }
+
+  .stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .backdrop { position: absolute; inset: 0; background: rgba(6,7,10,.985); backdrop-filter: blur(3px); }
+  .who { position: relative; text-align: center; max-width: 330px; }
+  .pair { font-size: 14px; color: var(--muted); display: flex; justify-content: center; gap: 6px; }
+  /* The discovery is the one place the emoji is allowed to be a picture. */
+  .bigicon { margin: 16px 0 8px; }
+  .bigicon .i { font-size: 72px; line-height: 1; }
+  .name { font-size: 28px; font-weight: 600; line-height: 1.15; }
+  .blurb { font-size: 16px; line-height: 1.4; margin-top: 16px; text-align: left; color: #c9cedb; }
+  .credit { display: inline-block; margin-top: 24px; font-size: 12px; color: var(--amber);
+    border: 1px solid var(--amber); border-radius: 999px; padding: 4px 12px; }
+</style>
+</head>
+<body>
+<script type="module">
+  import { lab } from "../../_context/screen.js";
+  lab("Demoted",
+    "What Infinite Craft did. It cannot commission art, because its elements are invented at runtime, so it refuses to treat the emoji as a picture: 1em, inline, ahead of the name, on a plain pill. The word is the object and the glyph is punctuation. Thirty unrelated palettes stop mattering once none of them has any area.");
+</script>
+</body>
+</html>
