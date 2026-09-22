@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shortlist</title>
+<style>
+  :root {
+    --bg: #0a0b0f; --plate: #14161d; --plate-2: #1d212b;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.3);
+    --text: #eef0f5; --muted: #7b8294; --win: #6FD08C;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  svg { display: block; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 20px; font-weight: 600; line-height: 1.15; margin: 0 0 8px; }
+  .lede { color: var(--muted); margin: 0 0 20px; max-width: 70ch; }
+
+  .bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px;
+    padding: 12px 0 14px; background: linear-gradient(var(--bg) 78%, transparent);
+    flex-wrap: wrap; }
+  .count { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .count b { color: var(--text); font-weight: 600; }
+  button { background: var(--plate-2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 8px; padding: 7px 13px; font: inherit; font-size: 13px; cursor: pointer; }
+  button:hover { border-color: var(--line-strong); }
+  button:disabled { opacity: .4; cursor: default; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 14px; }
+  .cand { background: var(--plate); border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px; cursor: pointer; transition: transform .12s, border-color .12s, opacity .25s;
+    position: relative; }
+  .cand:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .cand:hover .kill { opacity: 1; }
+  .kill { position: absolute; top: 10px; right: 10px; font-size: 12px; color: var(--muted);
+    opacity: 0; transition: opacity .12s; }
+  .cand.gone { display: none; }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .row .cell { width: 58px; height: 58px; display: grid; place-items: center; }
+  .row .cell svg { width: 54px; height: 54px; }
+  .name { font-size: 15px; font-weight: 600; }
+  .meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .said { font-size: 12px; color: var(--muted); margin-top: 8px; font-style: italic; line-height: 1.45; }
+
+  .winner { border-color: var(--win); box-shadow: 0 0 0 1px var(--win); cursor: default; }
+  .winner:hover { transform: none; }
+  .winner .kill { display: none; }
+  .banner { margin: 0 0 18px; padding: 14px 16px; border: 1px solid var(--win); border-radius: 12px;
+    background: rgba(111,208,140,.08); font-size: 15px; }
+  .banner b { color: var(--win); }
+  .big { display: none; gap: 12px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+  .winner .big { display: flex; }
+  .big .cell { width: 96px; height: 96px; display: grid; place-items: center; }
+  .big .cell svg { width: 92px; height: 92px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Everything that survived a round</h1>
+  <p class="lede">Every candidate you said yes to across nineteen rounds, on one screen. Click a card to remove it. Keep going until one is left.</p>
+  <div id="banner"></div>
+  <div class="bar">
+    <span class="count"><b id="n">0</b> left</span>
+    <button id="undo" disabled>Undo</button>
+    <button id="reset">Start over</button>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+<script type="module">
+  import { artStyles, RISO_DEFS } from "../_context/icon-art.js";
+  import { furtherStyles } from "../_context/icon-art-further.js";
+  import { twelveStyles, ED_DEFS } from "../_context/icon-art-twelve.js";
+  import { round10Styles, MESH_DEFS } from "../_context/icon-art-round10.js";
+  import { round11Styles, R11_DEFS } from "../_context/icon-art-round11.js";
+  import { round12Styles, R12_DEFS } from "../_context/icon-art-round12.js";
+  import { round13Styles, R13_DEFS } from "../_context/icon-art-round13.js";
+  import { round14Styles, R14_DEFS } from "../_context/icon-art-round14.js";
+  import { round16Styles, R16_DEFS } from "../_context/icon-art-round16.js";
+
+  // Every filter, pattern and clip path each module needs, all injected once.
+  document.body.insertAdjacentHTML("afterbegin",
+    RISO_DEFS + ED_DEFS + MESH_DEFS + R11_DEFS + R12_DEFS + R13_DEFS + R14_DEFS + R16_DEFS);
+
+  // Star, Water and Earth are the only three subjects present in every module, because the
+  // earliest survivors predate the twelve-subject set. Earth is also the recognisability test.
+  const SHOW = ["star", "water", "earth"];
+
+  const CANDIDATES = [
+    { id: "luminous", round: 5, set: artStyles.luminous,
+      said: "“Out of 1 and 2, 2 looks better, but I think we should keep exploring further.”" },
+    { id: "glass", label: "glass (r7)", round: 7, set: furtherStyles.glass,
+      said: "“Glass is the best of these, but it's very … basic?”" },
+    { id: "cosmic", round: 8, set: twelveStyles.cosmic,
+      said: "“Out of these 4, cosmic is the only one I'd move to the next round.”" },
+    { id: "editorial", round: 9, set: twelveStyles.editorial,
+      said: "“From these four, the best 2 are cosmic and editorial.”" },
+    { id: "oil", round: 10, set: round10Styles.oil,
+      said: "“Oil and inkwash are the best two of these.”" },
+    { id: "inkwash", round: 10, set: round10Styles.inkwash,
+      said: "“Oil and inkwash are the best two of these.”" },
+    { id: "gouache", round: 11, set: round11Styles.gouache,
+      said: "“The first 2, and they're essentially just darkmode/lightmode version of each other.”" },
+    { id: "woodcut", round: 11, set: round11Styles.woodcut,
+      said: "“The first 2, and they're essentially just darkmode/lightmode version of each other.”" },
+    { id: "clay", round: 12, set: round12Styles.clay,
+      said: "“Clay is the best out of these.”" },
+    { id: "glass13", label: "glass (r13)", round: 13, set: round13Styles.glass,
+      said: "“Glass/wax out of these 4.”" },
+    { id: "wax", round: 13, set: round13Styles.wax,
+      said: "“Glass/wax out of these 4.”" },
+    { id: "gel", round: 14, set: round14Styles.gel,
+      said: "“Gel is the only usable one here.” Later: not necessarily liked more than the earlier ones." },
+    { id: "habitat", round: 16, set: round16Styles.habitat,
+      said: "“Habitat advances.” The only survivor from the depiction axis rather than the rendering one." },
+  ];
+
+  const grid = document.getElementById("grid");
+  const banner = document.getElementById("banner");
+  const nEl = document.getElementById("n");
+  const undoBtn = document.getElementById("undo");
+  let removed = [];
+
+  grid.innerHTML = CANDIDATES.map((c) => `
+    <article class="cand" data-id="${c.id}">
+      <span class="kill">remove ✕</span>
+      <div class="row">${SHOW.map((s) => `<span class="cell">${c.set[s] ?? ""}</span>`).join("")}</div>
+      <div class="name">${c.label ?? c.id}</div>
+      <div class="meta">round ${c.round}</div>
+      <div class="said">${c.said}</div>
+      <div class="big">${SHOW.map((s) => `<span class="cell">${c.set[s] ?? ""}</span>`).join("")}</div>
+    </article>`).join("");
+
+  function render() {
+    const live = CANDIDATES.filter((c) => !removed.includes(c.id));
+    for (const el of grid.children) el.classList.toggle("gone", removed.includes(el.dataset.id));
+    nEl.textContent = live.length;
+    undoBtn.disabled = removed.length === 0;
+    const won = live.length === 1 ? live[0] : null;
+    for (const el of grid.children) el.classList.toggle("winner", !!won && el.dataset.id === won.id);
+    banner.innerHTML = won
+      ? `<div class="banner">Last one standing: <b>${won.label ?? won.id}</b>, from round ${won.round}. Shown large below.</div>`
+      : "";
+  }
+  grid.addEventListener("click", (e) => {
+    const card = e.target.closest(".cand");
+    if (!card || card.classList.contains("winner")) return;
+    if (CANDIDATES.filter((c) => !removed.includes(c.id)).length <= 1) return;
+    removed.push(card.dataset.id);
+    render();
+  });
+  undoBtn.onclick = () => { removed.pop(); render(); };
+  document.getElementById("reset").onclick = () => { removed = []; render(); };
+  render();
+</script>
+</body>
+</html>
