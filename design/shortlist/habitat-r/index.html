@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Habitat, four paints</title>
+<style>
+  :root { --bg: #0a0b0f; --plate: #14161d; --plate-2: #1d212b;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.28);
+    --text: #eef0f5; --muted: #7b8294; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  svg { display: block; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 56px; }
+  h1 { font-size: 20px; font-weight: 600; line-height: 1.15; margin: 0 0 8px; }
+  .lede { color: var(--muted); margin: 0 0 8px; max-width: 72ch; }
+  h2 { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    font-weight: 600; margin: 32px 0 12px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 9px 8px; text-align: center; vertical-align: middle; }
+  thead th { font-size: 14px; font-weight: 600; border-bottom: 1px solid var(--line); width: 23%; }
+  thead th small { display: block; font-size: 12px; font-weight: 400; color: var(--muted);
+    margin-top: 4px; line-height: 1.45; }
+  tbody th { font-size: 14px; font-weight: 400; color: var(--muted); text-align: left; width: 84px; }
+  tbody tr + tr td, tbody tr + tr th { border-top: 1px solid rgba(255,255,255,.05); }
+  .big { display: grid; place-items: center; }
+  .big svg { width: 74px; height: 74px; }
+  .situ { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .col > .name { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .card { background: var(--plate); border: 1px solid var(--line); border-radius: 10px;
+    padding: 9px 4px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .card .well { width: 40px; height: 40px; display: grid; place-items: center; }
+  .card .well svg { width: 34px; height: 34px; }
+  .card .n { font-size: 11px; line-height: 1.15; text-align: center; color: var(--muted); }
+  .card.picked { border-color: var(--line-strong); background: var(--plate-2); }
+  @media (max-width: 860px) { .situ { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap"></div>
+<script type="module">
+  import { habitatR as habitatX, habitatRNotes as habitatXNotes, subjects, HR_DEFS as HX_DEFS } from "../../_context/icon-art-habitat-r.js";
+  document.body.insertAdjacentHTML("afterbegin", HX_DEFS);
+  const names = ["own", "goldenhour", "shadowbox", "wash"];
+  const label = { own: "own (incumbent)", goldenhour: "golden hour", shadowbox: "shadow box", wash: "wash" };
+  const wrap = document.querySelector(".wrap");
+
+  wrap.innerHTML = `
+    <h1>Habitat, four paints</h1>
+    <p class="lede">The framing is settled: a thing plus exactly one piece of the world it belongs to. What was never chosen is the paint. The incumbent rendering is a modelled solid with a generic key light, and it was inherited from clay rather than picked for this job.</p>
+    <p class="lede">Habitat differs from every other depiction in one way that should decide the rendering: it already contains light and ground. A sun beside the Earth, a glow under the fire, a long shadow under the person, a ripple under the drop. That is a lighting setup, not decoration. So these three treat the light as the system rather than as a per-item trick.</p>
+    <p class="lede">The context is the same element in every column. Only what it is made of changes, and in golden hour the ground itself warms up, because everything is standing in the same late light.</p>
+
+    <h2>At 74px</h2>
+    <table>
+      <thead><tr><th style="width:84px"></th>${names.map((n) => `<th>${label[n]}<small>${habitatXNotes[n]}</small></th>`).join("")}</tr></thead>
+      <tbody>${subjects.map(([id, name]) => `<tr><th>${name}</th>${
+        names.map((n) => `<td><span class="big">${habitatX[n][id]}</span></td>`).join("")
+      }</tr>`).join("")}</tbody>
+    </table>
+
+    <h2>All twelve in the grid, at 34px</h2>
+    <div class="situ">${names.map((n) => `<div class="col"><div class="name">${label[n]}</div><div class="grid">${
+      subjects.map(([id, name], i) => `<div class="card${i === 4 ? " picked" : ""}">
+        <span class="well">${habitatX[n][id]}</span><span class="n">${name}</span></div>`).join("")
+    }</div></div>`).join("")}</div>`;
+</script>
+</body>
+</html>
