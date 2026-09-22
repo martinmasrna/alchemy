@@ -28,7 +28,7 @@
   button:hover { border-color: var(--line-strong); }
   button:disabled { opacity: .4; cursor: default; }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
   .cand { background: var(--plate); border: 1px solid var(--line); border-radius: 14px;
     padding: 14px; cursor: pointer; transition: transform .12s, border-color .12s, opacity .25s;
     position: relative; }
@@ -37,9 +37,9 @@
   .kill { position: absolute; top: 10px; right: 10px; font-size: 12px; color: var(--muted);
     opacity: 0; transition: opacity .12s; }
   .cand.gone { display: none; }
-  .row { display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 12px; }
-  .row .cell { width: 58px; height: 58px; display: grid; place-items: center; }
-  .row .cell svg { width: 54px; height: 54px; }
+  .row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 12px; }
+  .row .cell { aspect-ratio: 1; display: grid; place-items: center; }
+  .row .cell svg { width: 100%; height: 100%; }
   .name { font-size: 15px; font-weight: 600; }
   .meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
   .said { font-size: 12px; color: var(--muted); margin-top: 8px; font-style: italic; line-height: 1.45; }
@@ -50,16 +50,16 @@
   .banner { margin: 0 0 18px; padding: 14px 16px; border: 1px solid var(--win); border-radius: 12px;
     background: rgba(111,208,140,.08); font-size: 15px; }
   .banner b { color: var(--win); }
-  .big { display: none; gap: 12px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
-  .winner .big { display: flex; }
-  .big .cell { width: 96px; height: 96px; display: grid; place-items: center; }
-  .big .cell svg { width: 92px; height: 92px; }
+    .big { display: none; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .winner .big { display: grid; }
+  .big .cell { aspect-ratio: 1; display: grid; place-items: center; }
+  .big .cell svg { width: 100%; height: 100%; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Everything that survived a round</h1>
-  <p class="lede">Every candidate you said yes to across nineteen rounds, on one screen. Click a card to remove it. Keep going until one is left.</p>
+  <p class="lede">Every candidate you said yes to across nineteen rounds, all twelve subjects each, on one screen. Click a card to remove it. Keep going until one is left.</p>
   <div id="banner"></div>
   <div class="bar">
     <span class="count"><b id="n">0</b> left</span>
@@ -69,28 +69,27 @@
   <div class="grid" id="grid"></div>
 </div>
 <script type="module">
-  import { artStyles, RISO_DEFS } from "../_context/icon-art.js";
-  import { furtherStyles } from "../_context/icon-art-further.js";
   import { twelveStyles, ED_DEFS } from "../_context/icon-art-twelve.js";
   import { round10Styles, MESH_DEFS } from "../_context/icon-art-round10.js";
   import { round11Styles, R11_DEFS } from "../_context/icon-art-round11.js";
   import { round12Styles, R12_DEFS } from "../_context/icon-art-round12.js";
   import { round13Styles, R13_DEFS } from "../_context/icon-art-round13.js";
   import { round14Styles, R14_DEFS } from "../_context/icon-art-round14.js";
-  import { round16Styles, R16_DEFS } from "../_context/icon-art-round16.js";
+  import { shortlistExtra, SL_DEFS } from "../_context/icon-art-shortlist.js";
+  import { subjects } from "../_context/shapes.js";
 
   // Every filter, pattern and clip path each module needs, all injected once.
   document.body.insertAdjacentHTML("afterbegin",
-    RISO_DEFS + ED_DEFS + MESH_DEFS + R11_DEFS + R12_DEFS + R13_DEFS + R14_DEFS + R16_DEFS);
+    ED_DEFS + MESH_DEFS + R11_DEFS + R12_DEFS + R13_DEFS + R14_DEFS + SL_DEFS);
 
-  // Star, Water and Earth are the only three subjects present in every module, because the
-  // earliest survivors predate the twelve-subject set. Earth is also the recognisability test.
-  const SHOW = ["star", "water", "earth"];
+  // All twelve, for every candidate. Luminous, glass and habitat only ever existed for six
+  // subjects, so they are rebuilt over the shared parts in icon-art-shortlist.js.
+  const SHOW = subjects.map(([id]) => id);
 
   const CANDIDATES = [
-    { id: "luminous", round: 5, set: artStyles.luminous,
+    { id: "luminous", round: 5, set: shortlistExtra.luminous,
       said: "“Out of 1 and 2, 2 looks better, but I think we should keep exploring further.”" },
-    { id: "glass", label: "glass (r7)", round: 7, set: furtherStyles.glass,
+    { id: "glass", label: "glass (r7)", round: 7, set: shortlistExtra.glass,
       said: "“Glass is the best of these, but it's very … basic?”" },
     { id: "cosmic", round: 8, set: twelveStyles.cosmic,
       said: "“Out of these 4, cosmic is the only one I'd move to the next round.”" },
@@ -112,8 +111,8 @@
       said: "“Glass/wax out of these 4.”" },
     { id: "gel", round: 14, set: round14Styles.gel,
       said: "“Gel is the only usable one here.” Later: not necessarily liked more than the earlier ones." },
-    { id: "habitat", round: 16, set: round16Styles.habitat,
-      said: "“Habitat advances.” The only survivor from the depiction axis rather than the rendering one." },
+    { id: "habitat", round: 16, set: shortlistExtra.habitat,
+      said: "“Habitat advances.” The only survivor from the depiction axis rather than the rendering one. Six of its twelve worlds are new." },
   ];
 
   const grid = document.getElementById("grid");
@@ -129,7 +128,7 @@
       <div class="name">${c.label ?? c.id}</div>
       <div class="meta">round ${c.round}</div>
       <div class="said">${c.said}</div>
-      <div class="big">${SHOW.map((s) => `<span class="cell">${c.set[s] ?? ""}</span>`).join("")}</div>
+      <div class="big" style="margin-top:14px">${SHOW.map((s) => `<span class="cell">${c.set[s] ?? ""}</span>`).join("")}</div>
     </article>`).join("");
 
   function render() {

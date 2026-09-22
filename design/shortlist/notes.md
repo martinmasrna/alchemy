@@ -12,9 +12,11 @@ best of its four, not that it is good.
 Each card carries what Martin actually said when it survived, so the record is his words
 rather than my summary of them.
 
-Shown on Star, Water and Earth. Those are the only three subjects present in every module,
-because the early survivors predate the twelve-subject set, and Earth is the recognisability
-test in any case.
+All twelve subjects for every candidate. Three of the thirteen only ever existed for six:
+luminous and glass won rounds 5 and 7, before the twelve-subject set existed, and habitat won
+round 16 on six. Those three are rebuilt in `_context/icon-art-shortlist.js` as renderers over
+the shared parts, so they are reconstructions rather than the original files. Same look, same
+rules, more subjects. Six of habitat's twelve worlds are new and had to be invented.
 
 Click removes. Undo and start over are in the sticky bar. The last one standing is marked and
 shown large.
