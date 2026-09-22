@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Round 18</title>
+<style>
+  :root {
+    --bg: #0a0b0f; --plate: #14161d; --plate-2: #1d212b;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.28);
+    --text: #eef0f5; --muted: #7b8294;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  svg { display: block; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 20px; font-weight: 600; line-height: 1.15; margin: 0 0 8px; }
+  .lede { color: var(--muted); margin: 0 0 8px; max-width: 70ch; }
+  h2 { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    font-weight: 600; margin: 32px 0 12px; }
+
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 10px 8px; text-align: center; vertical-align: middle; }
+  thead th { font-size: 14px; font-weight: 600; border-bottom: 1px solid var(--line); width: 22%; }
+  thead th small { display: block; font-size: 12px; font-weight: 400; color: var(--muted);
+    margin-top: 4px; line-height: 1.4; }
+  tbody th { font-size: 14px; font-weight: 400; color: var(--muted); text-align: left; width: 86px; }
+  tbody tr + tr td, tbody tr + tr th { border-top: 1px solid rgba(255,255,255,.05); }
+  .big { display: grid; place-items: center; }
+  .big svg { width: 72px; height: 72px; }
+
+  .situ { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .col > .name { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .card { background: var(--plate); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 4px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .card .well { width: 40px; height: 40px; display: grid; place-items: center; }
+  .card .well svg { width: 34px; height: 34px; }
+  .card .n { font-size: 12px; line-height: 1.15; text-align: center; }
+  .card.picked { border-color: var(--line-strong); background: var(--plate-2); }
+
+  .heroes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .hero { background: var(--plate); border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px 12px; text-align: center; }
+  .hero .mark { display: grid; place-items: center; }
+  .hero .mark svg { width: 104px; height: 104px; }
+  .hero .n { font-size: 18px; font-weight: 600; margin-top: 12px; }
+  @media (max-width: 900px) { .situ, .heroes { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap"></div>
+<script type="module">
+  import { round18Styles as styles, round18Notes as notes, subjects6 as subjects, R18_DEFS }
+    from "../../../../../../../../../../../../../_context/icon-art-round18.js";
+  document.body.insertAdjacentHTML("afterbegin", R18_DEFS);
+  const names = Object.keys(styles);
+  const wrap = document.querySelector(".wrap");
+
+  const head = `<h1>Round 18: back to the depiction axis</h1>
+    <p class="lede">Round 17 was a framing mistake. Habitat advanced and I varied habitat's sub-kinds instead of staying on the axis, which is the same narrowing error as round 12 in new clothes. All four came out worse than the thing they were meant to improve.</p>
+    <p class="lede">So: four depiction strategies not tried yet, and not four kinds of habitat. The thing beside something whose size everyone knows. Everything seen from directly overhead. The thing collected, mounted and catalogued. Or a characteristic detail at huge magnification instead of the whole object.</p>
+    <p class="lede">The best single drawing of round 15 was Tribe seen from above, which is the lead the overhead column is following up.</p>`;
+
+  const matrix = `<h2>The illustration, at 72px</h2><table>
+    <thead><tr><th style="width:86px"></th>${names.map(n => `<th>${n}<small>${notes[n]}</small></th>`).join("")}</tr></thead>
+    <tbody>${subjects.map(([id, label]) => `<tr><th>${label}</th>${
+      names.map(n => `<td><span class="big">${styles[n][id]}</span></td>`).join("")
+    }</tr>`).join("")}</tbody></table>`;
+
+  const situ = `<h2>All twelve in the grid, at 34px</h2><div class="situ">${
+    names.map(n => `<div class="col"><div class="name">${n}</div><div class="grid">${
+      subjects.map(([id, label], i) => `<div class="card${i === 2 ? " picked" : ""}">
+        <span class="well">${styles[n][id]}</span><span class="n">${label}</span></div>`).join("")
+    }</div></div>`).join("")}</div>`;
+
+  const heroes = `<h2>At discovery size</h2><div class="heroes">${
+    names.map(n => `<div class="hero"><div class="mark">${styles[n].fire}</div><div class="n">Fire</div></div>`).join("")
+  }</div>`;
+
+  wrap.innerHTML = head + matrix + situ + heroes;
+</script>
+</body>
+</html>
