@@ -38,6 +38,7 @@ Bench on top: two slots and a result slot pinned above the grid of what you own.
 Discovery is the highlight and gets a full-screen moment: the two ingredients collide (pull-back, then a 650ms flight), a flash and a ring at contact, a 100ms hit-stop, a 7px kick, sparks, the result lands with overshoot, then the pair, the name, the blurb and the credit rise in. Dismissed by tapping anywhere. Reaching the summit adds a stats line to the same moment.
 The grid never shows which pairs were tried or which already made something.
 Animation rule from the iOS bug: no CSS variables inside keyframes. Motion that depends on data runs through the Web Animations API with pixel values.
+Icons: the emoji are placeholders and the replacement is decided. Every icon is the thing plus exactly one piece of the world it belongs to, drawn as two flat planes with a cast shadow between them and no tile behind it. A thing is the colour a person already expects it to be, and the test is Earth. The full decision, the rules that survived, and what it costs to build are in `design/shortlist/habitat-r/port-spec.md`. Nothing is in the game yet: only 3 of world 1's 31 subjects have been drawn.
 Palette and type have not been designed yet; the dark navy and amber are placeholders.
 
 ## Platform
@@ -48,7 +49,7 @@ Progress must survive closing the tab, clearing history and switching phones. Br
 Martin plays each new world blind. The table stays hidden from him until after the play, because "would I have guessed it" can only be tested once. Then the table is cut and rewritten together.
 
 ## Where we are
-World 1 (Big Bang to Earth, 27 discoveries) is live at https://martinmasrna.github.io/alchemy/ with the converged screen and the credit economy. Martin has played it twice (logs in `playlogs/`); the planet half has never been played blind, so the next real data point is a friend's log. Next design round, if wanted: palette and type. Next content: world 2 (Sun, Water, Rock, Air to Life).
+World 1 (Big Bang to Earth, 27 discoveries) is live at https://martinmasrna.github.io/alchemy/ with the converged screen and the credit economy. Martin has played it twice (logs in `playlogs/`); the planet half has never been played blind, so the next real data point is a friend's log. The icon style is settled after nineteen rounds in `design/`; building world 1's 31 icons is the next design job and is a session of its own. Next content: world 2 (Sun, Water, Rock, Air to Life).
 
 ## Parked
 Hint cost (candidates: earned currency, scarcity per world, slow recharge, a quiz). How a finished world seeds the next ones. What happens at the end of a world.
