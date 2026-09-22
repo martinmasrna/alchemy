@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The eight with nowhere to be</title>
+<style>
+  :root { --bg: #0a0b0f; --plate: #14161d; --plate-2: #1d212b;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.28);
+    --text: #eef0f5; --muted: #7b8294; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  svg { display: block; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px 56px; }
+  h1 { font-size: 20px; font-weight: 600; line-height: 1.15; margin: 0 0 8px; }
+  .lede { color: var(--muted); margin: 0 0 8px; max-width: 72ch; }
+  h2 { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    font-weight: 600; margin: 34px 0 12px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 9px 8px; text-align: center; vertical-align: middle; }
+  thead th { font-size: 14px; font-weight: 600; border-bottom: 1px solid var(--line); width: 29%; }
+  thead th small { display: block; font-size: 12px; font-weight: 400; color: var(--muted);
+    margin-top: 4px; line-height: 1.45; }
+  tbody th { font-size: 14px; font-weight: 400; color: var(--muted); text-align: left; width: 90px; }
+  tbody tr + tr td, tbody tr + tr th { border-top: 1px solid rgba(255,255,255,.05); }
+  .big { display: grid; place-items: center; }
+  .big svg { width: 74px; height: 74px; }
+  .situ { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .col > .name { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .card { background: var(--plate); border: 1px solid var(--line); border-radius: 10px;
+    padding: 9px 4px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .card .well { width: 40px; height: 40px; display: grid; place-items: center; }
+  .card .well svg { width: 34px; height: 34px; }
+  .card .n { font-size: 11px; line-height: 1.15; text-align: center; color: var(--muted); }
+  .card.drawn { border-color: rgba(245,185,60,.32); }
+  .note { color: var(--muted); font-size: 13px; margin: 10px 0 0; max-width: 72ch; }
+  @media (max-width: 860px) { .situ { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap"></div>
+<script type="module">
+  import { w1abstract, w1abstractNotes, abstracts, W1_DEFS } from "../../../_context/icon-art-w1-abstract.js";
+  import { habitatR, HR_DEFS } from "../../../_context/icon-art-habitat-r.js";
+
+  document.body.insertAdjacentHTML("afterbegin", W1_DEFS + HR_DEFS);
+  const names = ["effect", "void", "bare"];
+  const label = { effect: "effect", void: "void", bare: "bare" };
+  const settled = habitatR.shadowbox;
+
+  // World 1's order, so the abstracts are seen where the player meets them: the four seeds
+  // first, then four more before anything concrete exists. Star, Water and Earth are the only
+  // three of world 1 already drawn, and they come in at the end as the check — do the eight
+  // belong in the same set as the three that are finished?
+  const run = [...abstracts, ["star", "Star"], ["water", "Water"], ["earth", "Earth"]];
+  const icon = (n, id) => w1abstract[n][id] ?? settled[id];
+
+  document.querySelector(".wrap").innerHTML = `
+    <h1>The eight with nowhere to be</h1>
+    <p class="lede">Habitat's rule is a thing plus exactly one piece of the world it belongs to, and it was settled on subjects that live somewhere: a star among stars, a fire on its logs, a car on a road, a person on the ground. World 1 is the world before anywhere exists. Eight of its thirty-one subjects have no habitat, and four of those are the seeds, so they are the first icons anyone ever sees.</p>
+    <p class="lede">Same silhouettes, same paint. Only the answer to "what is the piece of world" changes. If none of these holds, the problem is the style decision and not the drawing, which is why these eight are being drawn before the twenty-three easy ones.</p>
+
+    <h2>At 74px</h2>
+    <table>
+      <thead><tr><th style="width:90px"></th>${names.map((n) =>
+        `<th>${label[n]}<small>${w1abstractNotes[n]}</small></th>`).join("")}</tr></thead>
+      <tbody>${abstracts.map(([id, name]) => `<tr><th>${name}</th>${
+        names.map((n) => `<td><span class="big">${w1abstract[n][id]}</span></td>`).join("")
+      }</tr>`).join("")}</tbody>
+    </table>
+
+    <h2>In the grid at 34px, with the three already drawn</h2>
+    <div class="situ">${names.map((n) => `<div class="col"><div class="name">${label[n]}</div><div class="grid">${
+      run.map(([id, name], i) => `<div class="card${i >= 8 ? " drawn" : ""}">
+        <span class="well">${icon(n, id)}</span><span class="n">${name}</span></div>`).join("")
+    }</div></div>`).join("")}</div>
+    <p class="note">The three with the amber edge are Star, Water and Earth from the settled set, unchanged. They are the control: the eight above them have to look like they came out of the same hand.</p>`;
+</script>
+</body>
+</html>
