@@ -16,7 +16,65 @@
 //           later with Rock, Lava and Ocean.
 //   bare    no world at all, and the absence is the signal: these are the things that exist
 //           before there is anywhere to be. Cheapest, and the one that risks looking unfinished.
-import { hues, parts, abstracts, star4, disc } from "./shapes-w1.js";
+import { star4, disc } from "./shapes-w1.js";
+
+// The eight as they were drawn for this round, frozen here so the page keeps showing what was
+// judged while the live set in shapes-w1.js moves on.
+const abstracts = [
+  ["energy", "Energy"], ["matter", "Matter"], ["space", "Space"], ["time", "Time"],
+  ["particle", "Particle"], ["light", "Light"], ["gravity", "Gravity"], ["lightyear", "Lightyear"],
+];
+const hues = {
+  energy:    { base: "#F7C948", dark: "#A85A10", light: "#FFF6DC", accent: "#FF8A2E" },
+  matter:    { base: "#9A8E80", dark: "#5E554A", light: "#D6CCBE", accent: "#E3C08A" },
+  space:     { base: "#2A3352", dark: "#141A2E", light: "#5A6894", accent: "#D8E4F4" },
+  time:      { base: "#8A5A34", dark: "#4A2E18", light: "#E8EEF2", accent: "#F5B93C" },
+  particle:  { base: "#5FBEEA", dark: "#1E5C84", light: "#E6F7FF", accent: "#A8E6FF" },
+  light:     { base: "#F7D774", dark: "#B8862A", light: "#FFF7DC", accent: "#FFFFFF" },
+  gravity:   { base: "#39405C", dark: "#161A2A", light: "#7C88A8", accent: "#A8C4E0" },
+  lightyear: { base: "#CFE4F2", dark: "#3E6E96", light: "#FFF7DC", accent: "#F5B93C" },
+};
+const parts = {
+  energy: [
+    { d: "M28.5 4L13 27h8.5L19 44L35 21h-8.5z", tone: "base" },
+    { d: "M27.4 10L18.5 26.4h6L21.8 37.6L30 23.2h-6z", tone: "light" },
+  ],
+  matter: [
+    { d: disc(17.5, 29, 7.6), tone: "base" },
+    { d: disc(30.5, 29, 7.6), tone: "dark" },
+    { d: disc(24, 18.5, 7.6), tone: "light" },
+  ],
+  space: [
+    { d: "M14 11h20a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V15a4 4 0 0 1 4-4z", tone: "base" },
+    { d: disc(18, 18, 1.3) + disc(30, 16.5, 1) + disc(24, 26, .9) + disc(32, 30, 1.3) + disc(16.5, 29, .9), tone: "accent" },
+  ],
+  time: [
+    { d: "M15.5 9H32.5L25.4 21.4h-2.8z", tone: "light" },
+    { d: "M15.5 35H32.5L25.4 22.6h-2.8z", tone: "light" },
+    { d: "M17.8 11.6H30.2L27.3 16.6H20.7z", tone: "accent" },
+    { d: "M19 35c.3-3.4 2.3-5.4 5-5.4s4.7 2 5 5.4z", tone: "accent" },
+    { d: "M24 22.4V29", tone: "accent", w: 1 },
+    { d: "M12 5.4h24V9H12zM12 35h24v3.6H12z", tone: "base" },
+  ],
+  particle: [
+    { d: disc(13, 33, 2), tone: "dark" },
+    { d: disc(18.5, 28, 3.4), tone: "dark" },
+    { d: disc(27.5, 20.5, 7), tone: "base" },
+    { d: disc(25, 18, 2.4), tone: "light" },
+  ],
+  light: [
+    { d: "M5 24q4.75-10 9.5 0t9.5 0t9.5 0t9.5 0", tone: "base", w: 5 },
+  ],
+  gravity: [
+    { d: disc(24, 24, 9), tone: "base" },
+    { d: disc(21, 21, 3.2), tone: "light" },
+    { d: "M20.2 6.4L24 10.2L27.8 6.4M41.6 20.2L37.8 24L41.6 27.8M27.8 41.6L24 37.8L20.2 41.6M6.4 27.8L10.2 24L6.4 20.2", tone: "accent", w: 2.2 },
+  ],
+  lightyear: [
+    { d: "M11 22.6h26v2.8H11z", tone: "light" },
+    { d: "M9 17h2.8v14H9zM36.2 17H39v14h-2.8z", tone: "dark" },
+  ],
+};
 
 const box = (b) => `<svg viewBox="0 0 48 48" fill="none" aria-hidden="true">${b}</svg>`;
 const draw = (p, fill, extra = "") =>

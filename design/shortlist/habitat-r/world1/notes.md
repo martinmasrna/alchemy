@@ -1,60 +1,34 @@
 # world1 — the whole set, drawn
 
-Thirty-one icons for *In the Beginning*, in the settled style: habitat's framing, shadow box
-rendering. Twenty-eight are new; Star, Water and Earth come through untouched from the set the
-style was chosen on and are the control.
+Thirty-one icons for *In the Beginning*. Martin reviews them one at a time on `review.html`, and his verdicts live in `review.json` beside it, each tied to a hash of the drawing it judged. `index.html` shows the current set at 74px, in the real grid at 34px, and in the pairs that must not collide.
 
-## What the build settled about habitat
+## What the build settled
 
-The framing is not a rule applied thirty-one times. **A piece of world is drawn when the thing
-is only itself in relation to something else, and left off when the silhouette already carries
-the name.** Six earn one:
+**Light is drawn as light; everything else is paper.** Shadow box is cut paper, and its no-glow rule was right for a drop, a moon or a volcano. For a star, a nebula, lava, a supernova, energy or space it was wrong, because their substance is glow. The first pass drew them as flat card and every one failed: "I need to FEEL the heat", "doesn't capture the majesty", a nebula ugly next to the luminous ones from earlier rounds. So light sources get real gradients and bloom, and they may spill past the frame, because a glow cropped at the viewBox ends in a hard square edge. Martin passed all eleven paper icons on the first pass (Water, Moon, Volcano, Cloud, Earth, Gravity, Solar System, Time, Particle, Air, Rainbow), and those were exactly the things that reflect light.
 
-| | without its world | with it |
-|---|---|---|
-| Gravity | a grey ball with arrows at it | a sheet denting under a mass |
-| Lightyear | a dumbbell | a span between two stars |
-| Moon | a grey rock, and Rock is four discoveries earlier | a moon over a planet |
-| Star | a shape | a star among stars |
-| Water | a teardrop | a drop about to land |
-| Earth | a blue marble | a world with its sun |
+**A piece of world is drawn when the thing is only itself in relation to something else**, not as a rule applied thirty-one times. Gravity is a ball until the sheet dents. The Moon is a rock until a planet is under it. The Lightyear tape measures to a star. Rock gets the pebbles it was made from. Ocean gets a horizon with a tiny volcano on it, Hokusai's trick for making the wave enormous. Star, Water and Earth keep theirs. Everything else stands alone, because world 1 is the universe before anywhere exists.
 
-The other twenty-five stand alone, and that is not a shortcut. World 1 is the universe before
-anywhere exists: Nebula, Rock, Volcano and Ocean have nothing to be placed next to, because
-there is nothing else yet. Habitat is a world-2-onward idea, and the arc of the icon set —
-things floating in nothing, then a planet appearing under one of them — is the arc of the world.
+**Chemical elements are periodic-table tiles**, Martin's call: symbol and atomic number, which says Hydrogen and not "an atom". Alone that is boring, so the symbol is lit like a discharge tube in the colour that gas really glows: hydrogen pink, helium peach, oxygen lilac, carbon arc white-blue.
+
+**Expected picture, not just expected colour.** A five-pointed star, because every child draws one. Gargantua from Interstellar for the black hole, because it is the picture everyone has. A generic planet has no ring, because a ring is Saturn.
 
 ## Readings that had to be drawn out, not designed out
 
 Every one of these was found by rendering and looking, never by thinking about it first.
 
-- **A level ellipse with something filled in the middle of it is an eye.** It caught Hydrogen,
-  Helium, Solar System and Galaxy on the same pass. Tilting does not fix it and neither does
-  two ellipses, which is a winking eye. Three is the shape everyone already reads as "atom".
-- **Concentric anything round a bright middle is also an eye**, which is why Galaxy had to
-  become two wound arms with real width. Thin strokes made it a swoosh.
-- **Three lines to the centre of a hexagon is an isometric cube.** Carbon is split down the
-  middle instead, with one lit edge.
-- **A solid comet tail is an object.** Parallel slivers were a syringe, a constant-width wedge
-  was a bone, a triangle with a round head on it was a bone again. A tail needs gaps: three
-  separate streaks fanning off the head.
-- **A curve along the bottom of the box is read as ground** whatever it is meant to be. That
-  killed Particle's "edge of something enormous" and then turned out to be exactly what Moon
-  wanted, so the planet went under the moon rather than beside it.
-- **Energy could not be radial.** Rays with no centre mass is the truer idea, but in amber at
-  34px it was a second Star, and Energy is a seed the player meets ten discoveries earlier.
-- **Black is not available.** Carbon is black and Black Hole is blacker, and the card is nearly
-  black. Carbon is drawn as graphite with a hard lit edge; Black Hole is a bright ring with a
-  hole in it, because drawn as a dark disc behind a level ellipse it was Saturn — and Planet
-  arrives two discoveries later.
+- **A level ellipse with something filled in the middle is an eye.** One is an eye, two is a winking eye, and three is the atom symbol. Concentric rings round a bright middle are an eye too.
+- **Three lines to the centre of a hexagon is an isometric cube.**
+- **A hard-edged comet tail is an object**: a syringe, then a bone, then a broom. A comet is a fuzzy head with two soft tails.
+- **A curve along the bottom of the box reads as ground**, whatever it is meant to be. It ruined one Particle and made the Moon.
+- **A lens of sea is a bowl, and a sea running off the frame is a block cut square.** Vastness came from scale instead: a big wave and a tiny far peak.
+- **Distance is pale.** The first far horizon was dark and read as a pair of sunglasses; atmosphere lightens what is far away.
+- **A paper shadow falls into hollows.** Anything placed in the shadow a shape throws on the card turns black.
+- **Energy cannot be warm and radial**, or it is a second Star. It is electric blue-white, the one light in the set that is not fire-coloured.
 
 ## Still open
 
-- The picked state. The app tints the card and brightens the emoji on it. A flat matte icon has
-  nothing to brighten, so border and panel carry it alone. Shown on Star in the grid.
-- The discovery moment. These have only ever been judged as stills, and the collide animation
-  flies two of them across the screen.
+- The picked state. The app tints the card and brightens the emoji on it. A flat paper icon has nothing to brighten.
+- The discovery moment. These have only been judged as stills; the collide animation flies two of them across the screen, and glowing ones may need their bloom kept when they move.
 - The named-but-undiscovered chips and the `?` squares, still emoji.
-- Light mode, never looked at.
-- Paint cost. Thirty-one blurred drop shadows on a phone is not free; the shadows may be better
-  baked than filtered.
+- Light mode, never looked at, and the glowing icons are built for a dark card.
+- Paint cost. Blurred shadows on every paper icon plus several bloom layers on every light icon is not free on a phone; the filters may need baking into images.

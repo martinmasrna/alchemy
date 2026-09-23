@@ -50,7 +50,7 @@
   import { HR_DEFS } from "../../../_context/icon-art-habitat-r.js";
   document.body.insertAdjacentHTML("afterbegin", W1_DEFS + HR_DEFS);
 
-  const ctrl = new Set(["star", "water", "earth"]);
+  const ctrl = new Set(["water", "earth"]);
   const hasWorld = (id) => !!w1worlds[id] || ctrl.has(id);
   // Pairs that have to stay apart at 34px, because the player meets them minutes apart and
   // will be tapping one to get the other.
@@ -64,14 +64,14 @@
 
   document.querySelector(".wrap").innerHTML = `
     <h1>World 1, all thirty-one</h1>
-    <p class="lede">Habitat's framing, shadow box rendering, drawn out for the whole of <em>In the Beginning</em>. The abstracts round settled that the piece of world is not applied thirty-one times: it is drawn when the thing is only itself in relation to something else, and left off when the silhouette already carries the name.</p>
-    <p class="lede">Six earn one. Gravity is a grey ball until the sheet dents. Lightyear is a dumbbell until there is a star at each end. Moon is a rock until there is a planet under it. Star, Water and Earth keep the worlds they were drawn with. The other twenty-five stand alone, because in the universe before anywhere exists there is nothing to stand them next to — which is the point of the world.</p>
+    <p class="lede">The whole of <em>In the Beginning</em> as it currently stands. Things that reflect light are cut paper; things that give off light are drawn as light. A piece of world is drawn only when the thing is itself in relation to something else, and left off when the silhouette already carries the name.</p>
+    <p class="lede">Review happens on <a href="review.html" style="color:inherit">review.html</a>; this page is for seeing the set together.</p>
 
     <h2>The set at 74px — amber outline means it was given a world</h2>
     <div class="sheet">${w1subjects.map(([id, n]) => `
       <div class="cell${hasWorld(id) ? " world" : ""}${ctrl.has(id) ? " ctrl" : ""}">
         ${w1icons[id]}<span class="n">${n}</span></div>`).join("")}</div>
-    <p class="note">The three in amber text are Star, Water and Earth, untouched from the set the style was chosen on. They are the control: the other twenty-eight have to look like they came out of the same hand.</p>
+    <p class="note">The two in amber text are Water and Earth, untouched from the set the style was chosen on. They are the control: the rest have to look like they came out of the same hand.</p>
 
     <h2>The grid at 34px, in play order — where the session is actually spent</h2>
     <div class="phone">

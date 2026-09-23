@@ -6,13 +6,18 @@ Live comparison: `design/shortlist/habitat-r/`.
 
 ## What the design is
 
-**Framing (habitat).** Every icon is the thing plus exactly one piece of the world it belongs
-to. One element, never a scene. A star gets a few other stars; a drop gets the surface it lands
-on; Earth gets its sun; a person gets a ground line; a fire gets its logs; a car gets a road.
+**Framing (habitat).** An icon is the thing plus one piece of the world it belongs to, when the
+thing is only itself in relation to something else. One element, never a scene. A star gets a
+few other stars; a drop gets the surface it lands on; Earth gets its sun; gravity gets the sheet
+it dents; a person gets a ground line; a car gets a road. A thing whose silhouette already
+carries its name stands alone.
 
-**Rendering (shadow box).** Two physical planes with air between them. The piece of world is a
-sheet at the back, the thing is a sheet at the front, and the shadow one throws on the other is
-the only depth cue. Flat matte colour throughout, because cut paper has no gradient.
+**Rendering (shadow box, and light).** Things that reflect light are two physical planes with
+air between them. The piece of world is a sheet at the back, the thing is a sheet at the front,
+and the shadow one throws on the other is the only depth cue, in flat matte colour, because cut
+paper has no gradient. Things that give off light — a star, a nebula, lava, a supernova — are
+drawn as light instead: real gradients and bloom, allowed to spill past the frame. Drawn as
+paper, every one of them lost the thing it is.
 
 Per shape, in order: a black drop shadow at 50% offset `translate(1.8 2.4)` and blurred by
 `stdDeviation 1.7`; the flat fill; then a 90%-scale copy 18% lighter at 50% opacity, which is
@@ -26,8 +31,8 @@ The context sits behind everything at 85% opacity.
   being told. The test is Earth: if Earth is not obviously Earth, the drawing failed.
 - **No support unless earned.** No tile behind an icon. A near-black tile on an already dark
   card is just a darker square. Shadow box needs no tile; the shadow does the work.
-- **Context has to be drawn in whatever ink the surface takes.** A glow under a fire says
-  nothing on paper. A piece of world is not a sprite that can be moved between backgrounds.
+- **Context has to be drawn in whatever ink the surface takes.** A glow under a paper object
+  says nothing. A piece of world is not a sprite that can be moved between backgrounds.
 - **Details cannot share the body's light model**, or they sink into it. Every part gets a
   ramp built from its own colour, never from the body's. This bug was made twice.
 - **34px is the real size.** The grid is where the session is spent; 72px is where a discovery

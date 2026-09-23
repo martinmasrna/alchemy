@@ -1,0 +1,252 @@
+{
+  "verdicts": {
+    "water@4e0b74b1": {
+      "icon": "water",
+      "name": "Water",
+      "v": "4e0b74b1",
+      "at": 1790148542055,
+      "note": "",
+      "verdict": "good"
+    },
+    "rainbow@7f841dc5": {
+      "icon": "rainbow",
+      "name": "Rainbow",
+      "v": "7f841dc5",
+      "at": 1790148546164,
+      "note": "",
+      "verdict": "good"
+    },
+    "moon@cc46a986": {
+      "icon": "moon",
+      "name": "Moon",
+      "v": "cc46a986",
+      "at": 1790148564134,
+      "note": "",
+      "verdict": "good"
+    },
+    "volcano@0363f046": {
+      "icon": "volcano",
+      "name": "Volcano",
+      "v": "0363f046",
+      "at": 1790148566391,
+      "note": "",
+      "verdict": "good"
+    },
+    "cloud@58f4b102": {
+      "icon": "cloud",
+      "name": "Cloud",
+      "v": "58f4b102",
+      "at": 1790148571764,
+      "note": "",
+      "verdict": "good"
+    },
+    "earth@14ae5592": {
+      "icon": "earth",
+      "name": "Earth",
+      "v": "14ae5592",
+      "at": 1790148572565,
+      "note": "",
+      "verdict": "good"
+    },
+    "lightyear@2663a5dc": {
+      "icon": "lightyear",
+      "name": "Lightyear",
+      "v": "2663a5dc",
+      "at": 1790148598073,
+      "note": "this looks like a fucking barbell :D",
+      "verdict": "note"
+    },
+    "nebula@fe1cae10": {
+      "icon": "nebula",
+      "name": "Nebula",
+      "v": "fe1cae10",
+      "at": 1790148638046,
+      "note": "this looks horrible ... some of the Nebulas you were drawing in the converge-design session were so beautiful, this is just ugly",
+      "verdict": "note"
+    },
+    "hydrogen@ec657756": {
+      "icon": "hydrogen",
+      "name": "Hydrogen",
+      "v": "ec657756",
+      "at": 1790148655656,
+      "note": "this looks like \"atom\", not hydrogen",
+      "verdict": "note"
+    },
+    "gravity@5fff45c6": {
+      "icon": "gravity",
+      "name": "Gravity",
+      "v": "5fff45c6",
+      "at": 1790148659477,
+      "note": "",
+      "verdict": "good"
+    },
+    "light@ac05c9f7": {
+      "icon": "light",
+      "name": "Light",
+      "v": "ac05c9f7",
+      "at": 1790148733040,
+      "note": "I would imagine light as rays, or something completely different than this. This just looks lazy.",
+      "verdict": "note"
+    },
+    "star@c9f03c71": {
+      "icon": "star",
+      "name": "Star",
+      "v": "c9f03c71",
+      "at": 1790148755586,
+      "note": "why don't just make it 5-point start that every kid would recognize??",
+      "verdict": "note"
+    },
+    "helium@f851f5b1": {
+      "icon": "helium",
+      "name": "Helium",
+      "v": "f851f5b1",
+      "at": 1790148817600,
+      "note": "idk ... for chemical items, we might be best off just going with their periodic table thing-y, like \"He_2\"?",
+      "verdict": "note"
+    },
+    "carbon@8f2a0c2a": {
+      "icon": "carbon",
+      "name": "Carbon",
+      "v": "8f2a0c2a",
+      "at": 1790148863157,
+      "note": "same note as helium ... although, I can see how that would be boring as well ... idk, we need to figure out the chemical elements as a group",
+      "verdict": "note"
+    },
+    "oxygen@8bcc4e1c": {
+      "icon": "oxygen",
+      "name": "Oxygen",
+      "v": "8bcc4e1c",
+      "at": 1790148873304,
+      "note": "chemical elements",
+      "verdict": "note"
+    },
+    "comet@538360fa": {
+      "icon": "comet",
+      "name": "Comet",
+      "v": "538360fa",
+      "at": 1790148892096,
+      "note": "come on, this is not how comet looks like :D",
+      "verdict": "note"
+    },
+    "supernova@f67ced75": {
+      "icon": "supernova",
+      "name": "Supernova",
+      "v": "f67ced75",
+      "at": 1790148906512,
+      "note": "this looks like drawing of a sun, not explosion",
+      "verdict": "note"
+    },
+    "stardust@b2b299d4": {
+      "icon": "stardust",
+      "name": "Stardust",
+      "v": "b2b299d4",
+      "at": 1790148927552,
+      "note": "looks like a night sky, doesn't have \"dusty\" feeling",
+      "verdict": "note"
+    },
+    "blackhole@ad73d978": {
+      "icon": "blackhole",
+      "name": "Black Hole",
+      "v": "ad73d978",
+      "at": 1790148950547,
+      "note": "use the visual from Interstellar, most widely recognized image of a black hole",
+      "verdict": "note"
+    },
+    "rock@415f1193": {
+      "icon": "rock",
+      "name": "Rock",
+      "v": "415f1193",
+      "at": 1790148960645,
+      "note": "we can do a lot better than that",
+      "verdict": "note"
+    },
+    "solarsystem@66a0ff73": {
+      "icon": "solarsystem",
+      "name": "Solar System",
+      "v": "66a0ff73",
+      "at": 1790148967217,
+      "note": "",
+      "verdict": "good"
+    },
+    "galaxy@3cf3b37f": {
+      "icon": "galaxy",
+      "name": "Galaxy",
+      "v": "3cf3b37f",
+      "at": 1790148978671,
+      "note": "right shape, just lazy execution",
+      "verdict": "note"
+    },
+    "lava@6a79b09b": {
+      "icon": "lava",
+      "name": "Lava",
+      "v": "6a79b09b",
+      "at": 1790149001675,
+      "note": "looks like bread or something ... i need to FEEL the heat coming out of the picture, ffs",
+      "verdict": "note"
+    },
+    "energy@6d25a38c": {
+      "icon": "energy",
+      "name": "Energy",
+      "v": "6d25a38c",
+      "at": 1790149030824,
+      "note": "looks like a bolt, not energy",
+      "verdict": "note"
+    },
+    "time@4982f67e": {
+      "icon": "time",
+      "name": "Time",
+      "v": "4982f67e",
+      "at": 1790149042250,
+      "note": "",
+      "verdict": "good"
+    },
+    "particle@7c3ff13b": {
+      "icon": "particle",
+      "name": "Particle",
+      "v": "7c3ff13b",
+      "at": 1790149043664,
+      "note": "",
+      "verdict": "good"
+    },
+    "planet@291e483e": {
+      "icon": "planet",
+      "name": "Planet",
+      "v": "291e483e",
+      "at": 1790149064571,
+      "note": "looks like Saturn specifically, not generic planet",
+      "verdict": "note"
+    },
+    "ocean@9e166a71": {
+      "icon": "ocean",
+      "name": "Ocean",
+      "v": "9e166a71",
+      "at": 1790149108130,
+      "note": "idk, doesn't capture the vastness of the ocean, not at all",
+      "verdict": "note"
+    },
+    "air@a9da2812": {
+      "icon": "air",
+      "name": "Air",
+      "v": "a9da2812",
+      "at": 1790149108653,
+      "note": "",
+      "verdict": "good"
+    },
+    "matter@42565229": {
+      "icon": "matter",
+      "name": "Matter",
+      "v": "42565229",
+      "at": 1790149128226,
+      "note": "we can do better. not sure how exactly, but better than this.",
+      "verdict": "note"
+    },
+    "space@953075cf": {
+      "icon": "space",
+      "name": "Space",
+      "v": "953075cf",
+      "at": 1790149157145,
+      "note": "doesn't capture the majesty of space at all IMO",
+      "verdict": "note"
+    }
+  }
+}
