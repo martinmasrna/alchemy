@@ -60,20 +60,19 @@
   .track { display: none; }
   .summit .hint { grid-area: 1 / 3 / 3 / 4; white-space: nowrap; font-size: 13px; color: var(--muted); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); }
 
-  /* The bench floats over the sky and stays: a pane of dark glass with three sockets. The
-     sockets' corners nest inside the pane's: outer radius = inner radius + padding. */
+  /* The bench floats over the sky and stays: a pane of dark glass with three sockets carved into
+     it. The depth is what makes them sockets; lightened, they turn into form fields. */
   .bench { position: sticky; top: 8px; z-index: 10; margin-top: 16px; display: grid; grid-template-columns: 1fr 16px 1fr 16px 1fr;
-    align-items: center; gap: 4px; padding: 10px; border-radius: 22px; background: var(--glass);
+    align-items: center; gap: 4px; padding: 12px; border-radius: 20px; background: var(--glass);
     backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--line); box-shadow: 0 12px 32px #0006; }
   .op { text-align: center; color: var(--muted); font-size: 16px; }
-  .slot { height: 68px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-    background: radial-gradient(70% 70% at 50% 40%, #ffffff0d, transparent), #0a0e1e99; box-shadow: inset 0 1px 4px #0008, inset 0 0 0 1px #ffffff0d; }
-  .slot .ic { width: 38px; height: 38px; }
+  .slot { height: 84px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    background: radial-gradient(60% 60% at 50% 45%, #ffffff08, transparent), #05070f80; box-shadow: inset 0 2px 8px #000a, inset 0 0 0 1px #ffffff0a; }
+  .slot .ic { width: 44px; height: 44px; }
   .slot .ic svg { width: 100%; height: 100%; }
   .slot .nm { font-size: 12px; color: var(--muted); }
-  .slot.r { box-shadow: inset 0 1px 4px #0008, inset 0 0 0 1px rgba(255, 207, 112, .2); }
-  /* The same question mark as the undiscovered below: something unknown lands here. */
-  .slot.r:not(.full)::after { content: "?"; color: var(--warm); opacity: .45; font-size: 20px; }
+  .slot.r { box-shadow: inset 0 2px 8px #000a, inset 0 0 0 1px rgba(255, 207, 112, .2); }
+  .slot.r:not(.full)::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--warm); opacity: .35; box-shadow: 0 0 12px var(--warm); }
   .bench.found .slot.r { box-shadow: inset 0 0 0 1px var(--warm), 0 0 24px var(--warm-soft); }
   .bench.dud .slot.r { box-shadow: inset 0 0 0 1px var(--bad), 0 0 20px rgba(255, 111, 125, .25); }
   .bench.dud .slot.r::after { content: "nothing"; width: auto; height: auto; background: none; box-shadow: none; opacity: 1; color: var(--bad); font-size: 13px; }
