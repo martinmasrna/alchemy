@@ -1,6 +1,19 @@
-import world from "./worlds/world1.js";
+import world1 from "./worlds/world1.js";
+import world2 from "./worlds/world2.js";
 import { SYNC_URL } from "./config.js";
-import { icons as ICONS, defs as ICON_DEFS } from "./icons/world1.js";
+import { icons as W1_ICONS, defs as W1_DEFS } from "./icons/world1.js";
+
+// ---------- which world ----------
+// ?world=w2 opens a world; otherwise the game reopens the last one played.
+const WORLDS = [world1, world2];
+const WKEY = "alchemy.world";
+let wanted = new URLSearchParams(location.search).get("world");
+if (!WORLDS.some((w) => w.id === wanted)) { try { wanted = localStorage.getItem(WKEY); } catch {} }
+const world = WORLDS.find((w) => w.id === wanted) ?? world1;
+try { localStorage.setItem(WKEY, world.id); } catch {}
+// World 1's icons are drawn; any other world shows its table's emoji until its own are.
+const ICONS = world.id === "w1" ? W1_ICONS : {};
+const ICON_DEFS = world.id === "w1" ? W1_DEFS : "";
 
 // ---------- data ----------
 const byId = new Map(world.items.map((i) => [i.id, i]));
@@ -208,12 +221,13 @@ function reveal(id, a, b, guessed) {
   const isSummit = id === world.summit;
   const T = K.dur, STOP = K.stop, d0 = T + STOP + 500;
   let stats = "";
+  const next = WORLDS[WORLDS.indexOf(world) + 1];
   if (isSummit) {
     const mins = Math.round((S.finishedAt - S.startedAt) / 60000);
     const tries = S.log.filter((e) => e.kind === "try").length;
     const hints = S.log.filter((e) => e.kind === "hint").length;
     const found = S.owned.filter((x) => !byId.get(x).seed).length;
-    stats = `<div class="stats in" style="animation-delay:${d0 + 650}ms">${mins} min · ${tries} attempts · ${hints} hints · ${found} of ${discoveries.length} found<br>World 2 is not built yet. You can keep exploring this one.</div>`;
+    stats = `<div class="stats in" style="animation-delay:${d0 + 650}ms">${mins} min · ${tries} attempts · ${hints} hints · ${found} of ${discoveries.length} found<br>${next ? `${next.name} is open: find it in the menu.` : "The next world is not built yet. You can keep exploring this one."}</div>`;
   }
   const sparks = Array.from({ length: K.sparks }, () => `<div class="anchor spark"><div></div></div>`).join("");
   st.className = "stage show";
@@ -294,6 +308,11 @@ function revealRecipe(tid) {
 function menu(open) { el.sheet.hidden = !open; el.menuBtn.setAttribute("aria-expanded", open); }
 el.menuBtn.onclick = (e) => { e.stopPropagation(); menu(el.sheet.hidden); };
 document.addEventListener("click", (e) => { if (!el.sheet.hidden && !el.sheet.contains(e.target)) menu(false); });
+// One line per world; the one being played is marked, the others open it. Keeps ?nolog.
+$("worlds").innerHTML = WORLDS.map((w, i) => {
+  const q = new URLSearchParams(location.search); q.set("world", w.id);
+  return w === world ? `<span class="here">World ${i + 1} · ${w.name}</span>` : `<a href="?${q}">World ${i + 1} · ${w.name}</a>`;
+}).join("");
 $("copyLog").onclick = async () => {
   menu(false);
   const text = JSON.stringify({ world: world.id, ...S }, null, 0);

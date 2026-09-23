@@ -1,7 +1,7 @@
 // Minimal offline cache so the game works as a home-screen app.
 // Bump VERSION whenever any file changes.
-const VERSION = "w1-15";
-const FILES = ["./", "./index.html", "./app.js", "./config.js", "./worlds/world1.js", "./icons/world1.js", "./manifest.webmanifest", "./icon.svg"];
+const VERSION = "w2-1";
+const FILES = ["./", "./index.html", "./app.js", "./config.js", "./worlds/world1.js", "./worlds/world2.js", "./icons/world1.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: "reload" })))).then(() => self.skipWaiting()));
