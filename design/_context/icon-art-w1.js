@@ -291,17 +291,18 @@ const space = (() => {
     <path d="${panel}" stroke="#7C88C8" stroke-width=".8" opacity=".6"/>`);
 })();
 
-// The view that means ocean rather than water: open sea to a far horizon, a low sun, and its
-// road of glitter coming towards you. The sea is paper-matte blue, pale at the horizon because
-// distance is pale, and it fades into the card instead of stopping, since a sea cut off by the
-// frame is a block. The sun is its one piece of world. Stacked waves were a pattern, a lens of
-// sea a bowl, and Hokusai's great wave was a wave.
+// The view that means ocean rather than water: open sea to a far horizon under a high sun, its
+// glitter coming towards you. The sea is paper-matte blue, pale at the horizon because distance
+// is pale, and it fades into the card instead of stopping, since a sea cut off by the frame is
+// a block. The sun is its one piece of world, high and yellow: on the horizon and gold it was a
+// sunset, and high and white it was the Moon. Stacked waves were a pattern, a lens of sea a bowl, Hokusai's wave a wave.
 const ocean = (() => {
-  const rows = [[22, 2.4, .5], [24.4, 3.6, .6], [27.2, 5, .7], [30.6, 6.6, .85], [34.6, 8.4, 1], [39.4, 10.4, 1.15]];
+  const sx = 31;
+  const rows = [[22, 1.6, .5], [24.4, 2.6, .6], [27.2, 3.6, .7], [30.6, 4.8, .85], [34.6, 6.2, 1], [39.4, 7.6, 1.15]];
   const glitter = rows.map(([y, w, sw], i) => {
-    const gap = w * .22;
-    return `<path d="M${n(24 - w)} ${y}H${n(24 - gap)}M${n(24 + gap)} ${y}H${n(24 + w)}" stroke="#FFE3A0" stroke-width="${sw}"
-      opacity="${n(.95 - i * .1)}" stroke-linecap="round"/>`;
+    const gap = w * .24;
+    return `<path d="M${n(sx - w)} ${y}H${n(sx - gap)}M${n(sx + gap)} ${y}H${n(sx + w)}" stroke="#FFF3C4" stroke-width="${sw}"
+      opacity="${n(.9 - i * .1)}" stroke-linecap="round"/>`;
   }).join("");
   return box(`<defs>
       <linearGradient id="oc-s" x1="0" y1="20" x2="0" y2="46" gradientUnits="userSpaceOnUse">
@@ -309,20 +310,20 @@ const ocean = (() => {
       <linearGradient id="oc-v" x1="0" y1="20" x2="0" y2="46" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient>
       <linearGradient id="oc-h" x1="0" y1="0" x2="48" y2="0" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#000"/><stop offset=".16" stop-color="#fff"/><stop offset=".84" stop-color="#fff"/>
+        <stop offset="0" stop-color="#000"/><stop offset=".28" stop-color="#fff"/><stop offset=".72" stop-color="#fff"/>
         <stop offset="1" stop-color="#000"/></linearGradient>
       <mask id="oc-mv"><rect x="0" y="19" width="48" height="29" fill="url(#oc-v)"/></mask>
       <mask id="oc-m"><rect x="0" y="0" width="48" height="48" fill="url(#oc-h)"/></mask></defs>
-    <circle cx="24" cy="20" r="9" fill="#FFB45A" opacity=".45" filter="url(#w1-haze)"/>
     <g mask="url(#oc-m)"><g mask="url(#oc-mv)">
       <rect x="0" y="20" width="48" height="28" fill="url(#oc-s)"/>
-      <path d="M6 25.6h3M13 26h3.4M33 25.8h3.2M40 26.2h3M4 31h4.4M12 31.6h5M31.6 31.4h5M39.4 31h4.6M7 38h6M34 38.4h6.4"
+      <path d="M5 22.6h2M10 22.8h2.4M16 22.5h2M36 22.7h2.2M41 22.5h2M4 25.8h3M10.4 26.2h3.4M17 25.9h3M38 26.1h3.2M6 30.2h4M13 30.8h4.4M20 30.4h3.6M40 30.6h4M4 35h5M12 35.6h5.6M21 35.2h4.4M8 40.6h6M18 41.2h5"
         stroke="#A8D8F4" stroke-width=".6" opacity=".55" stroke-linecap="round"/>
       ${glitter}
     </g></g>
     <path d="M4 20H44" stroke="#C8E4F6" stroke-width=".6" opacity=".7" mask="url(#oc-m)"/>
-    <path d="M18 20a6 6 0 0 1 12 0z" fill="#FFD890" filter="url(#w1-bloom)" opacity=".9"/>
-    <path d="M18.6 20a5.4 5.4 0 0 1 10.8 0z" fill="#FFF0C8"/>`);
+    <circle cx="${sx}" cy="8" r="6.4" fill="#FFD24B" opacity=".6" filter="url(#w1-haze)"/>
+    <circle cx="${sx}" cy="8" r="3.8" fill="#FFE070"/>
+    <circle cx="${sx - .9}" cy="7.1" r="1.8" fill="#FFF6D0"/>`);
 })();
 
 // ---- the elements --------------------------------------------------------------------------

@@ -32,7 +32,8 @@ const wave = (y, n = 4, step = 10, amp = 5) =>
   `M4 ${y}q${step / 2} ${-amp} ${step} 0` + `t${step} 0`.repeat(n - 1);
 
 export const hues = {
-  matter:     { base: "#C9BFAE", dark: "#6E7890", light: "#F2ECE2", accent: "#F5B93C" },
+  // Textbook protons and neutrons: red and blue, each with its own highlight.
+  matter:     { base: "#D8584A", light: "#F6B0A6", blue: "#5E86C0", blueL: "#C4D6F0" },
   time:       { base: "#8A5A34", dark: "#4A2E18", light: "#E8EEF2", accent: "#F5B93C" },
   particle:   { base: "#5FBEEA", dark: "#1E5C84", light: "#E6F7FF", accent: "#A8E6FF" },
   gravity:    { base: "#39405C", dark: "#161A2A", light: "#7C88A8", accent: "#A8C4E0" },
@@ -48,16 +49,13 @@ export const hues = {
 };
 
 export const parts = {
-  // The atom symbol, the one picture everybody already has for "stuff". It was first drawn for
-  // Hydrogen, where Martin rejected it for reading as "atom" — which is exactly what Matter
-  // should read as. Three chips of grey was a snowman, and a block, a ball and a pyramid were
-  // geometry. One electron per orbit, so it is no particular element.
-  matter: [
-    { d: [-60, 0, 60].map((a) => ellR(24, 24, 17, 6.5, a)).join(""), tone: "dark", w: 1.4 },
-    { d: disc(24, 24, 5.8), tone: "base" },
-    { d: disc(22.2, 22.2, 2), tone: "light" },
-    { d: disc(41, 24, 2.6) + disc(15.5, 9.3, 2.6) + disc(15.5, 38.7, 2.6), tone: "accent" },
-  ],
+  // A clump of protons and neutrons, the textbook picture of what everything is built from.
+  // Particle is one ball and Matter is the clump, so the recipe reads in the drawings. Three grey
+  // chips were a snowman, three primitive solids were geometry, and the atom symbol said
+  // "atom" rather than "stuff".
+  matter: [[19.5, 17, "base"], [28.5, 17.5, "blue"], [14.5, 24.5, "blue"], [24, 24, "base"], [33.5, 25, "base"],
+    [19, 32, "base"], [28.5, 32.5, "blue"], [23.5, 39, "blue"]]
+    .flatMap(([x, y, t]) => [{ d: disc(x, y, 5.4), tone: t }, { d: disc(x - 1.8, y - 1.8, 1.6), tone: t === "base" ? "light" : "blueL" }]),
   time: [
     { d: "M15.5 9H32.5L25.4 21.4h-2.8z", tone: "light" },
     { d: "M15.5 35H32.5L25.4 22.6h-2.8z", tone: "light" },

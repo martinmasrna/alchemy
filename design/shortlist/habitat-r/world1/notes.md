@@ -20,8 +20,8 @@ Every one of these was found by rendering and looking, never by thinking about i
 - **Three lines to the centre of a hexagon is an isometric cube.**
 - **A hard-edged comet tail is an object**: a syringe, then a bone, then a broom. A comet is a fuzzy head with two soft tails.
 - **A curve along the bottom of the box reads as ground**, whatever it is meant to be. It ruined one Particle and made the Moon.
-- **Ocean is a view, not a thing.** Stacked waves were a pattern, a lens of sea a bowl, a sea running off the frame a block cut square, a round fade a bowl again, and Hokusai's great wave was a wave. What means ocean is open water to a horizon with a sun on it, fading into the card downwards and at both ends.
-- **Matter is the atom symbol.** Rejected for Hydrogen because it read as "atom", which is what matter should read as. A clump was a snowman and three primitive solids were geometry.
+- **Ocean is a view, not a thing.** Stacked waves were a pattern, a lens of sea a bowl, a sea running off the frame a block cut square, a round fade a bowl again, and Hokusai's great wave was a wave. What means ocean is open water to a horizon, fading into the card downwards and at both ends. The sun decides the hour: gold on the horizon was a sunset, and high and white it was the Moon, so it is high and yellow.
+- **Matter is a clump of protons and neutrons**, red and blue: the textbook picture of what everything is made of, with Particle as one ball of it. Three grey chips were a snowman, three primitive solids were geometry, and the atom symbol said "atom" rather than "stuff".
 - **Distance is pale.** The first far horizon was dark and read as a pair of sunglasses; atmosphere lightens what is far away.
 - **A paper shadow falls into hollows.** Anything placed in the shadow a shape throws on the card turns black.
 - **Energy cannot be warm and radial**, or it is a second Star. It is electric blue-white, the one light in the set that is not fire-coloured.
