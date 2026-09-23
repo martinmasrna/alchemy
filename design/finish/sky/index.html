@@ -44,19 +44,21 @@
   .sheet button { text-align: left; padding: 8px 10px; border-radius: 8px; }
   .sheet button:hover { background: #fff1; }
 
-  .summit { display: grid; grid-template-columns: 56px 1fr auto; grid-template-rows: auto auto; align-items: center; column-gap: 12px; row-gap: 8px; margin-top: 12px; }
-  .summit > .ic { grid-row: span 2; width: 56px; height: 56px; filter: drop-shadow(0 0 14px rgba(90, 170, 255, .35)); }
-  .summit > .ic svg { width: 100%; height: 100%; }
-  .goal { display: flex; align-items: baseline; gap: 8px; }
-  .goal .k { font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  /* The goal, with progress as a ring round it and the count under its name. */
+  .summit { display: grid; grid-template-columns: 72px 1fr auto; align-items: center; column-gap: 12px; row-gap: 2px; margin-top: 12px; }
+  .summit > .ic { grid-area: 1 / 1 / 3 / 2; width: 72px; height: 72px; padding: 10px; position: relative; }
+  .summit > .ic svg { width: 100%; height: 100%; filter: drop-shadow(0 0 10px rgba(90, 170, 255, .35)); }
+  .summit > .ic::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(var(--warm) calc(var(--p) * 1turn), #ffffff14 0);
+    -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+    mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); }
+  .goal { grid-area: 1 / 2; align-self: end; }
   .goal .v { font-size: 24px; font-weight: 600; line-height: 1.1; }
-  .goal { grid-area: 1 / 2; }
-  .summit .hint { grid-area: 1 / 3; justify-self: end; white-space: nowrap; font-size: 13px; color: var(--muted); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); }
-  .progress { grid-area: 2 / 2 / 3 / 4; display: flex; align-items: center; gap: 12px; }
+  .progress { grid-area: 2 / 2; align-self: start; }
   .progress .num { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .progress .num b { color: var(--text); font-weight: 600; }
-  .track { flex: 1; height: 3px; border-radius: 3px; background: #ffffff14; overflow: hidden; }
-  .track i { display: block; height: 100%; background: linear-gradient(90deg, #7fb6ff, var(--warm)); border-radius: 3px; }
+  .track { display: none; }
+  .summit .hint { grid-area: 1 / 3 / 3 / 4; white-space: nowrap; font-size: 13px; color: var(--muted); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); }
 
   /* The bench floats over the sky and stays: a pane of dark glass with three sockets. */
   .bench { position: sticky; top: 8px; z-index: 10; margin-top: 16px; display: grid; grid-template-columns: 1fr 16px 1fr 16px 1fr;
@@ -100,84 +102,17 @@
   .named .hint { font-size: 13px; color: var(--muted); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); }
   .marks { display: flex; flex-wrap: wrap; gap: 14px 18px; padding-block: 16px 8px; }
   .mark { width: 20px; height: 20px; border-radius: 50%; position: relative; }
+  /* All alike: a size or brightness would read as meaning something, and nothing tells them apart. */
   .mark::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: #aab4d8; opacity: .35; box-shadow: 0 0 6px #aab4d855; }
-  .mark:nth-child(3n)::before { inset: 8px; opacity: .25; }
-  .mark:nth-child(4n+1)::before { inset: 6px; }
   .mark.armed { width: auto; height: 28px; padding-inline: 12px; border-radius: 999px; color: var(--warm); font-size: 13px; border: 1px solid rgba(255, 207, 112, .4); }
   .mark.armed::before { display: none; }
-
-  /* ---------- round 2 variants, switched by ?bench= ?dark= ?head= ---------- */
-
-  /* bench=rings: no pane. Three sockets on the sky itself, the result the one that glows. The
-     sticky strip carries the same fixed sky as the page, so it has no visible edge. */
-  [data-bench="rings"] .bench { top: 0; margin-inline: -16px; padding: 12px 16px 28px; border: 0; border-radius: 0; box-shadow: none;
-    backdrop-filter: none; -webkit-backdrop-filter: none; grid-template-columns: 1fr 16px 1fr 16px 1.2fr; justify-items: center;
-    background: var(--sky); background-size: var(--sky-size); background-attachment: fixed;
-    -webkit-mask-image: linear-gradient(#000 78%, transparent); mask-image: linear-gradient(#000 78%, transparent); }
-  [data-bench="rings"] .slot { width: 76px; height: 76px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #ffffff0a, #03050c 70%);
-    box-shadow: inset 0 2px 8px #000c, 0 0 0 1px var(--line); position: relative; }
-  [data-bench="rings"] .slot .nm { position: absolute; top: calc(100% + 4px); white-space: nowrap; }
-  [data-bench="rings"] .slot.r { width: 88px; height: 88px; box-shadow: inset 0 2px 8px #000c, 0 0 0 1px rgba(255, 207, 112, .35), 0 0 28px rgba(255, 190, 90, .12); }
-  [data-bench="rings"] .slot.r .ic { width: 52px; height: 52px; }
-  [data-bench="rings"] .bench.found .slot.r { box-shadow: 0 0 0 1.5px var(--warm), 0 0 36px rgba(255, 190, 90, .4); }
-  [data-bench="rings"] .bench.dud .slot.r { box-shadow: 0 0 0 1.5px var(--bad), 0 0 28px rgba(255, 111, 125, .3); }
-
-  /* bench=slim: the same glass, half the height. The names go; the icons say it. */
-  [data-bench="slim"] .bench { padding: 6px 10px; border-radius: 999px; grid-template-columns: 1fr 14px 1fr 14px 1fr; }
-  [data-bench="slim"] .slot { height: 56px; border-radius: 999px; }
-  [data-bench="slim"] .slot .ic { width: 40px; height: 40px; }
-  [data-bench="slim"] .slot .nm { display: none; }
-  [data-bench="slim"] .bench.dud .slot.r::after { font-size: 12px; }
-
-  /* dark=field: the unlit stars scattered like a patch of sky rather than laid in a row. */
-  [data-dark="field"] .marks { gap: 18px 22px; padding-block: 16px 16px; }
-  [data-dark="field"] .mark::before { inset: auto; left: 50%; top: 50%; width: var(--s); height: var(--s); margin: calc(var(--s) / -2); opacity: var(--o); }
-  [data-dark="field"] .mark.armed { transform: none !important; }
-
-  /* dark=grid: the rest of the world continues the grid as unlit stars, one per thing left. */
-  [data-dark="grid"] .items .mark, [data-dark="grid"] .named.cell { height: 88px; width: auto; border-radius: 16px; }
-  [data-dark="grid"] .items .mark::before { inset: auto; left: 50%; top: 34px; width: 5px; height: 5px; margin-left: -2.5px; }
-  [data-dark="grid"] .items .mark:nth-child(3n)::before { width: 4px; height: 4px; }
-  [data-dark="grid"] .named.cell { flex-direction: column; justify-content: flex-start; gap: 4px; padding-block: 8px 0; flex-wrap: nowrap; }
-  [data-dark="grid"] .named.cell > .ic { width: 44px; height: 44px; opacity: .3; filter: grayscale(1) brightness(1.5); }
-  [data-dark="grid"] .named.cell > .nm { font-size: 13px; font-weight: 500; }
-  [data-dark="grid"] .named.cell .eq, [data-dark="grid"] .named.cell .plus, [data-dark="grid"] .named.cell .rec > span:not(.ic) { display: none; }
-  [data-dark="grid"] .named.cell .rec { gap: 2px; }
-  [data-dark="grid"] .named.cell .rec .ic { width: 16px; height: 16px; }
-  [data-dark="grid"] .named.cell .hint { font-size: 11px; padding: 2px 8px; }
-  [data-dark="grid"] .items .mark.armed { height: 88px; border: 1px solid rgba(255, 207, 112, .4); border-radius: 16px; padding: 4px; font-size: 12px; line-height: 1.2; }
-
-  /* head=ring: progress is a ring around the goal, and the count sits under its name. */
-  [data-head="ring"] .summit { grid-template-columns: 72px 1fr auto; row-gap: 2px; }
-  [data-head="ring"] .summit > .ic { width: 72px; height: 72px; padding: 10px; position: relative; filter: none; }
-  [data-head="ring"] .summit > .ic::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
-    background: conic-gradient(var(--warm) calc(var(--p) * 1turn), #ffffff14 0);
-    -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
-    mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); }
-  [data-head="ring"] .summit > .ic svg { filter: drop-shadow(0 0 10px rgba(90, 170, 255, .35)); }
-  [data-head="ring"] .goal { align-self: end; }
-  [data-head="ring"] .progress { grid-area: 2 / 2 / 3 / 3; align-self: start; }
-  [data-head="ring"] .track { display: none; }
-  [data-head="ring"] .summit .hint { grid-area: 1 / 3 / 3 / 4; align-self: center; border: 0; padding: 0; font-size: 13px; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script type="module">
   import { mount } from "../mock.js";
-  const q = new URLSearchParams(location.search);
-  for (const k of ["bench", "dark", "head"]) if (q.get(k)) document.documentElement.dataset[k] = q.get(k);
-  // A fixed jitter per star, so the field is the same on every render.
-  const rnd = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
-  const field = (i) => {
-    const s = 3 + Math.round(rnd(i, 1) * 4);
-    return `--s:${s}px; --o:${(0.2 + rnd(i, 2) * 0.35).toFixed(2)}; transform: translate(${Math.round((rnd(i, 3) - .5) * 20)}px, ${Math.round((rnd(i, 4) - .5) * 16)}px)`;
-  };
-  mount({
-    darkLabel: (n) => `${n} still dark`,
-    darkInGrid: q.get("dark") === "grid",
-    markStyle: q.get("dark") === "field" ? field : () => "",
-  });
+  mount({ darkLabel: (n) => `${n} still dark` });
 </script>
 </body>
 </html>

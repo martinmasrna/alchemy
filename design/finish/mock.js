@@ -26,7 +26,7 @@ export const HEX = `<svg class="hex" viewBox="0 0 12 12" aria-hidden="true"><pat
 const icon = (id) => `<span class="ic">${w1icons[id]}</span>`;
 
 export function mount(opts = {}) {
-  const { darkInGrid = false, darkLabel = (n) => `Undiscovered · ${n}`, markStyle = () => "" } = opts;
+  const { darkInGrid = false, darkLabel = (n) => `Undiscovered · ${n}` } = opts;
   document.body.insertAdjacentHTML("afterbegin", W1_DEFS + HR_DEFS);
   const app = document.getElementById("app");
   let a = null, b = null, result = null, outcome = null, justMade = null, armed = false, menu = false, timer;
@@ -49,7 +49,7 @@ export function mount(opts = {}) {
       return `<div class="named">${icon(id)}<span class="nm">${it.name}</span><span class="eq">=</span>${rec}</div>`;
     }).join("");
     const marks = Array.from({ length: dark }, (_, i) =>
-      `<button class="mark${i === 0 && armed ? " armed" : ""}" data-mark style="${markStyle(i, dark)}">${i === 0 && armed ? `Name one · ${HEX}1` : ""}</button>`).join("");
+      `<button class="mark${i === 0 && armed ? " armed" : ""}" data-mark>${i === 0 && armed ? `Name one · ${HEX}1` : ""}</button>`).join("");
     const items = save.owned.map((id) =>
       `<button class="item${id === a && !b ? " picked" : ""}${id === justMade ? " new" : ""}" data-id="${id}">${icon(id)}<span class="nm">${byId.get(id).name}</span></button>`).join("");
     const summit = byId.get(world.summit);
@@ -64,7 +64,7 @@ export function mount(opts = {}) {
         </div>
         <div class="summit" style="--p:${found / discoveries.length}">
           ${icon(summit.id)}
-          <div class="goal"><span class="k">Goal</span><span class="v">${summit.name}</span></div>
+          <div class="goal"><span class="v">${summit.name}</span></div>
           <div class="progress"><span class="num"><b>${found}</b> / ${discoveries.length}</span><span class="track"><i style="width:${(found / discoveries.length) * 100}%"></i></span></div>
           <button class="hint">Recipe · ${HEX}5</button>
         </div>
