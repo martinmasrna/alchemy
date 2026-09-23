@@ -10,7 +10,7 @@ Thirty icons for *In the Beginning*. Martin reviews them one at a time on `revie
 
 **Chemical elements are periodic-table tiles**, Martin's call: symbol and atomic number, which says Hydrogen and not "an atom". Alone that is boring, so the symbol is lit like a discharge tube in the colour that gas really glows: hydrogen pink, helium peach, oxygen lilac, carbon arc white-blue.
 
-**Expected picture, not just expected colour.** A five-pointed star, because every child draws one. Gargantua from Interstellar for the black hole, because it is the picture everyone has. A generic planet has no ring, because a ring is Saturn.
+**Expected picture, not just expected colour.** A five-pointed star, because every child draws one. Gargantua from Interstellar for the black hole, because it is the picture everyone has. A generic planet needs a colour no famous planet owns, because every one that does names it: a ring was Saturn, rust was Mars, banded tan is Jupiter. It is dusty violet.
 
 ## Readings that had to be drawn out, not designed out
 

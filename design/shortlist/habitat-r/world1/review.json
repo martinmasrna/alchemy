@@ -439,6 +439,22 @@
       "at": 1790151537501,
       "note": "can we maybe make it looks a bit less like 'atom'? just one more attempt, then we say fuck it and lock in whatever is left :D",
       "verdict": "note"
+    },
+    "matter@75581886": {
+      "icon": "matter",
+      "name": "Matter",
+      "v": "75581886",
+      "at": 1790151981302,
+      "note": "remove the bottom ball, and we're good",
+      "verdict": "note"
+    },
+    "ocean@4a207de0": {
+      "icon": "ocean",
+      "name": "Ocean",
+      "v": "4a207de0",
+      "at": 1790151983521,
+      "note": "",
+      "verdict": "good"
     }
   }
 }

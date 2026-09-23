@@ -39,8 +39,9 @@ export const hues = {
   gravity:    { base: "#39405C", dark: "#161A2A", light: "#7C88A8", accent: "#A8C4E0" },
   rainbow:    { base: "#F5B93C", dark: "#3E7FC6", light: "#FFF7DC", accent: "#E8623C", green: "#4FA35C" },
   rock:       { base: "#8A7C6A", dark: "#4E4438", light: "#C2B39C", accent: "#6A5E50" },
-  // Rust, not ochre: ochre with a ring was Saturn, and blue-green is taken by Earth.
-  planet:     { base: "#C8683E", dark: "#5E2616", light: "#F6B488", accent: "#E8935E", band: "#9E4628" },
+  // A colour no famous planet owns, because every one that does names it: rust was Mars, ochre
+  // with a ring was Saturn, banded tan is Jupiter, blue-green is Earth and grey is the Moon.
+  planet:     { base: "#8E78B8", dark: "#2E2640", light: "#D2C4EE", accent: "#A892D0", band: "#6B5698" },
   solarsystem:{ base: "#F5B93C", dark: "#3E4A6E", light: "#FFF6DC", accent: "#5FBEEA" },
   moon:       { base: "#B8BCC6", dark: "#6E727C", light: "#E8EAF0", accent: "#8A8E98" },
   volcano:    { base: "#5E5248", dark: "#332C26", light: "#8A7E70", accent: "#E8762F", hot: "#FFD24B" },
@@ -54,7 +55,7 @@ export const parts = {
   // chips were a snowman, three primitive solids were geometry, and the atom symbol said
   // "atom" rather than "stuff".
   matter: [[19.5, 17, "base"], [28.5, 17.5, "blue"], [14.5, 24.5, "blue"], [24, 24, "base"], [33.5, 25, "base"],
-    [19, 32, "base"], [28.5, 32.5, "blue"], [23.5, 39, "blue"]]
+    [19, 32, "base"], [28.5, 32.5, "blue"]]
     .flatMap(([x, y, t]) => [{ d: disc(x, y, 5.4), tone: t }, { d: disc(x - 1.8, y - 1.8, 1.6), tone: t === "base" ? "light" : "blueL" }]),
   time: [
     { d: "M15.5 9H32.5L25.4 21.4h-2.8z", tone: "light" },
@@ -98,6 +99,7 @@ export const parts = {
     { d: "M12.4 28.6c7.2 1.4 16 1.4 23.2 0-.5 1.3-1.1 2.4-1.8 3.4-6.6 1.1-13 1.1-19.6 0-.7-1-1.3-2.1-1.8-3.4z", tone: "band" },
     { d: "M15.5 13.6c5.4-2 11.6-2 17 0-2.4-1.4-5.4-2.4-8.5-2.4s-6.1 1-8.5 2.4z", tone: "light" },
     { d: disc(18.5, 19, 2.4), tone: "light" },
+    { d: disc(16.5, 26, 1.6) + disc(25.5, 25.4, 1.1) + disc(21, 32.6, 1.2), tone: "band" },
     { d: "M24 11a13 13 0 0 1 0 26a18 18 0 0 0 0-26z", tone: "dark" },
   ],
   solarsystem: [
