@@ -48,26 +48,14 @@ A renderer receives parts and dresses them. Nothing else is needed to add a styl
 Sizes: 48×48 box. 34px in a grid card (the current app uses a 44px well and a 28px icon, so the
 well stays and the icon grows from 28 to 34). 72–84px at discovery size.
 
-## What is new versus what exists
+## What exists
 
-**Exists:** the framing, the rendering, the colour rules, and twelve subjects fully drawn —
-Star, Water, Earth, Life, Human, Fire, Hunting, Tribe, City, Car, Calculus, Bitcoin. Those were
-chosen to span the whole diamond, so they prove the style rather than serve world 1.
-
-**New, and this is the actual cost:** only three of those twelve are in world 1. Building the
-set means **31 silhouettes and 31 context elements for world 1 alone**, then roughly thirty more
-per world after it. The existing monoline marks in `design/_context/icons.js` cover 22 of the 31
-subjects but are stroke-based line art, so they are a reference for what each thing should look
-like, not geometry that can be reused.
-
-World 1 subjects still to draw: Energy, Matter, Space, Time, Particle, Light, Gravity, Hydrogen,
-Lightyear, Nebula, Star*, Helium, Carbon, Oxygen, Water*, Comet, Rainbow, Supernova, Stardust,
-Black Hole, Rock, Planet, Solar System, Galaxy, Moon, Lava, Volcano, Air, Ocean, Cloud, Earth*.
-(* already drawn.)
-
-Each needs a context decided, not just a shape. Several are hard: Space, Time, Lightyear and
-Gravity have no world to stand in, and inventing one for them is the first real design problem
-of the build rather than a mechanical task.
+The framing, the rendering, the colour rules, twelve subjects drawn across the whole diamond
+(Star, Water, Earth, Life, Human, Fire, Hunting, Tribe, City, Car, Calculus, Bitcoin), and all
+of world 1, drawn and reviewed per icon in `world1/`. Paper subjects live in
+`design/_context/shapes-w1.js` as parts; light subjects are drawn by hand in
+`design/_context/icon-art-w1.js`, because a glow does not decompose into flat parts. Every world
+after this one is roughly thirty more.
 
 ## What the mockups do not cover
 
@@ -78,5 +66,5 @@ of the build rather than a mechanical task.
   re-deciding, since there is no longer a glow to brighten.
 - The named-but-undiscovered chips and the `?` squares, which currently use inline emoji.
 - Light mode. Every candidate was judged on the dark card only.
-- File size and paint cost. Thirty-one icons with blur filters is not free on a phone; the
-  shadows may be better baked than filtered.
+- File size and paint cost. Thirty icons with blur filters, several with layered bloom, is not
+  free on a phone; the filters may be better baked into images.

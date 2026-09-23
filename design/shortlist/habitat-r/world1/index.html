@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>World 1, all thirty-one</title>
+<title>World 1, the whole set</title>
 <style>
   :root { --bg: #0a0b0f; --plate: #14161d; --plate-2: #1d212b;
     --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.28);
@@ -63,7 +63,7 @@
   const name = Object.fromEntries(w1subjects);
 
   document.querySelector(".wrap").innerHTML = `
-    <h1>World 1, all thirty-one</h1>
+    <h1>World 1, the whole set</h1>
     <p class="lede">The whole of <em>In the Beginning</em> as it currently stands. Things that reflect light are cut paper; things that give off light are drawn as light. A piece of world is drawn only when the thing is itself in relation to something else, and left off when the silhouette already carries the name.</p>
     <p class="lede">Review happens on <a href="review.html" style="color:inherit">review.html</a>; this page is for seeing the set together.</p>
 
@@ -78,7 +78,7 @@
       <div class="grid">${w1subjects.map(([id, n]) =>
         `<div class="card${id === "star" ? " picked" : ""}"><span class="well">${w1icons[id]}</span><span class="n">${n}</span></div>`).join("")}</div>
       <div style="flex:1;min-width:280px">
-        <p class="note" style="margin-top:0">Thirty-one cards is the whole world discovered, which is what the last minutes look like. The order is the order the table unlocks them, so the top two rows are the first five minutes.</p>
+        <p class="note" style="margin-top:0">Thirty cards is the whole world discovered, which is what the last minutes look like. The order is the order the table unlocks them, so the top two rows are the first five minutes.</p>
         <p class="note">Star is drawn in the picked state. The app tints a selected card and brightens the emoji on it; a flat matte icon has nothing to brighten, so the border and the panel do all of it now. That is a real open question and not a detail.</p>
       </div>
     </div>

@@ -36,7 +36,6 @@ export const hues = {
   time:       { base: "#8A5A34", dark: "#4A2E18", light: "#E8EEF2", accent: "#F5B93C" },
   particle:   { base: "#5FBEEA", dark: "#1E5C84", light: "#E6F7FF", accent: "#A8E6FF" },
   gravity:    { base: "#39405C", dark: "#161A2A", light: "#7C88A8", accent: "#A8C4E0" },
-  lightyear:  { base: "#F5B93C", dark: "#3E3630", light: "#FFF3C4", accent: "#8A6A2A" },
   rainbow:    { base: "#F5B93C", dark: "#3E7FC6", light: "#FFF7DC", accent: "#E8623C", green: "#4FA35C" },
   rock:       { base: "#8A7C6A", dark: "#4E4438", light: "#C2B39C", accent: "#6A5E50" },
   // Rust, not ochre: ochre with a ring was Saturn, and blue-green is taken by Earth.
@@ -77,15 +76,6 @@ export const parts = {
     { d: disc(24, 24, 9), tone: "base" },
     { d: disc(21, 21, 3.2), tone: "light" },
     { d: "M20.2 6.4L24 10.2L27.8 6.4M41.6 20.2L37.8 24L41.6 27.8M27.8 41.6L24 37.8L20.2 41.6M6.4 27.8L10.2 24L6.4 20.2", tone: "accent", w: 2.2 },
-  ],
-  // A tape measure run out to a star. A bar with two end caps was a barbell in every version.
-  lightyear: [
-    { d: "M20.8 27.2L40.2 8.6L43 11.4L23.6 30z", tone: "light" },
-    { d: "M25.1 25.8l.83.87M28 23l.83.87M30.9 20.2l.83.87M33.8 17.4l.83.87M36.7 14.65l.83.87", tone: "accent", w: .7 },
-    { d: "M40.2 8.6L43 11.4L44.2 10.2L41.4 7.4z", tone: "dark" },
-    { d: "M9 25h12a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V29a4 4 0 0 1 4-4z", tone: "base" },
-    { d: disc(15, 34, 4), tone: "dark" },
-    { d: disc(15, 34, 1.6), tone: "accent" },
   ],
   rainbow: [
     { d: "M4 40a20 20 0 0 1 40 0", tone: "accent", w: 3.2 },
@@ -146,7 +136,7 @@ export const parts = {
 export const w1subjects = [
   ["energy", "Energy"], ["matter", "Matter"], ["space", "Space"], ["time", "Time"],
   ["particle", "Particle"], ["light", "Light"], ["gravity", "Gravity"], ["hydrogen", "Hydrogen"],
-  ["lightyear", "Lightyear"], ["nebula", "Nebula"], ["star", "Star"], ["helium", "Helium"],
+  ["nebula", "Nebula"], ["star", "Star"], ["helium", "Helium"],
   ["carbon", "Carbon"], ["oxygen", "Oxygen"], ["water", "Water"], ["comet", "Comet"],
   ["rainbow", "Rainbow"], ["supernova", "Supernova"], ["stardust", "Stardust"],
   ["blackhole", "Black Hole"], ["rock", "Rock"], ["planet", "Planet"],

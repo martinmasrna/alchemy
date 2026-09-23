@@ -5,7 +5,7 @@
 
 export default {
   id: "w1",
-  version: 3,
+  version: 4,
   name: "In the Beginning",
   subtitle: "From nothing to a wet rock with a sky.",
   seeds: ["energy", "matter", "space", "time"],
@@ -30,8 +30,6 @@ export default {
       blurb: "Stuff likes other stuff. The weakest force in the universe, but the only one that never gives up, which is why it wins in the end." },
     { id: "hydrogen", name: "Hydrogen", icon: "🎈", recipe: ["particle", "particle"],
       blurb: "One proton, one electron. The simplest possible atom, and still three quarters of everything. The universe's default setting." },
-    { id: "lightyear", name: "Lightyear", icon: "📏", recipe: ["light", "time"],
-      blurb: "How far light gets in a year. About nine and a half trillion kilometres. Not a unit of time, despite every science-fiction film." },
 
     // ---- stars ----
     { id: "nebula", name: "Nebula", icon: "🌫️", recipe: ["hydrogen", "gravity"],

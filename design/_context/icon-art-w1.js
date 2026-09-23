@@ -1,4 +1,4 @@
-// World 1, all thirty-one, in the settled style: habitat's framing, shadow box rendering —
+// World 1, the whole set, in the settled style: habitat's framing, shadow box rendering —
 // with one rule the first review forced.
 //
 // Things that give off light are drawn as light; things that reflect it are paper. Shadow box
@@ -10,7 +10,7 @@
 //
 // Habitat still applies to both: a piece of world is drawn when the thing is only itself in
 // relation to something else — Gravity's sheet, the Moon's planet, the Star's neighbours, the
-// Rock's pebbles, the Ocean's low sun, the star at the end of the Lightyear's tape.
+// Rock's pebbles, the Ocean's sun.
 import { hues as w1hues, parts as w1parts, w1subjects, disc, star4 } from "./shapes-w1.js";
 import { hues as baseHues, parts as baseParts, rng } from "./shapes.js";
 import { habitatR } from "./icon-art-habitat-r.js";
@@ -50,9 +50,6 @@ const WORLDS = {
   gravity: `<g stroke="#A8C4E0" stroke-width=".8" fill="none" opacity=".5" stroke-linecap="round">
     <path d="M4 14q20 5 40 0M4 21q20 9 40 0M4 28q20 11 40 0M4 35q20 7 40 0"/>
     <path d="M11 11q4 13 0 26M19 10q2 14 0 28M29 10q-2 14 0 28M37 11q-4 13 0 26"/></g>`,
-  // What the tape is measuring to. A star, so the unit is about light and not about metres.
-  lightyear: `<circle cx="44.6" cy="5" r="4" fill="#FFD27A" opacity=".8" filter="url(#w1-bloom)"/>
-    <path d="${star4(44.6, 5, 3.4)}" fill="#FFF6DC"/>`,
   // Drawn as a whole circle and left to the viewBox to crop, because an arc closed by hand
   // came out as a wedge with two straight sides. It sits under the moon rather than beside
   // it: a curve along the bottom of the box is read as ground, and for a moon the ground is

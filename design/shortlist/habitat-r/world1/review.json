@@ -407,6 +407,38 @@
       "at": 1790150821393,
       "note": "idk ... this feels like \"geometric objects\", not really \"matter\"",
       "verdict": "note"
+    },
+    "comet@e9bf54f1": {
+      "icon": "comet",
+      "name": "Comet",
+      "v": "e9bf54f1",
+      "at": 1790151458806,
+      "note": "",
+      "verdict": "good"
+    },
+    "lava@1d6f339e": {
+      "icon": "lava",
+      "name": "Lava",
+      "v": "1d6f339e",
+      "at": 1790151464773,
+      "note": "",
+      "verdict": "good"
+    },
+    "ocean@f0beb7c0": {
+      "icon": "ocean",
+      "name": "Ocean",
+      "v": "f0beb7c0",
+      "at": 1790151485337,
+      "note": "getting closer, but this looks a bit too much like a sunset :D",
+      "verdict": "note"
+    },
+    "matter@939505f1": {
+      "icon": "matter",
+      "name": "Matter",
+      "v": "939505f1",
+      "at": 1790151537501,
+      "note": "can we maybe make it looks a bit less like 'atom'? just one more attempt, then we say fuck it and lock in whatever is left :D",
+      "verdict": "note"
     }
   }
 }

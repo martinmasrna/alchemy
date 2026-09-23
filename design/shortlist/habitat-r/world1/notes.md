@@ -1,12 +1,12 @@
 # world1 — the whole set, drawn
 
-Thirty-one icons for *In the Beginning*. Martin reviews them one at a time on `review.html`, and his verdicts live in `review.json` beside it, each tied to a hash of the drawing it judged. `index.html` shows the current set at 74px, in the real grid at 34px, and in the pairs that must not collide.
+Thirty icons for *In the Beginning*. Martin reviews them one at a time on `review.html`, and his verdicts live in `review.json` beside it, each tied to a hash of the drawing it judged. `index.html` shows the current set at 74px, in the real grid at 34px, and in the pairs that must not collide.
 
 ## What the build settled
 
 **Light is drawn as light; everything else is paper.** Shadow box is cut paper, and its no-glow rule was right for a drop, a moon or a volcano. For a star, a nebula, lava, a supernova, energy or space it was wrong, because their substance is glow. The first pass drew them as flat card and every one failed: "I need to FEEL the heat", "doesn't capture the majesty", a nebula ugly next to the luminous ones from earlier rounds. So light sources get real gradients and bloom, and they may spill past the frame, because a glow cropped at the viewBox ends in a hard square edge. Martin passed all eleven paper icons on the first pass (Water, Moon, Volcano, Cloud, Earth, Gravity, Solar System, Time, Particle, Air, Rainbow), and those were exactly the things that reflect light.
 
-**A piece of world is drawn when the thing is only itself in relation to something else**, not as a rule applied thirty-one times. Gravity is a ball until the sheet dents. The Moon is a rock until a planet is under it. The Lightyear tape measures to a star. Rock gets the pebbles it was made from. Ocean gets a low sun and its road of glitter across open sea. Star, Water and Earth keep theirs. Everything else stands alone, because world 1 is the universe before anywhere exists.
+**A piece of world is drawn when the thing is only itself in relation to something else**, not as a rule applied to every icon. Gravity is a ball until the sheet dents. The Moon is a rock until a planet is under it. Rock gets the pebbles it was made from. Ocean gets a low sun and its road of glitter across open sea. Star, Water and Earth keep theirs. Everything else stands alone, because world 1 is the universe before anywhere exists.
 
 **Chemical elements are periodic-table tiles**, Martin's call: symbol and atomic number, which says Hydrogen and not "an atom". Alone that is boring, so the symbol is lit like a discharge tube in the colour that gas really glows: hydrogen pink, helium peach, oxygen lilac, carbon arc white-blue.
 
