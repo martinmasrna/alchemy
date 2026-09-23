@@ -65,20 +65,12 @@ const WORLDS = {
 };
 
 // Light that sits inside a paper subject, laid over its parts: the Solar System's sun, which
-// was the one star in the set drawn as paper, and the Volcano's lava, which was flat orange
-// beside a Lava that glows.
+// was the one star in the set drawn as paper.
 const FRONT = {
   solarsystem: `<defs><radialGradient id="ss-s" cx=".42" cy=".4" r=".62">
       <stop offset="0" stop-color="#FFFCEB"/><stop offset=".5" stop-color="#FFD85A"/><stop offset="1" stop-color="#F59A1E"/></radialGradient></defs>
     <circle cx="24" cy="24" r="8" fill="#FFB23A" opacity=".7" filter="url(#w1-haze)"/>
     <circle cx="24" cy="24" r="6" fill="url(#ss-s)"/>`,
-  volcano: `<g filter="url(#w1-bloom)" opacity=".85">
-      <path d="M23 21l-2 10 1 9M27 21l2 9-1 10" stroke="#FF7A2A" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M20.6 18.4h6.8l-1.4 3h-4z" fill="#FFA040"/></g>
-    <path d="M23 21l-2 10 1 9M27 21l2 9-1 10" stroke="#FFD27A" stroke-width=".7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <g fill="#FFD24B" opacity=".8" filter="url(#w1-fine)"><circle cx="15" cy="8.5" r="2.2"/><circle cx="33" cy="8" r="2"/>
-      <circle cx="24" cy="5.2" r="2.5"/><circle cx="19" cy="12" r="1.7"/><circle cx="29.4" cy="11.6" r="1.8"/></g>
-    <path d="M20.6 18.4h6.8l-1.4 3h-4z" fill="#FFE08A" opacity=".85"/>`,
 };
 
 // Visual weight, evened out: Planet and the Moon's body were half the size of the full-bleed
@@ -386,18 +378,16 @@ const cloud = box(puffs("cl",
   [[9.5, 31.5, 4.8], [15, 28, 7], [23, 21.5, 9.4], [32, 24, 8.4], [38.5, 30, 6]],
   "M13.5 29h23a4.2 4.2 0 0 1 0 8.4h-23a4.2 4.2 0 0 1 0-8.4z"));
 
-// Six bands of refracted light with a soft glow behind them, and the two little clouds every
-// child draws its feet into.
+// Six bands of refracted light with a soft glow behind them and a sheen along the outer edge.
+// Clouds at its feet were one element too many.
 const rainbow = (() => {
-  const cy = 33, cols = ["#E8453C", "#F28A2E", "#F7CF3A", "#58B85A", "#3D8BD9", "#7A5CC8"];
+  const cy = 35, cols = ["#E8453C", "#F28A2E", "#F7CF3A", "#58B85A", "#3D8BD9", "#7A5CC8"];
   const arc = (r) => `M${n(24 - r)} ${cy}A${r} ${r} 0 0 1 ${n(24 + r)} ${cy}`;
   const bands = cols.map((c, i) => [arc(18 - i * 1.95), c]);
   return box(`<g filter="url(#w1-bloom)" opacity=".45">${bands.map(([d, c]) =>
       `<path d="${d}" stroke="${c}" stroke-width="2.4"/>`).join("")}</g>
     ${bands.map(([d, c]) => `<path d="${d}" stroke="${c}" stroke-width="2.05"/>`).join("")}
-    <path d="${arc(19)}" stroke="#FFFFFF" stroke-width=".5" opacity=".3"/>
-    ${puffs("rbl", [[6.5, 33.5, 4.2], [12, 31, 5], [17.5, 33.8, 3.8]], "M6 33h12a3.4 3.4 0 0 1 0 6.8H6a3.4 3.4 0 0 1 0-6.8z")}
-    ${puffs("rbr", [[41.5, 33.5, 4.2], [36, 31, 5], [30.5, 33.8, 3.8]], "M30 33h12a3.4 3.4 0 0 1 0 6.8H30a3.4 3.4 0 0 1 0-6.8z")}`);
+    <path d="${arc(19)}" stroke="#FFFFFF" stroke-width=".5" opacity=".3"/>`);
 })();
 
 // Wind as moving, translucent ribbons that thicken and brighten as they sweep in, carrying a
@@ -517,6 +507,37 @@ const earth = box(`<defs>
   <circle cx="41.5" cy="6.5" r="4" fill="#FFD890" opacity=".8" filter="url(#w1-bloom)"/>
   <circle cx="41.5" cy="6.5" r="1.9" fill="#FFFBEA"/>`);
 
+// A volcano erupting: a cone lit on one flank and in shadow on the other, with strata, a crater
+// glowing from inside, lava rivers running down it, an ash plume lit orange from below, and lava
+// bombs arcing out. As flat parts with a glow laid over them it was the plainest thing in a
+// row of finished icons.
+const volcano = (() => {
+  const cone = "M7 42C12 34 17 24 20.6 16.6H27.4C31 24 36 34 41 42Z";
+  const rivers = "M22.6 17.4C21.6 22 20.2 25.4 19.6 29.6C19 33 17.6 36 16 40.4M25.6 17.4C26.6 21 27.2 24.4 28.8 27.6C30.2 30.6 31 34.4 31.6 40M19.6 29.6C21 32 21.4 35.6 22 40.6";
+  return box(`<defs>
+      <linearGradient id="vo-l" x1="0" y1="16" x2="0" y2="42" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7A6C60"/><stop offset="1" stop-color="#4A3F36"/></linearGradient>
+      <linearGradient id="vo-r" x1="0" y1="16" x2="0" y2="42" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4A3F36"/><stop offset="1" stop-color="#2A231E"/></linearGradient>
+      <radialGradient id="vo-a" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#8A8290"/><stop offset="1" stop-color="#3E3842"/></radialGradient>
+      <clipPath id="vo-c"><path d="${cone}"/></clipPath></defs>
+    <circle cx="24" cy="13" r="7" fill="#FF6A1A" opacity=".5" filter="url(#w1-haze)"/>
+    <g fill="url(#vo-a)" opacity=".92"><circle cx="21.5" cy="10.6" r="4.4"/><circle cx="27" cy="8.4" r="5"/>
+      <circle cx="23.4" cy="4.8" r="3.6"/><circle cx="31" cy="4" r="3"/></g>
+    <g fill="#FF8A3A" opacity=".5" filter="url(#w1-fine)"><circle cx="22" cy="13" r="2.6"/><circle cx="26.4" cy="12.4" r="2.8"/></g>
+    <ellipse cx="24" cy="42.4" rx="18" ry="1.8" fill="#000" opacity=".5" filter="url(#w1-soft)"/>
+    <path d="M7 42C12 34 17 24 20.6 16.6H24V42Z" fill="url(#vo-l)"/>
+    <path d="M24 16.6H27.4C31 24 36 34 41 42H24Z" fill="url(#vo-r)"/>
+    <g clip-path="url(#vo-c)" stroke="#2A231E" stroke-width=".6" opacity=".5">
+      <path d="M12 35.5c6-1.4 12-1.2 18 .4M15 28c4.4-1 9-.8 13.6.4M9.6 39c8-1.6 18-1.4 26.4.6"/></g>
+    <path d="M7 42C12 34 17 24 20.6 16.6" stroke="#A89886" stroke-width=".6" opacity=".6"/>
+    <path d="${rivers}" stroke="#FF6A1A" stroke-width="2.8" opacity=".75" filter="url(#w1-bloom)" stroke-linecap="round"/>
+    <path d="${rivers}" stroke="#FF9A3C" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="${rivers}" stroke="#FFE08A" stroke-width=".55" stroke-linecap="round"/>
+    <ellipse cx="24" cy="16.8" rx="4" ry="1.5" fill="#FFB347" filter="url(#w1-bloom)"/>
+    <ellipse cx="24" cy="16.8" rx="3.3" ry="1.1" fill="#FFE8A0"/>
+    <path d="M22 15.4Q17.5 9 15.5 11.6M26.6 15.2Q31.5 9.4 33.6 13.4M21.4 16Q14.4 13 12.8 17" stroke="#FF9A3C" stroke-width=".6" opacity=".5" stroke-linecap="round"/>
+    <g fill="#FFD27A"><circle cx="15.5" cy="11.6" r="1.3"/><circle cx="33.6" cy="13.4" r="1.1"/><circle cx="12.8" cy="17" r=".9"/></g>`);
+})();
+
 // ---- the elements --------------------------------------------------------------------------
 // Martin's call: the periodic-table square, symbol and atomic number, which says Hydrogen and
 // not "an atom". Boring alone, so the symbol is lit like a discharge tube in the colour that
@@ -542,7 +563,7 @@ const element = (sym, num, tile, glow) => {
 const unclip = (svg) => svg.replace("<svg ", '<svg overflow="visible" ');
 const BESPOKE = Object.fromEntries(Object.entries({
   star, energy, light, nebula, comet, supernova, stardust, blackhole, galaxy, lava, space, ocean,
-  cloud, rainbow, air, time, gravity, particle, water, earth,
+  cloud, rainbow, air, time, gravity, particle, water, earth, volcano,
   hydrogen: element("H", 1, "#2A2340", "#FF5FB0"),
   helium: element("He", 2, "#33261E", "#FFA25A"),
   carbon: element("C", 6, "#24262C", "#A8DCFF"),

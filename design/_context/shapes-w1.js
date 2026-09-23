@@ -40,7 +40,6 @@ export const hues = {
   planet:     { base: "#8E78B8", dark: "#2E2640", light: "#D2C4EE", accent: "#A892D0", band: "#6B5698" },
   solarsystem:{ base: "#F5B93C", dark: "#3E4A6E", light: "#FFF6DC", accent: "#5FBEEA" },
   moon:       { base: "#B8BCC6", dark: "#6E727C", light: "#E8EAF0", accent: "#8A8E98" },
-  volcano:    { base: "#5E5248", dark: "#332C26", light: "#8A7E70", accent: "#E8762F", hot: "#FFD24B" },
 };
 
 export const parts = {
@@ -80,13 +79,6 @@ export const parts = {
   moon: [
     { d: disc(26, 20, 10.5), tone: "base" },
     { d: disc(23, 15, 2.6) + disc(30.5, 24, 3.2) + disc(22, 24, 1.8), tone: "accent" },
-  ],
-  volcano: [
-    { d: "M9 41L21 17h6l12 24z", tone: "base" },
-    { d: "M24 17h3l12 24H24z", tone: "dark" },
-    { d: "M23 21l-2 10 1 9M27 21l2 9-1 10", tone: "accent", w: 1.4 },
-    { d: "M20.6 18.4h6.8l-1.4 3h-4z", tone: "accent" },
-    { d: disc(15, 8.5, 1.6) + disc(33, 8, 1.4) + disc(24, 5.2, 1.9) + disc(19, 12, 1.2) + disc(29.4, 11.6, 1.3), tone: "hot" },
   ],
 };
 
