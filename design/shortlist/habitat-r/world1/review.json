@@ -559,6 +559,22 @@
       "at": 1790155407892,
       "note": "",
       "verdict": "good"
+    },
+    "rainbow@eaf53dcc": {
+      "icon": "rainbow",
+      "name": "Rainbow",
+      "v": "eaf53dcc",
+      "at": 1790155708595,
+      "note": "",
+      "verdict": "good"
+    },
+    "volcano@047d3e96": {
+      "icon": "volcano",
+      "name": "Volcano",
+      "v": "047d3e96",
+      "at": 1790155708595,
+      "note": "",
+      "verdict": "good"
     }
   }
 }
