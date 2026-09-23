@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World 1, all thirty-one</title>
+<style>
+  :root { --bg: #0a0b0f; --plate: #14161d; --plate-2: #1d212b;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.28);
+    --text: #eef0f5; --muted: #7b8294; --amber: #f5b93c; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  svg { display: block; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 20px; font-weight: 600; line-height: 1.15; margin: 0 0 8px; }
+  .lede { color: var(--muted); margin: 0 0 8px; max-width: 74ch; }
+  h2 { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    font-weight: 600; margin: 36px 0 12px; }
+  .sheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 4px; }
+  .cell { padding: 12px 4px 10px; display: flex; flex-direction: column; align-items: center; gap: 7px;
+    border-radius: 12px; }
+  .cell svg { width: 74px; height: 74px; }
+  .cell .n { font-size: 12px; color: var(--muted); text-align: center; }
+  .cell.world { background: rgba(245,185,60,.05); box-shadow: inset 0 0 0 1px rgba(245,185,60,.2); }
+  .cell.ctrl .n { color: var(--amber); }
+  /* The real app's metrics, not an approximation of them: three columns on a 390px phone,
+     8px gap, 12px/8px padding, 12px radius, 14px name. Only the icon changes, from a 28px
+     emoji to a 34px drawing. */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 358px; }
+  .card { background: var(--plate); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .card .well { width: 34px; height: 34px; display: grid; place-items: center; }
+  .card .well svg { width: 34px; height: 34px; }
+  .card .n { font-size: 14px; line-height: 1.15; text-align: center; color: var(--text); }
+  .card.picked { border-color: var(--amber); background: var(--plate-2); }
+  .phone { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+  .note { color: var(--muted); font-size: 13px; margin: 12px 0 0; max-width: 74ch; }
+  .pairs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .pair { background: var(--plate); border: 1px solid var(--line); border-radius: 10px; padding: 10px;
+    display: flex; align-items: center; gap: 6px; }
+  .pair svg { width: 40px; height: 40px; }
+  .pair .lbl { font-size: 11px; color: var(--muted); margin-left: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap"></div>
+<script type="module">
+  import { w1icons, w1worlds, w1subjects, W1_DEFS } from "../../../_context/icon-art-w1.js";
+  import { HR_DEFS } from "../../../_context/icon-art-habitat-r.js";
+  document.body.insertAdjacentHTML("afterbegin", W1_DEFS + HR_DEFS);
+
+  const ctrl = new Set(["star", "water", "earth"]);
+  const hasWorld = (id) => !!w1worlds[id] || ctrl.has(id);
+  // Pairs that have to stay apart at 34px, because the player meets them minutes apart and
+  // will be tapping one to get the other.
+  const RISKS = [
+    ["energy", "star"], ["star", "supernova"], ["star", "stardust"],
+    ["hydrogen", "helium"], ["particle", "hydrogen"], ["matter", "rock"],
+    ["planet", "earth"], ["planet", "moon"], ["light", "ocean"],
+    ["air", "cloud"], ["water", "ocean"], ["blackhole", "space"],
+  ];
+  const name = Object.fromEntries(w1subjects);
+
+  document.querySelector(".wrap").innerHTML = `
+    <h1>World 1, all thirty-one</h1>
+    <p class="lede">Habitat's framing, shadow box rendering, drawn out for the whole of <em>In the Beginning</em>. The abstracts round settled that the piece of world is not applied thirty-one times: it is drawn when the thing is only itself in relation to something else, and left off when the silhouette already carries the name.</p>
+    <p class="lede">Six earn one. Gravity is a grey ball until the sheet dents. Lightyear is a dumbbell until there is a star at each end. Moon is a rock until there is a planet under it. Star, Water and Earth keep the worlds they were drawn with. The other twenty-five stand alone, because in the universe before anywhere exists there is nothing to stand them next to — which is the point of the world.</p>
+
+    <h2>The set at 74px — amber outline means it was given a world</h2>
+    <div class="sheet">${w1subjects.map(([id, n]) => `
+      <div class="cell${hasWorld(id) ? " world" : ""}${ctrl.has(id) ? " ctrl" : ""}">
+        ${w1icons[id]}<span class="n">${n}</span></div>`).join("")}</div>
+    <p class="note">The three in amber text are Star, Water and Earth, untouched from the set the style was chosen on. They are the control: the other twenty-eight have to look like they came out of the same hand.</p>
+
+    <h2>The grid at 34px, in play order — where the session is actually spent</h2>
+    <div class="phone">
+      <div class="grid">${w1subjects.map(([id, n]) =>
+        `<div class="card${id === "star" ? " picked" : ""}"><span class="well">${w1icons[id]}</span><span class="n">${n}</span></div>`).join("")}</div>
+      <div style="flex:1;min-width:280px">
+        <p class="note" style="margin-top:0">Thirty-one cards is the whole world discovered, which is what the last minutes look like. The order is the order the table unlocks them, so the top two rows are the first five minutes.</p>
+        <p class="note">Star is drawn in the picked state. The app tints a selected card and brightens the emoji on it; a flat matte icon has nothing to brighten, so the border and the panel do all of it now. That is a real open question and not a detail.</p>
+      </div>
+    </div>
+
+    <h2>Pairs that must not collide at 34px</h2>
+    <div class="pairs">${RISKS.map(([a, b]) => `<div class="pair">
+      ${w1icons[a]}${w1icons[b]}<span class="lbl">${name[a]}<br>${name[b]}</span></div>`).join("")}</div>
+    <p class="note">Two things the player meets minutes apart, side by side at grid size. If a pair reads as one icon drawn twice, one of them is wrong.</p>`;
+</script>
+</body>
+</html>
