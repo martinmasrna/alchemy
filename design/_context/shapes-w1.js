@@ -32,8 +32,7 @@ const wave = (y, n = 4, step = 10, amp = 5) =>
   `M4 ${y}q${step / 2} ${-amp} ${step} 0` + `t${step} 0`.repeat(n - 1);
 
 export const hues = {
-  // Three materials, because matter is stuff of every kind: clay, slate and sand.
-  matter:     { base: "#B4AA9A", dark: "#7A7064", light: "#E2DCD0", sph: "#8FA3B8", sphL: "#D6E2EE", pyL: "#E8CF98", pyD: "#A8864A" },
+  matter:     { base: "#C9BFAE", dark: "#6E7890", light: "#F2ECE2", accent: "#F5B93C" },
   time:       { base: "#8A5A34", dark: "#4A2E18", light: "#E8EEF2", accent: "#F5B93C" },
   particle:   { base: "#5FBEEA", dark: "#1E5C84", light: "#E6F7FF", accent: "#A8E6FF" },
   gravity:    { base: "#39405C", dark: "#161A2A", light: "#7C88A8", accent: "#A8C4E0" },
@@ -46,22 +45,19 @@ export const hues = {
   moon:       { base: "#B8BCC6", dark: "#6E727C", light: "#E8EAF0", accent: "#8A8E98" },
   volcano:    { base: "#5E5248", dark: "#332C26", light: "#8A7E70", accent: "#E8762F", hot: "#FFD24B" },
   air:        { base: "#A8C4E0", dark: "#4A6480", light: "#E8F2FF", accent: "#8FB6DC" },
-  // Distance is pale, not dark: air between the eye and the horizon lightens everything there.
-  ocean:      { base: "#2E82C6", dark: "#123E68", light: "#4FA6E0", accent: "#CFEFFF", far: "#8CBDE4" },
   cloud:      { base: "#E8F0F8", dark: "#9FB4C8", light: "#FFFFFF", accent: "#C8D8E8" },
 };
 
 export const parts = {
-  // Stuff in its plainest forms: a block, a ball and a pyramid, the still life every drawing
-  // class starts with. Three chips of one grey was a snowman.
+  // The atom symbol, the one picture everybody already has for "stuff". It was first drawn for
+  // Hydrogen, where Martin rejected it for reading as "atom" — which is exactly what Matter
+  // should read as. Three chips of grey was a snowman, and a block, a ball and a pyramid were
+  // geometry. One electron per orbit, so it is no particular element.
   matter: [
-    { d: "M30 8L23.5 23L30 25.5z", tone: "pyL" },
-    { d: "M30 8L30 25.5L37 22.5z", tone: "pyD" },
-    { d: "M16 17L25 22L16 27L7 22z", tone: "light" },
-    { d: "M7 22L16 27V37L7 32z", tone: "base" },
-    { d: "M16 27L25 22V32L16 37z", tone: "dark" },
-    { d: disc(32, 32, 8), tone: "sph" },
-    { d: disc(29.4, 29.4, 2.6), tone: "sphL" },
+    { d: [-60, 0, 60].map((a) => ellR(24, 24, 17, 6.5, a)).join(""), tone: "dark", w: 1.4 },
+    { d: disc(24, 24, 5.8), tone: "base" },
+    { d: disc(22.2, 22.2, 2), tone: "light" },
+    { d: disc(41, 24, 2.6) + disc(15.5, 9.3, 2.6) + disc(15.5, 38.7, 2.6), tone: "accent" },
   ],
   time: [
     { d: "M15.5 9H32.5L25.4 21.4h-2.8z", tone: "light" },
@@ -138,19 +134,6 @@ export const parts = {
     { d: "M6 17h20a5.5 5.5 0 1 0-5.5-5.5", tone: "base", w: 3 },
     { d: "M6 26h26a5 5 0 1 1-5 5", tone: "base", w: 3 },
     { d: "M6 35h15", tone: "accent", w: 2.6 },
-  ],
-  // Vastness is Hokusai's answer: a great wave in front, and on the far horizon a volcano so
-  // small it makes the wave enormous and the distance endless. Stacked waves were a pattern, a
-  // lens of sea was a bowl, and a sea running off the frame was a block cut square.
-  ocean: [
-    { d: "M30 20.6H45.6", tone: "far", w: .7 },
-    { d: "M37.4 20.5l2.3-3.2h1.1l2.3 3.2z", tone: "far" },
-    { d: "M34 23.4h1.8M40 23.9h2.4", tone: "far", w: .5 },
-    { d: "M2 47C1 30 7 12 18 9C24 7.6 29 11 28 16.4C26.6 13.4 23 13 21.4 16C19.6 19.6 22 26 31 34C35 37.8 40 38.8 45 38.4C46.4 41 45.8 44 43 46.4C40 48 30 48 20 48C12 48 5 48.4 2 47z", tone: "base" },
-    { d: "M21.4 16C19.6 19.6 22 26 31 34L29 35C21 29 18 21 21.4 16z", tone: "dark" },
-    { d: "M8 42c4-2.4 8-2.4 12 0M25 44.4c3.6-2 7.4-2 11 0", tone: "light", w: 1.4 },
-    { d: "M5 22C8.4 14 12.6 10 18 9C23 8 27.6 11 28 16.4", tone: "accent", w: 1.6 },
-    { d: disc(27.6, 17.2, 1.1) + disc(25.2, 18.4, .8) + disc(29, 19.4, .7), tone: "accent" },
   ],
   cloud: [
     { d: "M13.5 35.5a7.5 7.5 0 0 1 .8-15A10.5 10.5 0 0 1 34 17.5 7.8 7.8 0 0 1 34.5 35.5z", tone: "base" },

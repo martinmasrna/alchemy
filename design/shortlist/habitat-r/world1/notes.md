@@ -6,7 +6,7 @@ Thirty-one icons for *In the Beginning*. Martin reviews them one at a time on `r
 
 **Light is drawn as light; everything else is paper.** Shadow box is cut paper, and its no-glow rule was right for a drop, a moon or a volcano. For a star, a nebula, lava, a supernova, energy or space it was wrong, because their substance is glow. The first pass drew them as flat card and every one failed: "I need to FEEL the heat", "doesn't capture the majesty", a nebula ugly next to the luminous ones from earlier rounds. So light sources get real gradients and bloom, and they may spill past the frame, because a glow cropped at the viewBox ends in a hard square edge. Martin passed all eleven paper icons on the first pass (Water, Moon, Volcano, Cloud, Earth, Gravity, Solar System, Time, Particle, Air, Rainbow), and those were exactly the things that reflect light.
 
-**A piece of world is drawn when the thing is only itself in relation to something else**, not as a rule applied thirty-one times. Gravity is a ball until the sheet dents. The Moon is a rock until a planet is under it. The Lightyear tape measures to a star. Rock gets the pebbles it was made from. Ocean gets a horizon with a tiny volcano on it, Hokusai's trick for making the wave enormous. Star, Water and Earth keep theirs. Everything else stands alone, because world 1 is the universe before anywhere exists.
+**A piece of world is drawn when the thing is only itself in relation to something else**, not as a rule applied thirty-one times. Gravity is a ball until the sheet dents. The Moon is a rock until a planet is under it. The Lightyear tape measures to a star. Rock gets the pebbles it was made from. Ocean gets a low sun and its road of glitter across open sea. Star, Water and Earth keep theirs. Everything else stands alone, because world 1 is the universe before anywhere exists.
 
 **Chemical elements are periodic-table tiles**, Martin's call: symbol and atomic number, which says Hydrogen and not "an atom". Alone that is boring, so the symbol is lit like a discharge tube in the colour that gas really glows: hydrogen pink, helium peach, oxygen lilac, carbon arc white-blue.
 
@@ -20,7 +20,8 @@ Every one of these was found by rendering and looking, never by thinking about i
 - **Three lines to the centre of a hexagon is an isometric cube.**
 - **A hard-edged comet tail is an object**: a syringe, then a bone, then a broom. A comet is a fuzzy head with two soft tails.
 - **A curve along the bottom of the box reads as ground**, whatever it is meant to be. It ruined one Particle and made the Moon.
-- **A lens of sea is a bowl, and a sea running off the frame is a block cut square.** Vastness came from scale instead: a big wave and a tiny far peak.
+- **Ocean is a view, not a thing.** Stacked waves were a pattern, a lens of sea a bowl, a sea running off the frame a block cut square, a round fade a bowl again, and Hokusai's great wave was a wave. What means ocean is open water to a horizon with a sun on it, fading into the card downwards and at both ends.
+- **Matter is the atom symbol.** Rejected for Hydrogen because it read as "atom", which is what matter should read as. A clump was a snowman and three primitive solids were geometry.
 - **Distance is pale.** The first far horizon was dark and read as a pair of sunglasses; atmosphere lightens what is far away.
 - **A paper shadow falls into hollows.** Anything placed in the shadow a shape throws on the card turns black.
 - **Energy cannot be warm and radial**, or it is a second Star. It is electric blue-white, the one light in the set that is not fire-coloured.

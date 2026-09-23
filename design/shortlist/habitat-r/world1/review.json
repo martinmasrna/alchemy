@@ -247,6 +247,166 @@
       "at": 1790149157145,
       "note": "doesn't capture the majesty of space at all IMO",
       "verdict": "note"
+    },
+    "space@828d9e15": {
+      "icon": "space",
+      "name": "Space",
+      "v": "828d9e15",
+      "at": 1790150463709,
+      "note": "",
+      "verdict": "good"
+    },
+    "energy@27097fc3": {
+      "icon": "energy",
+      "name": "Energy",
+      "v": "27097fc3",
+      "at": 1790150473413,
+      "note": "",
+      "verdict": "good"
+    },
+    "nebula@e0a2c464": {
+      "icon": "nebula",
+      "name": "Nebula",
+      "v": "e0a2c464",
+      "at": 1790150477651,
+      "note": "",
+      "verdict": "good"
+    },
+    "star@d6b52b3f": {
+      "icon": "star",
+      "name": "Star",
+      "v": "d6b52b3f",
+      "at": 1790150478716,
+      "note": "",
+      "verdict": "good"
+    },
+    "hydrogen@42e0d091": {
+      "icon": "hydrogen",
+      "name": "Hydrogen",
+      "v": "42e0d091",
+      "at": 1790150486716,
+      "note": "",
+      "verdict": "good"
+    },
+    "helium@55638094": {
+      "icon": "helium",
+      "name": "Helium",
+      "v": "55638094",
+      "at": 1790150488638,
+      "note": "",
+      "verdict": "good"
+    },
+    "carbon@55e8b9f9": {
+      "icon": "carbon",
+      "name": "Carbon",
+      "v": "55e8b9f9",
+      "at": 1790150489479,
+      "note": "",
+      "verdict": "good"
+    },
+    "oxygen@954a21d6": {
+      "icon": "oxygen",
+      "name": "Oxygen",
+      "v": "954a21d6",
+      "at": 1790150490483,
+      "note": "",
+      "verdict": "good"
+    },
+    "blackhole@79d481fb": {
+      "icon": "blackhole",
+      "name": "Black Hole",
+      "v": "79d481fb",
+      "at": 1790150502462,
+      "note": "",
+      "verdict": "good"
+    },
+    "galaxy@89f1aacf": {
+      "icon": "galaxy",
+      "name": "Galaxy",
+      "v": "89f1aacf",
+      "at": 1790150507359,
+      "note": "",
+      "verdict": "good"
+    },
+    "stardust@4014976f": {
+      "icon": "stardust",
+      "name": "Stardust",
+      "v": "4014976f",
+      "at": 1790150666492,
+      "note": "",
+      "verdict": "good"
+    },
+    "planet@aac0ac99": {
+      "icon": "planet",
+      "name": "Planet",
+      "v": "aac0ac99",
+      "at": 1790150687493,
+      "note": "now it's a Mars ... but I might be nitpicking I know :D",
+      "verdict": "note"
+    },
+    "lava@20196ca4": {
+      "icon": "lava",
+      "name": "Lava",
+      "v": "20196ca4",
+      "at": 1790150726550,
+      "note": "make the rocks a bit smaller so that actual LAVA gets a bit more space",
+      "verdict": "note"
+    },
+    "ocean@1d29b009": {
+      "icon": "ocean",
+      "name": "Ocean",
+      "v": "1d29b009",
+      "at": 1790150737742,
+      "note": "this is a wave, not an ocean",
+      "verdict": "note"
+    },
+    "rock@a9296897": {
+      "icon": "rock",
+      "name": "Rock",
+      "v": "a9296897",
+      "at": 1790150746144,
+      "note": "",
+      "verdict": "good"
+    },
+    "supernova@a961756e": {
+      "icon": "supernova",
+      "name": "Supernova",
+      "v": "a961756e",
+      "at": 1790150751539,
+      "note": "",
+      "verdict": "good"
+    },
+    "comet@5d6f015a": {
+      "icon": "comet",
+      "name": "Comet",
+      "v": "5d6f015a",
+      "at": 1790150768329,
+      "note": "make it go left -> right",
+      "verdict": "note"
+    },
+    "lightyear@97dfb2a3": {
+      "icon": "lightyear",
+      "name": "Lightyear",
+      "v": "97dfb2a3",
+      "at": 1790150789754,
+      "note": "idk, maybe lightyear doesn't belong anyway :D",
+      "verdict": "note"
+    },
+    "light@b031198b": {
+      "icon": "light",
+      "name": "Light",
+      "v": "b031198b",
+      "at": 1790150793667,
+      "note": "",
+      "verdict": "good"
+    },
+    "matter@19e2506e": {
+      "icon": "matter",
+      "name": "Matter",
+      "v": "19e2506e",
+      "at": 1790150821393,
+      "note": "idk ... this feels like \"geometric objects\", not really \"matter\"",
+      "verdict": "note"
     }
   }
 }
