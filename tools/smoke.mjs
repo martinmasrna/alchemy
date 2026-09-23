@@ -81,6 +81,8 @@ try {
   await evalJs("__card('Space').click(); document.getElementById('slotA').click()");
   check((await evalJs("document.querySelectorAll('#grid .card.picked').length")) === 0, "tapping the first slot puts the card down");
   check(!(await evalJs("document.getElementById('result').classList.contains('dud')")), "picking the next card clears the dud");
+  await evalJs("__combine('Energy','Energy')"); await sleep(1500);
+  check(!(await evalJs("document.getElementById('result').classList.contains('dud')")), "a dud clears on its own after the shake");
 
   // a hit: full-screen moment, credit, square count
   check((await evalJs("__combine('Energy','Matter')")) === true, "Energy + Matter shows the discovery moment");

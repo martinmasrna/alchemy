@@ -85,7 +85,7 @@ let justMade = null;      // id to pop into the grid
 let justNamed = null;     // id to pop into the chips
 let lastResult = null;    // id shown in the result slot
 let resultState = "idle"; // idle | found | dud
-let armed = false, armTimer;
+let armed = false, armTimer, dudTimer;
 
 $("worldName").textContent = world.name;
 document.title = `${world.name} · Alchemy`;
@@ -194,6 +194,9 @@ function combine(a, b) {
     resultState = "dud";
     save(); render();
     el.bench.classList.remove("shake"); void el.bench.offsetWidth; el.bench.classList.add("shake");
+    // "nothing" is a beat of feedback, not a state: it clears once the shake has been seen.
+    clearTimeout(dudTimer);
+    dudTimer = setTimeout(() => { if (resultState === "dud") { resultState = "idle"; render(); } }, 1200);
   }
 }
 
