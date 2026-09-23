@@ -80,11 +80,12 @@ try {
   check((await evalJs("document.querySelectorAll('#grid .card.picked').length")) === 0, "nothing stays picked after a combine");
   await evalJs("__card('Space').click(); document.getElementById('slotA').click()");
   check((await evalJs("document.querySelectorAll('#grid .card.picked').length")) === 0, "tapping the first slot puts the card down");
+  check(!(await evalJs("document.getElementById('result').classList.contains('dud')")), "picking the next card clears the dud");
 
   // a hit: full-screen moment, credit, square count
   check((await evalJs("__combine('Energy','Matter')")) === true, "Energy + Matter shows the discovery moment");
   check((await evalJs("__names().includes('Particle')")), "Particle appears in the grid");
-  check((await evalJs("document.getElementById('result').textContent")).includes("Particle"), "result slot shows the last discovery");
+  check((await evalJs("document.getElementById('result').innerHTML")) === "", "the bench empties once the discovery moment is dismissed");
   check((await evalJs("__credits()")) === c0 + 1, "a guessed discovery earns one credit");
   check((await evalJs("__squares()")) === total - 2, "one ? square fewer");
 

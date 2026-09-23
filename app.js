@@ -165,7 +165,7 @@ function recipeOrHint(t) {
 // Tap a card to pick it up, tap another (or the same one again) to combine. Tap the first slot to put it back.
 function pick(id) {
   disarm(); el.note.textContent = "";
-  if (!selected) { selected = id; render(); return; }
+  if (!selected) { selected = id; lastResult = null; resultState = "idle"; render(); return; }
   const a = selected; selected = null;
   combine(a, id);
 }
@@ -242,7 +242,8 @@ function reveal(id, a, b, guessed) {
   });
   q(".out > div").animate([{ transform: "scale(.2)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], fwd(600, T + STOP, "cubic-bezier(.2,1.6,.4,1)"));
 
-  st.onclick = () => { st.className = "stage"; st.innerHTML = ""; justMade = id; render(); };
+  // The moment has shown the find and the grid pops it in, so the bench empties.
+  st.onclick = () => { st.className = "stage"; st.innerHTML = ""; justMade = id; lastResult = null; resultState = "idle"; render(); };
 }
 
 let toastTimer;
