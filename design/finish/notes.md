@@ -16,4 +16,6 @@ Varied: the world the screen is set in.
 - **Album**: warm dark plate with a pressed well for every discovery in one grid. Owned in its well, named as a ghost with its bought recipe under it, the rest empty.
 - **Crucible**: alchemy. Warm near-black, gold line rings for the bench with a lit vessel for the result, a serif for names that matter.
 
+Chosen: Sky ("7.5/10 already"). Round 2 converges inside it at `sky/variants.html`, one part of the screen at a time.
+
 Not in this round: the discovery moment (found results only land in the result slot here), palette tuning within a direction, first-launch.
