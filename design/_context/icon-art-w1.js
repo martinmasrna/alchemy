@@ -51,10 +51,6 @@ const shadowbox = (id, world = "", { front = "", scale = 1 } = {}) => {
 };
 
 const WORLDS = {
-  // The sheet it dents. Without this, Gravity is a ball with four arrows pointing at it.
-  gravity: `<g stroke="#A8C4E0" stroke-width=".8" fill="none" opacity=".5" stroke-linecap="round">
-    <path d="M4 14q20 5 40 0M4 21q20 9 40 0M4 28q20 11 40 0M4 35q20 7 40 0"/>
-    <path d="M11 11q4 13 0 26M19 10q2 14 0 28M29 10q-2 14 0 28M37 11q-4 13 0 26"/></g>`,
   // Drawn as a whole circle and left to the viewBox to crop, because an arc closed by hand
   // came out as a wedge with two straight sides. It sits under the moon rather than beside
   // it: a curve along the bottom of the box is read as ground, and for a moon the ground is
@@ -85,9 +81,9 @@ const FRONT = {
     <path d="M20.6 18.4h6.8l-1.4 3h-4z" fill="#FFE08A" opacity=".85"/>`,
 };
 
-// Visual weight, evened out: Particle, Planet and the Moon's body were half the size of the
-// full-bleed icons, and in the grid Particle became a dot.
-const SCALE = { particle: 1.3, planet: 1.2, moon: 1.2 };
+// Visual weight, evened out: Planet and the Moon's body were half the size of the full-bleed
+// icons.
+const SCALE = { planet: 1.2, moon: 1.2 };
 
 // ---- light -------------------------------------------------------------------------------
 const ray = (cx, cy, deg, r0, r1, w) => {
@@ -359,6 +355,168 @@ const ocean = (() => {
     <circle cx="${sx - .9}" cy="7.1" r="1.8" fill="#FFF6D0"/>`);
 })();
 
+// ---- matter, modelled ------------------------------------------------------------------------
+// Things that reflect light, drawn by hand with the light they reflect: shading, highlights,
+// rims, texture. Built from flat parts, Air was three lines, Rainbow four arcs and Cloud two
+// shapes, and beside the hand-drawn lights they looked like a different, cheaper game. The
+// silhouettes are the same universal shapes; only the effort changed.
+
+const shade = (dx = 1.6, dy = 2.4, o = .45) =>
+  `opacity="${o}" transform="translate(${dx} ${dy})" filter="url(#w1-soft)" fill="#000"`;
+
+// Puffs share one gradient, lit from above and shaded blue-grey underneath, with a soft lit
+// cap on each puff so the volumes read.
+const puffs = (id, list, pill) => {
+  const shapes = list.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join("") + `<path d="${pill}"/>`;
+  const [top, bot] = [Math.min(...list.map(([, y, r]) => y - r)), Math.max(...list.map(([, y, r]) => y + r))];
+  return `<defs><linearGradient id="${id}-g" x1="0" y1="${top}" x2="0" y2="${bot}" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#EDF2FA"/><stop offset="1" stop-color="#AEBFD6"/></linearGradient>
+    <clipPath id="${id}-c">${shapes}</clipPath></defs>
+    <g ${shade(1.4, 2.4, .5)}>${shapes}</g>
+    <g fill="url(#${id}-g)">${shapes}</g>
+    <g clip-path="url(#${id}-c)">
+      <ellipse cx="${n(list.reduce((s, [x]) => s + x, 0) / list.length)}" cy="${bot}" rx="18" ry="${n((bot - top) * .28)}"
+        fill="#8EA3BE" opacity=".5" filter="url(#w1-fine)"/>
+      <g fill="#FFFFFF" opacity=".75" filter="url(#w1-fine)">${list.map(([x, y, r]) =>
+        `<circle cx="${n(x - r * .25)}" cy="${n(y - r * .3)}" r="${n(r * .55)}"/>`).join("")}</g>
+    </g>`;
+};
+
+const cloud = box(puffs("cl",
+  [[9.5, 31.5, 4.8], [15, 28, 7], [23, 21.5, 9.4], [32, 24, 8.4], [38.5, 30, 6]],
+  "M13.5 29h23a4.2 4.2 0 0 1 0 8.4h-23a4.2 4.2 0 0 1 0-8.4z"));
+
+// Six bands of refracted light with a soft glow behind them, and the two little clouds every
+// child draws its feet into.
+const rainbow = (() => {
+  const cy = 33, cols = ["#E8453C", "#F28A2E", "#F7CF3A", "#58B85A", "#3D8BD9", "#7A5CC8"];
+  const arc = (r) => `M${n(24 - r)} ${cy}A${r} ${r} 0 0 1 ${n(24 + r)} ${cy}`;
+  const bands = cols.map((c, i) => [arc(18 - i * 1.95), c]);
+  return box(`<g filter="url(#w1-bloom)" opacity=".45">${bands.map(([d, c]) =>
+      `<path d="${d}" stroke="${c}" stroke-width="2.4"/>`).join("")}</g>
+    ${bands.map(([d, c]) => `<path d="${d}" stroke="${c}" stroke-width="2.05"/>`).join("")}
+    <path d="${arc(19)}" stroke="#FFFFFF" stroke-width=".5" opacity=".3"/>
+    ${puffs("rbl", [[6.5, 33.5, 4.2], [12, 31, 5], [17.5, 33.8, 3.8]], "M6 33h12a3.4 3.4 0 0 1 0 6.8H6a3.4 3.4 0 0 1 0-6.8z")}
+    ${puffs("rbr", [[41.5, 33.5, 4.2], [36, 31, 5], [30.5, 33.8, 3.8]], "M30 33h12a3.4 3.4 0 0 1 0 6.8H30a3.4 3.4 0 0 1 0-6.8z")}`);
+})();
+
+// Wind as moving, translucent ribbons that thicken and brighten as they sweep in, carrying a
+// little dust. Three flat lines were a symbol for wind, not wind.
+const air = (() => {
+  const lines = ["M5 17h21a5.5 5.5 0 1 0-5.5-5.5", "M5 26h27a5 5 0 1 1-5 5", "M5 35h16", "M9 21.6h9"];
+  const widths = [2.6, 2.6, 2.2, 1.2];
+  return box(`<defs><linearGradient id="ai-g" x1="4" y1="0" x2="36" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#CFE6FF" stop-opacity="0"/><stop offset=".35" stop-color="#CFE6FF" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#FFFFFF"/></linearGradient></defs>
+    <g filter="url(#w1-bloom)" opacity=".45">${lines.slice(0, 3).map((d) =>
+      `<path d="${d}" stroke="#7FB2E6" stroke-width="4.6" stroke-linecap="round"/>`).join("")}</g>
+    ${lines.map((d, i) => `<path d="${d}" stroke="url(#ai-g)" stroke-width="${widths[i]}" stroke-linecap="round" ${i === 3 ? 'opacity=".55"' : ""}/>`).join("")}
+    <g fill="#FFFFFF"><circle cx="30.5" cy="17.4" r=".7" opacity=".7"/><circle cx="37" cy="23" r=".5" opacity=".6"/>
+      <circle cx="25" cy="35.3" r=".6" opacity=".6"/><circle cx="40" cy="36" r=".45" opacity=".5"/><circle cx="15" cy="30" r=".4" opacity=".45"/></g>`);
+})();
+
+// An hourglass with real glass: tinted bulbs with a streak of reflection, sand that glows
+// where it falls, and turned wooden posts between two lit plates.
+const time = box(`<defs>
+    <linearGradient id="ti-w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C08A52"/><stop offset="1" stop-color="#6E4524"/></linearGradient>
+    <linearGradient id="ti-p" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6E4524"/><stop offset=".45" stop-color="#C08A52"/><stop offset="1" stop-color="#5A3820"/></linearGradient>
+    <linearGradient id="ti-s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE08A"/><stop offset="1" stop-color="#E09A2E"/></linearGradient>
+    <linearGradient id="ti-g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E8F4FF" stop-opacity=".42"/>
+      <stop offset=".5" stop-color="#BFD6E8" stop-opacity=".16"/><stop offset="1" stop-color="#E8F4FF" stop-opacity=".32"/></linearGradient></defs>
+  <g ${shade()}><path d="M9 5.4h30v5H9zM9 34.4h30v5H9zM16 9.4H32C32 15 26.6 18.6 25.2 22H22.8C21.4 18.6 16 15 16 9.4zM16 34.6H32C32 29 26.6 25.4 25.2 22H22.8C21.4 25.4 16 29 16 34.6z"/></g>
+  <path d="M12.6 10h1.8v24.6h-1.8zM33.6 10h1.8v24.6h-1.8z" fill="url(#ti-p)"/>
+  <path d="M16 9.4H32C32 15 26.6 18.6 25.2 22H22.8C21.4 18.6 16 15 16 9.4zM16 34.6H32C32 29 26.6 25.4 25.2 22H22.8C21.4 25.4 16 29 16 34.6z" fill="url(#ti-g)"/>
+  <path d="M18.6 13.4H29.4C28.6 15.8 26 17.8 24.8 20.4H23.2C22 17.8 19.4 15.8 18.6 13.4z" fill="url(#ti-s)"/>
+  <path d="M17.2 34.4C18 30.6 20.8 28.6 24 28.6S30 30.6 30.8 34.4z" fill="url(#ti-s)"/>
+  <path d="M24 20.6V28.8" stroke="#FFD27A" stroke-width="1.8" opacity=".55" filter="url(#w1-fine)"/>
+  <path d="M24 20.6V28.8" stroke="#FFF0C0" stroke-width=".7"/>
+  <path d="M16 9.4H32C32 15 26.6 18.6 25.2 22H22.8C21.4 18.6 16 15 16 9.4zM16 34.6H32C32 29 26.6 25.4 25.2 22H22.8C21.4 25.4 16 29 16 34.6z" stroke="#CFE2F2" stroke-width=".6" opacity=".7"/>
+  <path d="M18.4 11.2C18.8 14.6 20.6 16.6 22 18.6M18.4 32.8C18.8 30 20.4 28 21.6 26.4" stroke="#FFFFFF" stroke-width=".9" opacity=".6" stroke-linecap="round"/>
+  <path d="M10.5 5.4h27a1.6 1.6 0 0 1 1.6 1.6v1.8a1.6 1.6 0 0 1-1.6 1.6h-27a1.6 1.6 0 0 1-1.6-1.6V7a1.6 1.6 0 0 1 1.6-1.6zM10.5 34.4h27a1.6 1.6 0 0 1 1.6 1.6v1.8a1.6 1.6 0 0 1-1.6 1.6h-27a1.6 1.6 0 0 1-1.6-1.6V36a1.6 1.6 0 0 1 1.6-1.6z" fill="url(#ti-w)"/>
+  <path d="M10.4 5.9h27.2M10.4 34.9h27.2" stroke="#E8C28E" stroke-width=".6" opacity=".8"/>`);
+
+// The composition Martin passed — a mass, the sheet it dents, four arrows falling in — with the
+// finish the rest of the set has: a lit, heavy ball, a warped grid that glows and fades out
+// before its edges, and arrows that catch the light. Redrawn as a perspective funnel with a
+// marble spiralling in, it read as a net and then as a ball under a lid.
+const gravity = box(`<defs><radialGradient id="gr-f" cx="24" cy="24" r="23" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient>
+  <mask id="gr-m"><rect x="0" y="0" width="48" height="48" fill="url(#gr-f)"/></mask>
+  <radialGradient id="gr-b" cx=".36" cy=".3" r=".75"><stop offset="0" stop-color="#A4B0D2"/>
+    <stop offset=".55" stop-color="#454E70"/><stop offset="1" stop-color="#1C2034"/></radialGradient></defs>
+  <g mask="url(#gr-m)" stroke-linecap="round">
+    <path d="M4 14q20 5 40 0M4 21q20 9 40 0M4 28q20 11 40 0M4 35q20 7 40 0M11 11q4 13 0 26M19 10q2 14 0 28M29 10q-2 14 0 28M37 11q-4 13 0 26"
+      stroke="#7FB0E8" stroke-width="1.8" opacity=".25" filter="url(#w1-bloom)"/>
+    <path d="M4 14q20 5 40 0M4 21q20 9 40 0M4 28q20 11 40 0M4 35q20 7 40 0M11 11q4 13 0 26M19 10q2 14 0 28M29 10q-2 14 0 28M37 11q-4 13 0 26"
+      stroke="#9CC4F0" stroke-width=".6" opacity=".7"/>
+  </g>
+  <path d="M20.2 6.4L24 10.2L27.8 6.4M41.6 20.2L37.8 24L41.6 27.8M27.8 41.6L24 37.8L20.2 41.6M6.4 27.8L10.2 24L6.4 20.2"
+    stroke="#7FB0E8" stroke-width="3.6" opacity=".35" filter="url(#w1-bloom)" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20.2 6.4L24 10.2L27.8 6.4M41.6 20.2L37.8 24L41.6 27.8M27.8 41.6L24 37.8L20.2 41.6M6.4 27.8L10.2 24L6.4 20.2"
+    stroke="#CFE6FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="24" cy="24" r="9.4" fill="#000" opacity=".5" transform="translate(1.6 2.4)" filter="url(#w1-soft)"/>
+  <circle cx="24" cy="24" r="9.4" fill="url(#gr-b)"/>
+  <path d="M17.6 29.6a9.4 9.4 0 0 0 14.2-.9" stroke="#8FB8E8" stroke-width=".8" opacity=".6" stroke-linecap="round"/>
+  <ellipse cx="20.6" cy="20.4" rx="2.6" ry="1.7" fill="#FFFFFF" opacity=".55"/>`);
+
+// A glossy particle and the track it leaves in a cloud chamber, sweeping in from behind in one
+// arc, droplets growing and brightening towards it. A track that curled back under the ball
+// was a string, and the whole thing a balloon.
+const particle = (() => {
+  const drops = Array.from({ length: 22 }, (_, i) => {
+    const t = i / 21, u = 1 - t;
+    const x = u * u * 4 + 2 * u * t * 12 + t * t * 22.5, y = u * u * 42 + 2 * u * t * 26 + t * t * 23.5;
+    return `<circle cx="${n(x)}" cy="${n(y)}" r="${n(.3 + t * .85)}" opacity="${n(.15 + t * .7)}"/>`;
+  }).join("");
+  return box(`<defs><radialGradient id="pa-b" cx=".36" cy=".32" r=".75"><stop offset="0" stop-color="#E6F7FF"/>
+      <stop offset=".45" stop-color="#5FBEEA"/><stop offset="1" stop-color="#1E5C84"/></radialGradient></defs>
+    <g fill="#9FD8F4">${drops}</g>
+    <circle cx="29.5" cy="18.5" r="8.2" fill="#000" opacity=".45" transform="translate(1.6 2.4)" filter="url(#w1-soft)"/>
+    <circle cx="29.5" cy="18.5" r="8.2" fill="url(#pa-b)"/>
+    <path d="M24.4 23.4a8.2 8.2 0 0 0 12.6-1.6" stroke="#A8E6FF" stroke-width=".8" opacity=".7" stroke-linecap="round"/>
+    <ellipse cx="26.6" cy="15.4" rx="2.6" ry="1.8" transform="rotate(-30 26.6 15.4)" fill="#FFFFFF" opacity=".8"/>`);
+})();
+
+// Glossy water about to land: light caught at the bottom of the drop, a sharp reflection, a
+// thin bright rim, and ripples spreading on the surface it falls towards.
+const water = box(`<defs><radialGradient id="wa-b" cx=".4" cy=".66" r=".72"><stop offset="0" stop-color="#8FD0F6"/>
+    <stop offset=".5" stop-color="#2E82C6"/><stop offset="1" stop-color="#123E68"/></radialGradient>
+    <clipPath id="wa-c"><path d="${baseParts.water[0].d}"/></clipPath></defs>
+  <ellipse cx="24" cy="42" rx="14" ry="2.6" fill="#2E82C6" opacity=".35"/>
+  <ellipse cx="24" cy="42.2" rx="17.5" ry="3.3" stroke="#5FBEEA" stroke-width=".8" opacity=".5"/>
+  <ellipse cx="24" cy="42.6" rx="21.5" ry="4.2" stroke="#5FBEEA" stroke-width=".6" opacity=".25"/>
+  <ellipse cx="25.5" cy="41.4" rx="8" ry="1.6" fill="#000" opacity=".4" filter="url(#w1-soft)"/>
+  <path d="${baseParts.water[0].d}" fill="url(#wa-b)"/>
+  <g clip-path="url(#wa-c)"><ellipse cx="26" cy="34.5" rx="8" ry="4.5" fill="#9FE4FF" opacity=".45" filter="url(#w1-fine)"/></g>
+  <path d="${baseParts.water[0].d}" stroke="#A8E6FF" stroke-width=".6" opacity=".55"/>
+  <path d="${baseParts.water[1].d}" fill="#FFFFFF" opacity=".78"/>
+  <circle cx="30" cy="24.5" r="1.3" fill="#FFFFFF" opacity=".75"/>
+  <circle cx="9" cy="37" r=".9" fill="#8FD0F6" opacity=".7"/><circle cx="39.5" cy="36.2" r=".7" fill="#8FD0F6" opacity=".6"/>`);
+
+// The summit, so the most finished drawing in the world: lit ocean, shaded land, clouds
+// crossing it, a night side, a halo of atmosphere, and its sun. It still has to pass the test
+// the whole style was built on: Earth has to be obviously Earth.
+const earth = box(`<defs>
+    <radialGradient id="ea-o" cx=".36" cy=".32" r=".75"><stop offset="0" stop-color="#6CBAF0"/>
+      <stop offset=".5" stop-color="#2E82C6"/><stop offset="1" stop-color="#123E68"/></radialGradient>
+    <linearGradient id="ea-l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7CCB84"/><stop offset="1" stop-color="#3E8A52"/></linearGradient>
+    <radialGradient id="ea-n" cx="14" cy="13" r="32" gradientUnits="userSpaceOnUse"><stop offset=".5" stop-color="#050A1A" stop-opacity="0"/>
+      <stop offset="1" stop-color="#050A1A" stop-opacity=".72"/></radialGradient>
+    <clipPath id="ea-c"><circle cx="24" cy="24" r="17"/></clipPath></defs>
+  <circle cx="24" cy="24" r="18.4" stroke="#6FC2FF" stroke-width="2.2" opacity=".45" filter="url(#w1-bloom)"/>
+  <circle cx="24" cy="24" r="17" fill="#000" opacity=".45" transform="translate(1.6 2.4)" filter="url(#w1-soft)"/>
+  <circle cx="24" cy="24" r="17" fill="url(#ea-o)"/>
+  <g clip-path="url(#ea-c)">
+    <path d="${baseParts.earth[1].d}${baseParts.earth[2].d}" fill="url(#ea-l)"/>
+    <path d="M9 14c5-3 11-3 15-1M26 30c4 1.4 9 .8 13-2M11 32c3 1.6 6 1.8 9 1" stroke="#FFFFFF" stroke-width="1.6" opacity=".7" stroke-linecap="round" filter="url(#w1-fine)"/>
+    <path d="M28 12c3-1 6-.6 8 1" stroke="#FFFFFF" stroke-width="1.2" opacity=".6" stroke-linecap="round"/>
+    <circle cx="24" cy="24" r="17" fill="url(#ea-n)"/>
+    <ellipse cx="17" cy="15" rx="5" ry="3" fill="#FFFFFF" opacity=".22" filter="url(#w1-fine)"/>
+  </g>
+  <circle cx="24" cy="24" r="17" stroke="#BFE8FF" stroke-width=".6" opacity=".55"/>
+  <circle cx="41.5" cy="6.5" r="4" fill="#FFD890" opacity=".8" filter="url(#w1-bloom)"/>
+  <circle cx="41.5" cy="6.5" r="1.9" fill="#FFFBEA"/>`);
+
 // ---- the elements --------------------------------------------------------------------------
 // Martin's call: the periodic-table square, symbol and atomic number, which says Hydrogen and
 // not "an atom". Boring alone, so the symbol is lit like a discharge tube in the colour that
@@ -384,6 +542,7 @@ const element = (sym, num, tile, glow) => {
 const unclip = (svg) => svg.replace("<svg ", '<svg overflow="visible" ');
 const BESPOKE = Object.fromEntries(Object.entries({
   star, energy, light, nebula, comet, supernova, stardust, blackhole, galaxy, lava, space, ocean,
+  cloud, rainbow, air, time, gravity, particle, water, earth,
   hydrogen: element("H", 1, "#2A2340", "#FF5FB0"),
   helium: element("He", 2, "#33261E", "#FFA25A"),
   carbon: element("C", 6, "#24262C", "#A8DCFF"),

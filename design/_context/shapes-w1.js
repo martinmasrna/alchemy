@@ -3,9 +3,9 @@
 // geometry is an ordered list of parts, outermost first, and `w` means the part is a stroke.
 // 48x48 box.
 //
-// Only things that reflect light live here, because shadow box is cut paper and paper is how
-// matter looks. Things that give off light — stars, nebulae, lava, energy — are drawn as light
-// in `icon-art-w1.js`, and Water and Earth come from `shapes.js`.
+// The subjects still built from flat parts: the ones where cut paper, with enough detail, holds
+// up beside the hand-drawn ones. Everything else — every light source, and the matter that
+// needed real shading to look finished — is drawn by hand in `icon-art-w1.js`.
 //
 // Rules being honoured: a thing is the colour a person already thinks it is, every part gets a
 // ramp from its own colour rather than the body's, and the drawing has to work at 34px.
@@ -34,10 +34,6 @@ const wave = (y, n = 4, step = 10, amp = 5) =>
 export const hues = {
   // Textbook protons and neutrons: red and blue, each with its own highlight.
   matter:     { base: "#D8584A", light: "#F6B0A6", blue: "#5E86C0", blueL: "#C4D6F0" },
-  time:       { base: "#8A5A34", dark: "#4A2E18", light: "#E8EEF2", accent: "#F5B93C" },
-  particle:   { base: "#5FBEEA", dark: "#1E5C84", light: "#E6F7FF", accent: "#A8E6FF" },
-  gravity:    { base: "#39405C", dark: "#161A2A", light: "#7C88A8", accent: "#A8C4E0" },
-  rainbow:    { base: "#F5B93C", dark: "#3E7FC6", light: "#FFF7DC", accent: "#E8623C", green: "#4FA35C" },
   rock:       { base: "#8A7C6A", dark: "#4E4438", light: "#C2B39C", accent: "#6A5E50" },
   // A colour no famous planet owns, because every one that does names it: rust was Mars, ochre
   // with a ring was Saturn, banded tan is Jupiter, blue-green is Earth and grey is the Moon.
@@ -45,8 +41,6 @@ export const hues = {
   solarsystem:{ base: "#F5B93C", dark: "#3E4A6E", light: "#FFF6DC", accent: "#5FBEEA" },
   moon:       { base: "#B8BCC6", dark: "#6E727C", light: "#E8EAF0", accent: "#8A8E98" },
   volcano:    { base: "#5E5248", dark: "#332C26", light: "#8A7E70", accent: "#E8762F", hot: "#FFD24B" },
-  air:        { base: "#A8C4E0", dark: "#4A6480", light: "#E8F2FF", accent: "#8FB6DC" },
-  cloud:      { base: "#E8F0F8", dark: "#9FB4C8", light: "#FFFFFF", accent: "#C8D8E8" },
 };
 
 export const parts = {
@@ -57,31 +51,6 @@ export const parts = {
   matter: [[19.5, 17, "base"], [28.5, 17.5, "blue"], [14.5, 24.5, "blue"], [24, 24, "base"], [33.5, 25, "base"],
     [19, 32, "base"], [28.5, 32.5, "blue"]]
     .flatMap(([x, y, t]) => [{ d: disc(x, y, 5.4), tone: t }, { d: disc(x - 1.8, y - 1.8, 1.6), tone: t === "base" ? "light" : "blueL" }]),
-  time: [
-    { d: "M15.5 9H32.5L25.4 21.4h-2.8z", tone: "light" },
-    { d: "M15.5 35H32.5L25.4 22.6h-2.8z", tone: "light" },
-    { d: "M17.8 11.6H30.2L27.3 16.6H20.7z", tone: "accent" },
-    { d: "M19 35c.3-3.4 2.3-5.4 5-5.4s4.7 2 5 5.4z", tone: "accent" },
-    { d: "M24 22.4V29", tone: "accent", w: 1 },
-    { d: "M12 5.4h24V9H12zM12 35h24v3.6H12z", tone: "base" },
-  ],
-  particle: [
-    { d: disc(13, 33, 2), tone: "dark" },
-    { d: disc(18.5, 28, 3.4), tone: "dark" },
-    { d: disc(27.5, 20.5, 7), tone: "base" },
-    { d: disc(25, 18, 2.4), tone: "light" },
-  ],
-  gravity: [
-    { d: disc(24, 24, 9), tone: "base" },
-    { d: disc(21, 21, 3.2), tone: "light" },
-    { d: "M20.2 6.4L24 10.2L27.8 6.4M41.6 20.2L37.8 24L41.6 27.8M27.8 41.6L24 37.8L20.2 41.6M6.4 27.8L10.2 24L6.4 20.2", tone: "accent", w: 2.2 },
-  ],
-  rainbow: [
-    { d: "M4 40a20 20 0 0 1 40 0", tone: "accent", w: 3.2 },
-    { d: "M8 40a16 16 0 0 1 32 0", tone: "base", w: 3.2 },
-    { d: "M12 40a12 12 0 0 1 24 0", tone: "green", w: 3.2 },
-    { d: "M16 40a8 8 0 0 1 16 0", tone: "dark", w: 3.2 },
-  ],
   // A boulder with a lit top, a shadowed flank and the grit it was made from. The pebbles are
   // its piece of world: the blurb is dust becoming pebbles becoming boulders.
   rock: [
@@ -118,15 +87,6 @@ export const parts = {
     { d: "M23 21l-2 10 1 9M27 21l2 9-1 10", tone: "accent", w: 1.4 },
     { d: "M20.6 18.4h6.8l-1.4 3h-4z", tone: "accent" },
     { d: disc(15, 8.5, 1.6) + disc(33, 8, 1.4) + disc(24, 5.2, 1.9) + disc(19, 12, 1.2) + disc(29.4, 11.6, 1.3), tone: "hot" },
-  ],
-  air: [
-    { d: "M6 17h20a5.5 5.5 0 1 0-5.5-5.5", tone: "base", w: 3 },
-    { d: "M6 26h26a5 5 0 1 1-5 5", tone: "base", w: 3 },
-    { d: "M6 35h15", tone: "accent", w: 2.6 },
-  ],
-  cloud: [
-    { d: "M13.5 35.5a7.5 7.5 0 0 1 .8-15A10.5 10.5 0 0 1 34 17.5 7.8 7.8 0 0 1 34.5 35.5z", tone: "base" },
-    { d: "M16 22c3-6 12-7 17-2-5-2-12-1-17 2z", tone: "light" },
   ],
 };
 
