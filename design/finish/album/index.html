@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finish · Album</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&display=swap">
+<style>
+  /* Album: the world is a page with a place for every discovery. What you have sits in its
+     well, what you know the name of is its ghost, and the rest are empty wells to fill. The
+     collection is the progress bar. */
+  :root {
+    color-scheme: dark;
+    --bg: #15120e; --plate: #1f1a14; --well: #0d0b08; --rim: rgba(255, 236, 205, .07);
+    --text: #f3ebde; --muted: #9c917f; --warm: #f0b75c; --bad: #f07a6a;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text);
+    font: 15px/1.35 "Bricolage Grotesque", system-ui, sans-serif; }
+  body { background: radial-gradient(140% 50% at 50% 0%, #221c15, var(--bg) 60%) fixed; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  svg { display: block; }
+  .hex { width: 11px; height: 11px; display: inline-block; vertical-align: -1px; }
+  #app { max-width: 480px; margin: 0 auto; padding-inline: 16px; padding-block: env(safe-area-inset-top) 48px; }
+
+  .top { padding-block: 16px 0; }
+  .bar { display: flex; align-items: center; gap: 12px; position: relative; }
+  .world { flex: 1; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; line-height: 1.1; }
+  .credits { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: #f0b75c1f; color: var(--warm); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .menu { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; gap: 3px; }
+  .menu i { width: 3px; height: 3px; border-radius: 50%; background: var(--muted); }
+  .sheet { position: absolute; right: 0; top: 40px; z-index: 20; display: flex; flex-direction: column; gap: 4px; padding: 8px;
+    background: var(--plate); border: 1px solid var(--rim); border-radius: 14px; min-width: 160px; box-shadow: 0 12px 32px #000a; }
+  .sheet span { color: var(--muted); font-size: 13px; padding: 6px 10px; }
+  .sheet button { text-align: left; padding: 8px 10px; border-radius: 8px; }
+  .sheet button:hover { background: #fff1; }
+
+  .summit { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; column-gap: 12px; row-gap: 8px; margin-top: 12px; }
+  .summit > .ic { grid-area: 1 / 1 / 3 / 2; width: 40px; height: 40px; }
+  .summit > .ic svg { width: 100%; height: 100%; }
+  .goal { grid-area: 1 / 2; display: flex; align-items: baseline; gap: 6px; font-size: 15px; }
+  .goal .k { color: var(--muted); }
+  .goal .k::after { content: ":"; }
+  .goal .v { font-weight: 600; }
+  .summit .hint { grid-area: 1 / 3; white-space: nowrap; font-size: 13px; color: var(--muted); }
+  .progress { grid-area: 2 / 2 / 3 / 4; display: flex; align-items: center; gap: 10px; }
+  .progress .num { order: 2; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .progress .num b { color: var(--text); }
+  .track { flex: 1; height: 6px; border-radius: 6px; background: var(--well); box-shadow: inset 0 1px 2px #000; overflow: hidden; }
+  .track i { display: block; height: 100%; background: var(--warm); border-radius: 6px; }
+
+  /* Wells: the one shape on the page. Pressed into the plate, lit from above. */
+  .slot, .item, .mark, .named.cell { border-radius: 18px; background: var(--well);
+    box-shadow: inset 0 3px 6px #000c, inset 0 -1px 0 var(--rim); }
+
+  .bench { position: sticky; top: 8px; z-index: 10; margin-top: 16px; display: grid; grid-template-columns: 1fr 16px 1fr 16px 1fr;
+    align-items: center; gap: 4px; padding: 10px; border-radius: 24px; background: var(--plate);
+    box-shadow: 0 1px 0 var(--rim) inset, 0 14px 28px #000b, 0 2px 4px #0008; }
+  .op { text-align: center; color: var(--muted); font-weight: 600; }
+  .slot { height: 88px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  .slot .ic { width: 46px; height: 46px; }
+  .slot .ic svg { width: 100%; height: 100%; }
+  .slot .nm { font-size: 12px; color: var(--muted); }
+  .slot.r:not(.full)::after { content: "?"; color: #f0b75c55; font-weight: 700; font-size: 22px; }
+  .bench.found .slot.r { box-shadow: inset 0 3px 6px #000c, 0 0 0 2px var(--warm); }
+  .bench.dud .slot.r { box-shadow: inset 0 3px 6px #000c, 0 0 0 2px var(--bad); }
+  .bench.dud .slot.r::after { content: "nothing"; color: var(--bad); font-size: 13px; font-weight: 600; }
+
+  .items { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 24px; }
+  .item, .mark, .named.cell { aspect-ratio: 1 / 1.12; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; position: relative; }
+  .item { background: linear-gradient(#ffffff06, transparent), var(--well); transition: box-shadow .15s; }
+  .item .ic { width: 48px; height: 48px; transition: transform .18s; }
+  .item .ic svg { width: 100%; height: 100%; }
+  .item .nm { font-size: 12px; line-height: 1.1; text-align: center; color: #e2d8c7; padding-inline: 2px; }
+  .item:active .ic { transform: scale(.92); }
+  .item.picked { box-shadow: inset 0 3px 6px #000c, 0 0 0 2px var(--warm), 0 0 18px #f0b75c40; }
+  .item.picked .ic { transform: translateY(-3px) scale(1.06); }
+  .item.new { animation: pop .45s; }
+  @keyframes pop { 0% { transform: scale(.5); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: none; opacity: 1; } }
+
+  /* A name you know is the ghost of its sticker; a recipe you bought shows under it. */
+  .named.cell > .ic { width: 40px; height: 40px; opacity: .28; filter: grayscale(1) brightness(1.4); }
+  .named.cell > .ic svg { width: 100%; height: 100%; }
+  .named.cell > .nm { font-size: 12px; color: var(--text); font-weight: 600; }
+  .named.cell .eq, .named.cell .plus, .named.cell .rec > span:not(.ic) { display: none; }
+  .named.cell .rec { display: flex; gap: 2px; }
+  .named.cell .rec .ic { width: 16px; height: 16px; }
+  .named.cell .rec .ic svg { width: 100%; height: 100%; }
+  .named.cell .hint { font-size: 11px; color: var(--muted); }
+  .mark::after { content: "?"; font-weight: 700; font-size: 18px; color: #ffffff12; }
+  .mark.armed { box-shadow: inset 0 3px 6px #000c, 0 0 0 1.5px #f0b75c88; color: var(--warm); font-size: 12px; text-align: center; padding: 4px; line-height: 1.2; }
+  .mark.armed::after { display: none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+  import { mount } from "../mock.js";
+  mount({ darkInGrid: true });
+</script>
+</body>
+</html>

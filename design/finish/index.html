@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finish round</title>
+<style>
+  :root { color-scheme: dark; --bg: #1a1b1f; --text: #eceef3; --muted: #8e93a3; --line: #33363f; --accent: #f5c451; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { padding-inline: 24px; padding-block: 24px 48px; }
+  header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  h1 { margin: 0; font-size: 20px; font-weight: 600; }
+  .states { display: flex; gap: 4px; }
+  .states button { font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 8px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--muted); }
+  .states button[aria-pressed="true"] { border-color: var(--accent); color: var(--text); }
+  .hint { color: var(--muted); font-size: 14px; }
+  .row { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; }
+  figure { margin: 0; width: 390px; max-width: 100%; }
+  iframe { display: block; width: 390px; height: 844px; max-width: 100%; border: 0; border-radius: 28px; box-shadow: 0 0 0 1px var(--line), 0 24px 48px #0008; background: #000; }
+  figcaption { margin-top: 16px; }
+  figcaption b { font-size: 17px; }
+  figcaption p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  figcaption a { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Finish round</h1>
+    <div class="states" role="group" aria-label="State">
+      <button type="button" data-q="">Mid-play</button>
+      <button type="button" data-q="?state=picked">Picked</button>
+      <button type="button" data-q="?state=dud">Dud</button>
+      <button type="button" data-q="?at=late">Late</button>
+    </div>
+    <span class="hint">Every screen is playable: tap two things. Scroll inside a phone to see the bench stay.</span>
+  </header>
+  <div class="row">
+    <figure><iframe data-src="sky/"></iframe><figcaption><b>Sky</b><p>The screen is the night the icons live in. Nothing boxed, things float; what's undiscovered is stars not yet lit.</p><a href="sky/" target="_blank">open alone</a></figcaption></figure>
+    <figure><iframe data-src="album/"></iframe><figcaption><b>Album</b><p>A page with a place for every discovery. Owned sits in its well, named is a ghost, the rest are empty wells to fill.</p><a href="album/" target="_blank">open alone</a></figcaption></figure>
+    <figure><iframe data-src="crucible/"></iframe><figcaption><b>Crucible</b><p>The game is called Alchemy, so the bench is the altar: gold rings, a lit vessel, reagents laid out below.</p><a href="crucible/" target="_blank">open alone</a></figcaption></figure>
+  </div>
+</div>
+<script>
+  const frames = [...document.querySelectorAll("iframe")], buttons = [...document.querySelectorAll(".states button")];
+  const show = (q) => {
+    frames.forEach((f) => (f.src = f.dataset.src + q));
+    buttons.forEach((b) => b.setAttribute("aria-pressed", b.dataset.q === q));
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => show(b.dataset.q)));
+  show("");
+</script>
+</body>
+</html>

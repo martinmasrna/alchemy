@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finish · Crucible</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Karla:wght@400;500;600&display=swap">
+<style>
+  /* Crucible: the game is called Alchemy, so the bench is the altar. Three rings drawn in gold
+     line on a dark warm ground, lit from the vessel in the middle; everything you own is laid
+     out below it like reagents on a table. */
+  :root {
+    color-scheme: dark;
+    --bg: #0d0a08; --bg-2: #1c130c; --gold: #d9b26a; --gold-dim: rgba(217, 178, 106, .28); --gold-faint: rgba(217, 178, 106, .12);
+    --text: #f1e7d6; --muted: #9a8b74; --bad: #e0705e;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font: 15px/1.35 Karla, system-ui, sans-serif; }
+  body { background: var(--bg); }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  svg { display: block; }
+  .hex { width: 11px; height: 11px; display: inline-block; vertical-align: -1px; }
+  #app { max-width: 480px; margin: 0 auto; padding-inline: 16px; padding-block: env(safe-area-inset-top) 48px; }
+  .serif { font-family: "Cormorant Garamond", Georgia, serif; }
+
+  .top { padding-block: 16px 0; text-align: center; }
+  .bar { display: flex; align-items: center; gap: 12px; position: relative; }
+  .world { flex: 1; order: 2; margin: 0; font: italic 500 22px/1.1 "Cormorant Garamond", Georgia, serif; color: var(--gold); }
+  .credits { order: 1; width: 48px; display: inline-flex; align-items: center; gap: 4px; color: var(--gold); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .menu { order: 3; width: 48px; height: 32px; display: inline-flex; align-items: center; justify-content: flex-end; gap: 3px; }
+  .menu i { width: 3px; height: 3px; border-radius: 50%; background: var(--muted); }
+  .sheet { position: absolute; right: 0; top: 40px; z-index: 20; display: flex; flex-direction: column; gap: 4px; padding: 8px; text-align: left;
+    background: #1a120c; border: 1px solid var(--gold-faint); border-radius: 12px; min-width: 160px; box-shadow: 0 12px 32px #000a; }
+  .sheet span { color: var(--muted); font-size: 13px; padding: 6px 10px; }
+  .sheet button { text-align: left; padding: 8px 10px; border-radius: 8px; }
+  .sheet button:hover { background: #fff1; }
+
+  .summit { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 10px; margin-top: 8px; }
+  .summit > .ic { width: 28px; height: 28px; }
+  .summit > .ic svg { width: 100%; height: 100%; }
+  .goal { display: flex; align-items: baseline; gap: 6px; }
+  .goal .k { font-size: 13px; color: var(--muted); }
+  .goal .k::after { content: " —"; }
+  .goal .v { font: 600 20px/1 "Cormorant Garamond", Georgia, serif; }
+  .summit .hint { font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--gold-faint); }
+  .progress { flex-basis: 100%; display: flex; justify-content: center; }
+  .progress .num { font-size: 12px; color: var(--muted); letter-spacing: .1em; font-variant-numeric: tabular-nums; }
+  .progress .num b { color: var(--text); font-weight: 600; }
+  .track { display: none; }
+
+  /* The bench: two reagent rings and the vessel. It keeps to the top of the screen, over a fade
+     of its own ground so the table slides under it. */
+  .bench { position: sticky; top: 0; z-index: 10; margin-inline: -16px; padding: 20px 16px 28px;
+    display: grid; grid-template-columns: 1fr 18px 1fr 18px 1.3fr; align-items: center; justify-items: center;
+    background: linear-gradient(var(--bg) 88%, transparent); }
+  .bench::after { content: ""; position: absolute; right: 2%; top: -10px; width: 44%; height: 150px; z-index: -1;
+    background: radial-gradient(closest-side, rgba(255, 170, 70, .16), transparent); pointer-events: none; }
+  .op { color: var(--gold); font-size: 18px; }
+  .slot { width: 76px; height: 76px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    background: radial-gradient(circle at 50% 40%, #1e150e, #0a0806); box-shadow: 0 0 0 1px var(--gold-dim), inset 0 4px 10px #000c; position: relative; }
+  .slot .ic { width: 42px; height: 42px; }
+  .slot .ic svg { width: 100%; height: 100%; }
+  .slot .nm { position: absolute; top: calc(100% + 6px); font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .slot.r { width: 96px; height: 96px; box-shadow: 0 0 0 1px var(--gold), 0 0 0 5px var(--bg), 0 0 0 6px var(--gold-dim), inset 0 4px 12px #000c, 0 0 30px rgba(255, 170, 70, .15); }
+  .slot.r .ic { width: 56px; height: 56px; }
+  .slot.r:not(.full)::after { content: ""; width: 10px; height: 10px; transform: rotate(45deg); border: 1px solid var(--gold-dim); }
+  .bench.found .slot.r { box-shadow: 0 0 0 1px var(--gold), 0 0 0 5px var(--bg), 0 0 0 6px var(--gold), 0 0 40px rgba(255, 180, 80, .45); }
+  .bench.dud .slot.r { box-shadow: 0 0 0 1px var(--bad), 0 0 0 5px var(--bg), 0 0 0 6px rgba(224, 112, 94, .4), inset 0 4px 12px #000c; }
+  .bench.dud .slot.r::after { content: "nothing"; width: auto; height: auto; border: 0; transform: none; color: var(--bad); font: italic 500 17px "Cormorant Garamond", Georgia, serif; }
+
+  .items { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 4px; margin-top: 4px; }
+  .item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding-block: 6px; position: relative; }
+  .item .ic { width: 50px; height: 50px; transition: transform .18s; }
+  .item .ic svg { width: 100%; height: 100%; }
+  .item .nm { font-size: 13px; color: #d9cdb8; text-align: center; line-height: 1.15; }
+  .item:active .ic { transform: scale(.92); }
+  .item::before { content: ""; position: absolute; top: 0; left: 50%; width: 62px; height: 62px; margin-left: -31px; border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--gold); opacity: 0; transition: opacity .15s; }
+  .item.picked::before { opacity: 1; }
+  .item.picked .nm { color: var(--gold); }
+  .item.new { animation: pop .45s; }
+  @keyframes pop { 0% { transform: scale(.5); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: none; opacity: 1; } }
+
+  .dark { margin-top: 36px; text-align: center; }
+  .lbl { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font: italic 500 17px "Cormorant Garamond", Georgia, serif; color: var(--muted); }
+  .lbl::before, .lbl::after { content: ""; flex: 1; height: 1px; background: var(--gold-faint); }
+  .named { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; padding-block: 4px 12px; font-size: 14px; }
+  .named .ic { width: 26px; height: 26px; }
+  .named .ic svg { width: 100%; height: 100%; }
+  .named > .nm { font: 600 19px "Cormorant Garamond", Georgia, serif; }
+  .named .eq, .named .plus { color: var(--gold); }
+  .rec { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+  .rec .ic { width: 20px; height: 20px; }
+  .named .hint { font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--gold-faint); }
+  .marks { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding-block: 8px; }
+  .mark { width: 22px; height: 22px; border-radius: 50%; box-shadow: 0 0 0 1px var(--gold-dim); position: relative; }
+  .mark::after { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: var(--gold-dim); }
+  .mark.armed { width: auto; padding-inline: 12px; border-radius: 999px; color: var(--gold); font-size: 12px; box-shadow: 0 0 0 1px var(--gold); }
+  .mark.armed::after { display: none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+  import { mount } from "../mock.js";
+  mount({ darkLabel: (n) => `${n} yet to be made` });
+</script>
+</body>
+</html>
