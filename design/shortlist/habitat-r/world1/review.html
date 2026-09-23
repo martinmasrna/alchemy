@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World 1 icon review</title>
+<style>
+  /* The game's own tokens: an icon has to be judged on the card it will actually sit on. */
+  :root {
+    color-scheme: dark;
+    --bg: #0b0d12; --panel: #151924; --panel-2: #1c2130; --line: #2a3145;
+    --text: #e8eaf0; --muted: #8b93a7; --accent: #f5c451; --good: #6fd08c; --bad: #e07a7a;
+  }
+  * { box-sizing: border-box; }
+  /* Anything given display: flex below would otherwise ignore the hidden attribute. */
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  svg { display: block; }
+  .wrap { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 120px; }
+
+  header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; line-height: 1.15; }
+  .count { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .count b { color: var(--accent); font-weight: 600; }
+  .sub { font-size: 14px; color: var(--muted); margin: 0 0 20px; }
+  .banner { border: 1px solid var(--bad); color: var(--bad); border-radius: 12px; padding: 10px 12px;
+    font-size: 14px; margin-bottom: 16px; }
+  .banner code { color: var(--text); }
+
+  .list { display: flex; flex-direction: column; gap: 12px; }
+  .item { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px;
+    display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; }
+  .art { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .big svg { width: 96px; height: 96px; }
+  /* A real grid card at real size — three columns in 358px, 34px icon, 14px name. This is the
+     one that decides it. */
+  .mini { width: 108px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .mini svg { width: 34px; height: 34px; }
+  .mini .n { font-size: 14px; line-height: 1.15; text-align: center; }
+
+  .body { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  h2 { font-size: 17px; font-weight: 600; margin: 2px 0 0; }
+  .tag { font-size: 12px; color: var(--accent); letter-spacing: .04em; text-transform: uppercase; }
+  .quote { font-size: 14px; color: var(--muted); margin: 0; padding-left: 10px; border-left: 2px solid var(--line);
+    overflow-wrap: anywhere; white-space: pre-wrap; }
+  .quote.mine { color: var(--text); border-left-color: var(--accent); }
+
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  button { font: inherit; font-size: 15px; border-radius: 10px; padding: 9px 14px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--text); }
+  button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:disabled { opacity: .45; cursor: default; }
+  button.good { border-color: color-mix(in srgb, var(--good) 55%, var(--line)); color: var(--good); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #1a1405; font-weight: 600; }
+  button.quiet { background: none; border-color: transparent; color: var(--muted); padding-inline: 8px; }
+  kbd { font: 12px ui-monospace, Consolas, monospace; color: var(--muted); }
+
+  .editor { display: flex; flex-direction: column; gap: 8px; }
+  textarea { font: inherit; font-size: 15px; width: 100%; min-height: 84px; resize: vertical; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--bg); color: var(--text); padding: 10px; }
+
+  .section { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    font-weight: 600; margin: 32px 0 12px; }
+  .done { text-align: center; color: var(--muted); font-size: 15px; padding: 28px 12px;
+    border: 1px dashed var(--line); border-radius: 16px; }
+  .done b { color: var(--good); font-weight: 600; }
+
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 8px 8px 8px 14px;
+    display: flex; align-items: center; gap: 10px; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.45);
+    max-width: calc(100% - 32px); }
+  .toast button { padding: 6px 12px; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>Icon review</h1><span class="count" id="count"></span></header>
+  <p class="sub" id="sub"></p>
+  <div class="banner" id="offline" hidden>Verdicts can't be saved. Start the server with <code>python tools/serve.py</code> and reload.</div>
+  <div class="list" id="queue"></div>
+  <div class="done" id="done" hidden></div>
+  <div class="section" id="notedHead" hidden></div>
+  <div class="list" id="noted"></div>
+</div>
+<div class="toast" id="toast" hidden><span id="toastText"></span><button type="button" id="undo">Undo</button></div>
+
+<script type="module">
+  import { w1icons, w1subjects, W1_DEFS } from "../../../_context/icon-art-w1.js";
+  import { HR_DEFS } from "../../../_context/icon-art-habitat-r.js";
+
+  // Verdicts live beside the drawings, in git. A verdict belongs to one version of an icon —
+  // a hash of its drawing — so a redrawn icon comes back to the queue with the old note on it.
+  const FILE = "design/shortlist/habitat-r/world1/review.json";
+  document.body.insertAdjacentHTML("afterbegin", W1_DEFS + HR_DEFS);
+
+  const sha = async (s) => [...new Uint8Array(await crypto.subtle.digest("SHA-1", new TextEncoder().encode(s)))]
+    .slice(0, 4).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const ICONS = await Promise.all(w1subjects.map(async ([id, name]) =>
+    ({ id, name, svg: w1icons[id], v: await sha(w1icons[id]) })));
+
+  const key = (icon) => `${icon.id}@${icon.v}`;
+  const $ = (id) => document.getElementById(id);
+  let state = { verdicts: {} }, canSave = true, lastGood = null, toastTimer = 0;
+  const cards = new Map();
+
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function buildCard(icon) {
+    const item = el("article", "item");
+    const art = el("div", "art");
+    const big = el("div", "big"); big.innerHTML = icon.svg;
+    const mini = el("div", "mini");
+    const well = el("span"); well.innerHTML = icon.svg;
+    mini.append(well, el("span", "n", icon.name));
+    art.append(big, mini);
+
+    const body = el("div", "body");
+    const tag = el("span", "tag", "Redrawn"); tag.hidden = true;
+    const prev = el("p", "quote"); prev.hidden = true;
+    const mine = el("p", "quote mine"); mine.hidden = true;
+    const actions = el("div", "actions");
+    const good = el("button", "good", "Good"); good.type = "button";
+    const fix = el("button", null, "Needs work"); fix.type = "button";
+    actions.append(good, fix);
+
+    const form = el("form", "editor"); form.hidden = true;
+    const ta = el("textarea"); ta.id = `note-${icon.id}`;
+    ta.placeholder = "What's wrong, and what should change?";
+    ta.setAttribute("aria-label", `Note for ${icon.name}`);
+    const row = el("div", "actions");
+    const save = el("button", "primary", "Save note"); save.type = "submit";
+    const cancel = el("button", "quiet", "Cancel"); cancel.type = "button";
+    const hint = el("kbd", null, "Ctrl+Enter");
+    row.append(save, cancel, hint);
+    form.append(ta, row);
+
+    body.append(tag, el("h2", null, icon.name), prev, mine, actions, form);
+    item.append(art, body);
+
+    good.addEventListener("click", () => markGood(icon));
+    fix.addEventListener("click", () => {
+      const v = state.verdicts[key(icon)];
+      if (!ta.value && v?.note) ta.value = v.note;
+      form.hidden = false; actions.hidden = true; ta.focus();
+    });
+    cancel.addEventListener("click", () => { form.hidden = true; actions.hidden = false; });
+    ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) form.requestSubmit(); });
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const note = ta.value.trim();
+      if (!note) { ta.focus(); return; }
+      setVerdict(icon, { verdict: "note", note }).then((ok) => {
+        if (ok) { form.hidden = true; actions.hidden = false; ta.value = ""; }
+      });
+    });
+
+    cards.set(icon.id, { item, tag, prev, mine, good, fix });
+    return item;
+  }
+
+  // The newest note left on an earlier drawing of this icon, so a redraw can be checked
+  // against what was asked for.
+  function previousNote(icon) {
+    let best = null;
+    for (const v of Object.values(state.verdicts))
+      if (v.icon === icon.id && v.v !== icon.v && v.verdict === "note" && (!best || v.at > best.at)) best = v;
+    return best;
+  }
+
+  function render() {
+    const queue = $("queue"), noted = $("noted");
+    let left = 0, nNoted = 0, nGood = 0;
+    for (const icon of ICONS) {
+      const c = cards.get(icon.id);
+      const v = state.verdicts[key(icon)];
+      const where = !v ? "queue" : v.verdict === "good" ? "good" : "noted";
+      const p = where === "queue" ? previousNote(icon) : null;
+
+      c.tag.hidden = c.prev.hidden = !p;
+      if (p) c.prev.textContent = `You said: ${p.note}`;
+      c.mine.hidden = where !== "noted";
+      if (where === "noted") c.mine.textContent = v.note;
+      c.fix.textContent = where === "noted" ? "Edit note" : "Needs work";
+      c.good.textContent = where === "noted" ? "Actually good" : "Good";
+      c.good.disabled = c.fix.disabled = !canSave;
+
+      if (where === "good") { c.item.remove(); nGood++; }
+      else (where === "noted" ? (nNoted++, noted) : (left++, queue)).append(c.item);
+    }
+
+    $("count").innerHTML = `<b>${left}</b> of ${ICONS.length} to judge`;
+    $("sub").textContent = `World 1 · ${nGood} good · ${nNoted} waiting for a redraw`;
+    $("done").hidden = left > 0;
+    $("done").innerHTML = nNoted
+      ? `Queue clear. <b>${nGood} good</b>, ${nNoted} with notes. They're saved in the repo, so just tell Claude you're done.`
+      : `All ${nGood} marked <b>good</b>. Nothing left to redraw.`;
+    $("notedHead").hidden = nNoted === 0;
+    $("notedHead").textContent = `Waiting for a redraw · ${nNoted}`;
+  }
+
+  // One writer and one file: every change rewrites the whole thing. On a failed save the
+  // change is rolled back, so the screen never shows a verdict the file does not have.
+  async function persist(next) {
+    try {
+      const r = await fetch(`/save?path=${encodeURIComponent(FILE)}`, { method: "POST", body: JSON.stringify(next) });
+      if (!r.ok) throw new Error(r.status);
+      state = next; return true;
+    } catch {
+      canSave = false; $("offline").hidden = false; render(); return false;
+    }
+  }
+
+  async function setVerdict(icon, body) {
+    const next = { verdicts: { ...state.verdicts,
+      [key(icon)]: { icon: icon.id, name: icon.name, v: icon.v, at: Date.now(), note: "", ...body } } };
+    const ok = await persist(next);
+    render();
+    return ok;
+  }
+
+  async function markGood(icon) {
+    if (await setVerdict(icon, { verdict: "good" })) { lastGood = icon; showToast(`${icon.name} marked good`); }
+  }
+
+  function showToast(text) {
+    $("toastText").textContent = text;
+    $("toast").hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { $("toast").hidden = true; lastGood = null; }, 6000);
+  }
+  $("undo").addEventListener("click", async () => {
+    const icon = lastGood; if (!icon) return;
+    $("toast").hidden = true; lastGood = null;
+    const verdicts = { ...state.verdicts }; delete verdicts[key(icon)];
+    await persist({ verdicts });
+    render();
+  });
+
+  try {
+    const r = await fetch(`/${FILE}`);
+    if (r.ok) state = await r.json();
+  } catch {}
+  ICONS.forEach((icon) => $("queue").append(buildCard(icon)));
+  render();
+</script>
+</body>
+</html>
