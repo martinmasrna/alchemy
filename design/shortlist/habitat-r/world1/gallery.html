@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World 1 icon gallery</title>
+<style>
+  /* The game's own tokens, so the set is seen on the card it will live on. */
+  :root {
+    color-scheme: dark;
+    --bg: #0b0d12; --panel: #151924; --panel-2: #1c2130; --line: #2a3145;
+    --text: #e8eaf0; --muted: #8b93a7; --accent: #f5c451;
+    --size: 88px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  svg { display: block; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 48px; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; line-height: 1.15; }
+  h1 span { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 8px; }
+  .sizes { display: flex; gap: 4px; }
+  .sizes button { font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--panel); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .sizes button[aria-pressed="true"] { border-color: var(--accent); color: var(--text); background: var(--panel-2); }
+  .sizes button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(calc(var(--size) + 32px), 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 8px 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .card svg { width: var(--size); height: var(--size); }
+  .card .n { font-size: 14px; line-height: 1.15; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>World 1 <span id="count"></span></h1>
+    <div class="sizes" role="group" aria-label="Icon size">
+      <button type="button" data-size="34">34px · grid</button>
+      <button type="button" data-size="88">88px</button>
+      <button type="button" data-size="140">140px</button>
+    </div>
+  </header>
+  <div class="grid" id="grid"></div>
+</div>
+<script type="module">
+  import { w1icons, w1subjects, W1_DEFS } from "../../../_context/icon-art-w1.js";
+  import { HR_DEFS } from "../../../_context/icon-art-habitat-r.js";
+  document.body.insertAdjacentHTML("afterbegin", W1_DEFS + HR_DEFS);
+
+  document.getElementById("count").textContent = `${w1subjects.length} icons, in play order`;
+  document.getElementById("grid").innerHTML = w1subjects.map(([id, name]) =>
+    `<div class="card">${w1icons[id]}<span class="n">${name}</span></div>`).join("");
+
+  const buttons = [...document.querySelectorAll(".sizes button")];
+  const setSize = (px) => {
+    document.documentElement.style.setProperty("--size", `${px}px`);
+    buttons.forEach((b) => b.setAttribute("aria-pressed", b.dataset.size === String(px)));
+    try { localStorage.setItem("gallery-size", px); } catch {}
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => setSize(b.dataset.size)));
+  let saved = null;
+  try { saved = localStorage.getItem("gallery-size"); } catch {}
+  setSize(saved ?? 88);
+</script>
+</body>
+</html>

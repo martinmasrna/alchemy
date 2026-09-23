@@ -49,7 +49,7 @@ Progress must survive closing the tab, clearing history and switching phones. Br
 Martin plays each new world blind. The table stays hidden from him until after the play, because "would I have guessed it" can only be tested once. Then the table is cut and rewritten together.
 
 ## Where we are
-World 1 (Big Bang to Earth, 26 discoveries) is live at https://martinmasrna.github.io/alchemy/ with the converged screen and the credit economy. Martin has played it twice (logs in `playlogs/`); the planet half has never been played blind, so the next real data point is a friend's log. All 31 of world 1's icons are drawn and 25 have passed review; Matter, Comet, Lava and Ocean are redrawn and back in the queue. Planet stays as it is unless Martin says otherwise. Lightyear was cut from the table: it was the one unit among things, and a dead end. Once they pass, the next design job is putting them into the game. Next content: world 2 (Sun, Water, Rock, Air to Life).
+World 1 (Big Bang to Earth, 26 discoveries) is live at https://martinmasrna.github.io/alchemy/ with the converged screen and the credit economy. Martin has played it twice (logs in `playlogs/`); the planet half has never been played blind, so the next real data point is a friend's log. All 30 of world 1's icons are drawn and have passed Martin's review; the whole set is at `design/shortlist/habitat-r/world1/gallery.html`. Lightyear was cut from the table: it was the one unit among things, and a dead end. The next design job is putting the icons into the game. Next content: world 2 (Sun, Water, Rock, Air to Life).
 
 ## Parked
 Hint cost (candidates: earned currency, scarcity per world, slow recharge, a quiz). How a finished world seeds the next ones. What happens at the end of a world.
@@ -59,7 +59,7 @@ Dead ends. Failure feedback on a dud combination (silence vs. near-miss). Which 
 
 ## Working on it
 `python tools/serve.py` in the repo root, open http://127.0.0.1:8765/. It serves the repo like `python -m http.server` and can also write `review.json` files under `design/`, which is what review pages save verdicts into.
-Icons are reviewed at `design/shortlist/habitat-r/world1/review.html`: Good takes an icon out of the queue, Needs work saves a note. Verdicts go to `review.json` beside it, keyed to a hash of each drawing, so a redrawn icon comes back to the queue with the old note shown next to it.
+`gallery.html` in the same folder shows the set in a grid at 34, 88 or 140px. Icons are reviewed at `design/shortlist/habitat-r/world1/review.html`: Good takes an icon out of the queue, Needs work saves a note. Verdicts go to `review.json` beside it, keyed to a hash of each drawing, so a redrawn icon comes back to the queue with the old note shown next to it.
 `node tools/check-world.mjs worlds/world1.js` validates a table: ids, reachability, one recipe per pair, critical path, dead ends.
 `node tools/smoke.mjs` plays world 1 to the summit in headless Chrome and checks the app (needs the server running).
 Every play uploads itself to a Cloudflare Worker (`worker/`, URL in `config.js`), one stored log per play, so starting over never overwrites an earlier one. First launch asks the player's name. Opening the game with `?nolog` plays without uploading and without asking for a name. `ADMIN_KEY=$(cat worker/.admin-key) node tools/pull-logs.mjs` downloads every play into `playlogs/`; the key file is git-ignored and also stored as the repo secret ADMIN_KEY.
