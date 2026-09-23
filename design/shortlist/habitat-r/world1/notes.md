@@ -24,6 +24,10 @@ Every one of these was found by rendering and looking, never by thinking about i
 - **Matter is a clump of protons and neutrons**, red and blue: the textbook picture of what everything is made of, with Particle as one ball of it. Three grey chips were a snowman, three primitive solids were geometry, and the atom symbol said "atom" rather than "stuff".
 - **Distance is pale.** The first far horizon was dark and read as a pair of sunglasses; atmosphere lightens what is far away.
 - **A paper shadow falls into hollows.** Anything placed in the shadow a shape throws on the card turns black.
+- **The light rule applies inside paper subjects too.** The Solar System's sun was a paper disc, the one star in the set that did not glow, and the Volcano's lava was flat orange beside a Lava that glows. Both keep paper bodies with light laid over them.
+- **A rounded square is a tile.** Space as a lifted panel read as a fifth element next to the four real ones; it is frameless now and dissolves into the card.
+- **Visual weight has to match across the grid.** Particle, Planet and the Moon were half the size of the full-bleed icons, and at 34px Particle was a dot; they are scaled up while their pieces of world stay put.
+- **No hard crops.** The Moon's planet was cut straight by the frame, the one place the viewBox showed; it fades out downwards now.
 - **Energy cannot be warm and radial**, or it is a second Star. It is electric blue-white, the one light in the set that is not fire-coloured.
 
 ## Still open

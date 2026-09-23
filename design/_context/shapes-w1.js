@@ -102,11 +102,10 @@ export const parts = {
     { d: disc(16.5, 26, 1.6) + disc(25.5, 25.4, 1.1) + disc(21, 32.6, 1.2), tone: "band" },
     { d: "M24 11a13 13 0 0 1 0 26a18 18 0 0 0 0-26z", tone: "dark" },
   ],
+  // Orbits and planets are paper; the sun is light, and is laid over them in icon-art-w1.js.
   solarsystem: [
     { d: ellR(24, 24, 20, 8.5, -18), tone: "dark", w: 1.2 },
     { d: ellR(24, 24, 13, 5.5, -18), tone: "dark", w: 1.2 },
-    { d: disc(24, 24, 6), tone: "base" },
-    { d: disc(22, 22, 2.2), tone: "light" },
     { d: disc(43, 18, 2.6) + disc(11.6, 27.6, 2), tone: "accent" },
   ],
   moon: [

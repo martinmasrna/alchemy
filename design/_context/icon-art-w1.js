@@ -30,8 +30,11 @@ const n = (v) => +v.toFixed(2);
 // Shadow box, unchanged from the renderer the style was chosen on: a black shadow at a 50%
 // offset and blurred, the flat fill, then a 90% copy 18% lighter at half opacity, which is the
 // light catching the raised edge.
-const shadowbox = (id, world = "") => {
-  let body = world ? `<g opacity=".85">${world}</g>` : "";
+// `front` is light laid over the paper (a glowing sun, hot lava), because a paper thing can
+// contain a light source. `scale` evens out visual weight, so a small subject is not a dot in
+// the grid; it grows the thing and leaves its piece of world where it is.
+const shadowbox = (id, world = "", { front = "", scale = 1 } = {}) => {
+  let body = "";
   parts[id].forEach((p) => {
     const c = hues[id][p.tone] ?? hues[id].base;
     if (p.w) {
@@ -42,7 +45,9 @@ const shadowbox = (id, world = "") => {
       + draw(p, c)
       + draw(p, lighter(c, .18), 'transform="translate(-.5 -.6) scale(.9)" transform-origin="24 24" opacity=".5"');
   });
-  return box(body);
+  body += front;
+  if (scale !== 1) body = `<g transform="translate(24 24) scale(${scale}) translate(-24 -24)">${body}</g>`;
+  return box((world ? `<g opacity=".85">${world}</g>` : "") + body);
 };
 
 const WORLDS = {
@@ -54,9 +59,35 @@ const WORLDS = {
   // came out as a wedge with two straight sides. It sits under the moon rather than beside
   // it: a curve along the bottom of the box is read as ground, and for a moon the ground is
   // exactly right.
-  moon: `<path d="${disc(24, 72, 32)}" fill="#2E6E96" opacity=".6"/>
-    <path d="${disc(24, 72, 32)}" fill="none" stroke="#7FB8DC" stroke-width="1.2" opacity=".55"/>`,
+  // The planet fades out downwards rather than being cut by the frame: a hard crop along the
+  // bottom was the one place in the set where the viewBox showed.
+  moon: `<defs><linearGradient id="mo-f" x1="0" y1="38" x2="0" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient>
+      <mask id="mo-m"><rect x="0" y="0" width="48" height="48" fill="url(#mo-f)"/></mask></defs>
+    <g mask="url(#mo-m)"><path d="${disc(24, 72, 32)}" fill="#2E6E96" opacity=".6"/>
+    <path d="${disc(24, 72, 32)}" fill="none" stroke="#7FB8DC" stroke-width="1.2" opacity=".55"/></g>`,
 };
+
+// Light that sits inside a paper subject, laid over its parts: the Solar System's sun, which
+// was the one star in the set drawn as paper, and the Volcano's lava, which was flat orange
+// beside a Lava that glows.
+const FRONT = {
+  solarsystem: `<defs><radialGradient id="ss-s" cx=".42" cy=".4" r=".62">
+      <stop offset="0" stop-color="#FFFCEB"/><stop offset=".5" stop-color="#FFD85A"/><stop offset="1" stop-color="#F59A1E"/></radialGradient></defs>
+    <circle cx="24" cy="24" r="8" fill="#FFB23A" opacity=".7" filter="url(#w1-haze)"/>
+    <circle cx="24" cy="24" r="6" fill="url(#ss-s)"/>`,
+  volcano: `<g filter="url(#w1-bloom)" opacity=".85">
+      <path d="M23 21l-2 10 1 9M27 21l2 9-1 10" stroke="#FF7A2A" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20.6 18.4h6.8l-1.4 3h-4z" fill="#FFA040"/></g>
+    <path d="M23 21l-2 10 1 9M27 21l2 9-1 10" stroke="#FFD27A" stroke-width=".7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <g fill="#FFD24B" opacity=".8" filter="url(#w1-fine)"><circle cx="15" cy="8.5" r="2.2"/><circle cx="33" cy="8" r="2"/>
+      <circle cx="24" cy="5.2" r="2.5"/><circle cx="19" cy="12" r="1.7"/><circle cx="29.4" cy="11.6" r="1.8"/></g>
+    <path d="M20.6 18.4h6.8l-1.4 3h-4z" fill="#FFE08A" opacity=".85"/>`,
+};
+
+// Visual weight, evened out: Particle, Planet and the Moon's body were half the size of the
+// full-bleed icons, and in the grid Particle became a dot.
+const SCALE = { particle: 1.3, planet: 1.2, moon: 1.2 };
 
 // ---- light -------------------------------------------------------------------------------
 const ray = (cx, cy, deg, r0, r1, w) => {
@@ -263,32 +294,34 @@ const lava = box(`<defs><radialGradient id="la-m" cx=".5" cy=".45" r=".65">
   <g fill="#FFD27A" filter="url(#w1-fine)"><circle cx="14" cy="16" r=".9"/><circle cx="22" cy="10" r=".7"/>
     <circle cx="30" cy="13" r="1"/><circle cx="37" cy="8.5" r=".6"/><circle cx="27" cy="5.5" r=".6"/></g>`);
 
-// Still a piece of dark cut out and lifted, which is what made Space work, but a window into
-// the deep now: violet falling to black, the Milky Way across it, a distant glow and two stars
-// bright enough to flare. The paper shadow under it keeps it an object in the set.
+// The deep itself, with no frame round it: violet-indigo dissolving into the card, the Milky Way
+// across it, stars thinning out towards the edge, and two bright enough to flare. As a lifted
+// panel it was a fifth element tile sitting next to the four real ones.
 const space = (() => {
-  const panel = "M11 8h26a5 5 0 0 1 5 5v22a5 5 0 0 1-5 5H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z";
   const r = rng(17);
   let dots = "";
-  for (let i = 0; i < 26; i++) {
-    const t = r(), along = [6 + t * 36, 38 - t * 24], off = (r() - .5) * (i < 14 ? 10 : 30);
-    dots += `<circle cx="${n(along[0] + off * .55)}" cy="${n(along[1] + off * .83)}" r="${n(.22 + r() ** 2 * .6)}" opacity="${n(.45 + r() * .55)}"/>`;
+  for (let i = 0; i < 44; i++) {
+    const a = r() * Math.PI * 2, rad = Math.sqrt(r()) * 20, near = i < 18;
+    const t = r(), x = near ? 6 + t * 36 + (r() - .5) * 6 : 24 + Math.cos(a) * rad;
+    const y = near ? 38 - t * 24 + (r() - .5) * 9 : 24 + Math.sin(a) * rad;
+    dots += `<circle cx="${n(x)}" cy="${n(y)}" r="${n(.22 + r() ** 2 * .6)}" opacity="${n(.45 + r() * .55)}"/>`;
   }
-  return box(`<defs><linearGradient id="sp-g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#070A1E"/><stop offset=".55" stop-color="#151743"/><stop offset="1" stop-color="#2C1452"/></linearGradient>
-    <clipPath id="sp-c"><path d="${panel}"/></clipPath></defs>
-    <path d="${panel}" fill="#000" opacity=".5" transform="translate(1.8 2.4)" filter="url(#w1-soft)"/>
-    <path d="${panel}" fill="url(#sp-g)"/>
-    <g clip-path="url(#sp-c)">
-      <path d="M2 40L46 12" stroke="#9C8CFF" stroke-width="11" opacity=".3" filter="url(#w1-haze)"/>
-      <path d="M2 40L46 12" stroke="#FFE6C8" stroke-width="3.4" opacity=".22" filter="url(#w1-bloom)"/>
-      <circle cx="35" cy="31" r="5" fill="#E04FB0" opacity=".28" filter="url(#w1-haze)"/>
+  return box(`<defs><radialGradient id="sp-g" cx="24" cy="24" r="23" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#241A5C"/><stop offset=".55" stop-color="#15164A" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#0B0D12" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sp-f" cx="24" cy="24" r="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient>
+    <mask id="sp-m"><rect x="0" y="0" width="48" height="48" fill="url(#sp-f)"/></mask></defs>
+    <circle cx="24" cy="24" r="23" fill="url(#sp-g)"/>
+    <g mask="url(#sp-m)">
+      <path d="M2 40L46 12" stroke="#9C8CFF" stroke-width="11" opacity=".32" filter="url(#w1-haze)"/>
+      <path d="M2 40L46 12" stroke="#FFE6C8" stroke-width="3.4" opacity=".24" filter="url(#w1-bloom)"/>
+      <circle cx="33" cy="31" r="5" fill="#E04FB0" opacity=".3" filter="url(#w1-haze)"/>
       <g fill="#FFFFFF">${dots}</g>
-      <circle cx="16" cy="17" r="3" fill="#CFE0FF" opacity=".7" filter="url(#w1-bloom)"/>
-      <path d="${star4(16, 17, 3.8)}" fill="#FFFFFF"/>
-      <path d="${star4(33, 23, 2.4)}" fill="#FFF3DC"/>
     </g>
-    <path d="${panel}" stroke="#7C88C8" stroke-width=".8" opacity=".6"/>`);
+    <circle cx="17" cy="18" r="3" fill="#CFE0FF" opacity=".7" filter="url(#w1-bloom)"/>
+    <path d="${star4(17, 18, 3.8)}" fill="#FFFFFF"/>
+    <path d="${star4(31, 24, 2.4)}" fill="#FFF3DC"/>`);
 })();
 
 // The view that means ocean rather than water: open sea to a far horizon under a high sun, its
@@ -360,7 +393,9 @@ const BESPOKE = Object.fromEntries(Object.entries({
 // Water and Earth come through untouched from the set the style was chosen on.
 const settled = habitatR.shadowbox;
 export const w1icons = Object.fromEntries(w1subjects.map(([id]) =>
-  [id, BESPOKE[id] ?? (w1parts[id] ? shadowbox(id, WORLDS[id]) : settled[id])]));
+  [id, BESPOKE[id] ?? (w1parts[id]
+    ? shadowbox(id, WORLDS[id], { front: FRONT[id] ?? "", scale: SCALE[id] ?? 1 })
+    : settled[id])]));
 
 export const w1worlds = WORLDS;
 export const w1glowing = Object.keys(BESPOKE);
