@@ -67,7 +67,7 @@ try {
   const total = world.items.filter((i) => !i.seed).length;
   const byId = new Map(world.items.map((i) => [i.id, i]));
   check((await evalJs("__names().length")) === 4, "starts with 4 seeds");
-  check((await evalJs("document.getElementById('total').textContent")) === String(total), "total counter matches table");
+  check((await evalJs("document.querySelector('#goal .progress').textContent")) === `0 / ${total}`, "progress counter matches table");
   check((await evalJs("__squares()")) === total - 1, "one ? square per unknown item, the named summit excluded");
   const widths = await evalJs(`JSON.stringify({ viewport: innerWidth, page: document.documentElement.scrollWidth })`);
   check(JSON.parse(widths).page <= JSON.parse(widths).viewport, `no horizontal overflow at 390px ${widths}`);
@@ -89,7 +89,7 @@ try {
   check((await evalJs("__squares()")) === total - 2, "one ? square fewer");
 
   // too poor for a recipe yet
-  await evalJs("document.querySelector('#goal .target.summit button').click()");
+  await evalJs("document.querySelector('#goal .hint').click()");
   check((await evalJs("__toast()")).includes("Not enough"), "refuses a hint you can't afford");
 
   // earn up, then the summit recipe costs 5 and names its ingredients
@@ -97,10 +97,10 @@ try {
   await evalJs("__combine('Matter','Matter')");     // Gravity
   await evalJs("__combine('Energy','Space')");      // Light
   check((await evalJs("__credits()")) === c0 + 4, "four guessed discoveries, four credits");
-  await evalJs("document.querySelector('#goal .target.summit button').click()");
-  check((await evalJs("document.querySelector('#goal .target.summit .r').textContent")).includes("Ocean"), "summit 'how?' reveals Ocean + Air");
+  await evalJs("document.querySelector('#goal .hint').click()");
+  check((await evalJs("document.querySelector('#goal .rec').textContent")).includes("Ocean"), "summit 'how?' reveals Ocean + Air");
   check((await evalJs("__credits()")) === c0 + 4 - 5, "recipe hint cost 5");
-  check((await evalJs("document.querySelectorAll('#named .target').length")) === 2, "Ocean and Air show as named chips");
+  check((await evalJs("document.querySelectorAll('#named .named').length")) === 2, "Ocean and Air show as named chips");
 
   // a ? square names something makeable right now
   const before = await evalJs("__credits()");
@@ -111,12 +111,12 @@ try {
   const st1 = await evalJs("__state()");
   const namedNow = st1.named.filter((id) => !st1.owned.includes(id) && id !== world.summit && !["ocean", "air"].includes(id));
   check(namedNow.length === 1 && byId.get(namedNow[0]).recipe.every((p) => st1.owned.includes(p)), `the name is something makeable now (${namedNow.map((id) => byId.get(id).name)})`);
-  check((await evalJs("document.querySelectorAll('#named .target').length")) === 3, "it joins the named chips");
+  check((await evalJs("document.querySelectorAll('#named .named').length")) === 3, "it joins the named chips");
 
   // persistence across reload
   await send("Page.reload"); await sleep(1200); await evalJs(HELPERS);
   check((await evalJs("__names().includes('Hydrogen')")), "progress survives reload");
-  check((await evalJs("document.querySelectorAll('#named .target').length")) === 3, "named chips survive reload");
+  check((await evalJs("document.querySelectorAll('#named .named').length")) === 3, "named chips survive reload");
 
   // play to the summit; everything left is guessed except Earth, whose recipe was bought
   const c3 = await evalJs("__credits()");
@@ -137,8 +137,8 @@ try {
   check((await evalJs("__credits()")) === c3 + (world.items.length - ownedNow.length - 1), "every guessed discovery earned, the bought summit did not");
   check(st.owned.length === world.items.length, `every item discovered (${st.owned.length}/${world.items.length})`);
   check(!!st.finishedAt, "finish time recorded");
-  check((await evalJs("__squares() + document.querySelectorAll('#named .target').length")) === 0, "nothing undiscovered left");
-  check((await evalJs("document.querySelector('#goal .target.summit').textContent")).includes("reached"), "goal chip shows reached");
+  check((await evalJs("__squares() + document.querySelectorAll('#named .named').length")) === 0, "nothing undiscovered left");
+  check((await evalJs("document.querySelector('#goal .progress').textContent")).includes("reached"), "goal chip shows reached");
   check((await evalJs("__combine('Energy','Matter')")) === false, "repeat combination shows no discovery");
 } catch (e) {
   fails.push(String(e));

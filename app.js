@@ -1,5 +1,6 @@
 import world from "./worlds/world1.js";
 import { SYNC_URL } from "./config.js";
+import { icons as ICONS, defs as ICON_DEFS } from "./icons/world1.js";
 
 // ---------- data ----------
 const byId = new Map(world.items.map((i) => [i.id, i]));
@@ -70,9 +71,14 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 
 // ---------- dom ----------
 const $ = (id) => document.getElementById(id);
-const el = { goal: $("goal"), slotA: $("slotA"), slotB: $("slotB"), result: $("result"), bench: $("bench"), grid: $("grid"), ownCount: $("ownCount"),
-  named: $("named"), hidden: $("hidden"), hiddenCount: $("hiddenCount"), note: $("note"), count: $("count"), total: $("total"), credits: $("credits"),
-  toast: $("toast"), stage: $("stage"), elapsed: $("elapsed") };
+const el = { goal: $("goal"), slotA: $("slotA"), slotB: $("slotB"), result: $("result"), bench: $("bench"), grid: $("grid"),
+  named: $("named"), hidden: $("hidden"), hiddenLabel: $("hiddenLabel"), note: $("note"), credits: $("credits"),
+  toast: $("toast"), stage: $("stage"), elapsed: $("elapsed"), menuBtn: $("menuBtn"), sheet: $("sheet") };
+
+// An item's drawing; the table's emoji stands in for a world whose icons are not drawn yet.
+document.body.insertAdjacentHTML("afterbegin", ICON_DEFS);
+const ic = (id) => `<span class="ic">${ICONS[id] ?? `<span class="emoji">${byId.get(id).icon}</span>`}</span>`;
+const HEX = `<svg class="hex" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 .8l4.5 2.6v5.2L6 11.2 1.5 8.6V3.4z" fill="currentColor"/></svg>`;
 
 let selected = null;      // id of the card in the first slot
 let justMade = null;      // id to pop into the grid
@@ -83,72 +89,76 @@ let armed = false, armTimer;
 
 $("worldName").textContent = world.name;
 document.title = `${world.name} · Alchemy`;
-el.total.textContent = discoveries.length;
 
 // ---------- rendering ----------
 function render() {
   const own = owned();
   const found = S.owned.filter((id) => !byId.get(id).seed).length;
-  el.count.textContent = found;
   el.credits.textContent = S.credits;
-  el.ownCount.textContent = S.owned.length;
-  el.hiddenCount.textContent = discoveries.length - found;
 
-  // goal
-  el.goal.innerHTML = "";
-  el.goal.appendChild(chip(byId.get(world.summit), own.has(world.summit)));
+  // goal: progress is the ring round its icon
+  const goal = byId.get(world.summit), reached = own.has(goal.id);
+  el.goal.className = "summit" + (reached ? " reached" : "") + (justNamed === goal.id ? " new" : "");
+  el.goal.style.setProperty("--p", reached ? 1 : found / discoveries.length);
+  el.goal.innerHTML = `${ic(goal.id)}<div class="goal">${goal.name}</div>` +
+    `<div class="progress">${reached ? "reached" : `<b>${found}</b> / ${discoveries.length}`}</div>`;
+  if (!reached) el.goal.appendChild(recipeOrHint(goal));
 
   // bench
-  const sel = selected ? byId.get(selected) : null;
-  el.slotA.className = "slot" + (sel ? " filled" : "");
-  el.slotA.innerHTML = sel ? `<span class="i">${sel.icon}</span><span class="n">${sel.name}</span>` : `<span>tap a card</span>`;
-  el.slotB.innerHTML = `<span>${sel ? "then another, or the same again" : "then another"}</span>`;
+  el.slotA.innerHTML = selected ? ic(selected) + `<span class="nm">${byId.get(selected).name}</span>` : "";
+  el.slotB.innerHTML = "";
   const r = byId.get(lastResult);
   el.result.className = "slot result " + (resultState === "found" ? "found" : resultState === "dud" ? "dud" : "");
-  el.result.innerHTML = resultState === "found" && r ? `<span class="i">${r.icon}</span><span class="n">${r.name}</span>` : resultState === "dud" ? `<span>nothing</span>` : `<span>?</span>`;
+  el.result.innerHTML = resultState === "found" && r ? ic(r.id) + `<span class="nm">${r.name}</span>` : resultState === "dud" ? "nothing" : "";
 
   // owned grid: seeds first, then in discovery order
   el.grid.innerHTML = "";
   for (const id of S.owned) {
-    const it = byId.get(id);
-    const card = document.createElement("div");
+    const card = document.createElement("button");
     card.className = "card" + (id === selected ? " picked" : "") + (id === justMade ? " new" : "");
-    card.innerHTML = `<span class="i">${it.icon}</span><span class="n">${it.name}</span>`;
+    card.innerHTML = `${ic(id)}<span class="n">${byId.get(id).name}</span>`;
     card.onclick = () => pick(id);
     el.grid.appendChild(card);
   }
   justMade = null;
 
-  // named-but-unmade items as chips, everything else as ? squares
+  // named-but-unmade things on glass, everything else as question marks
   el.named.innerHTML = "";
-  for (const id of S.named) if (!own.has(id) && id !== world.summit) el.named.appendChild(chip(byId.get(id), false));
+  const namedLeft = S.named.filter((id) => !own.has(id) && id !== world.summit);
+  for (const id of namedLeft) {
+    const t = byId.get(id), row = document.createElement("div");
+    row.className = "named" + (id === justNamed ? " new" : "");
+    row.innerHTML = `${ic(id)}<span class="nm">${t.name}</span>`;
+    if (S.recipesKnown.includes(id)) row.insertAdjacentHTML("beforeend", `<span class="eq">=</span>`);
+    row.appendChild(recipeOrHint(t));
+    el.named.appendChild(row);
+  }
   justNamed = null;
   const unknown = discoveries.filter((d) => !own.has(d.id) && !S.named.includes(d.id)).length;
+  el.hiddenLabel.textContent = unknown + namedLeft.length ? `${unknown + namedLeft.length} to discover` : "";
   el.hidden.innerHTML = "";
   for (let i = 0; i < unknown; i++) {
-    const sq = document.createElement("div");
+    const sq = document.createElement("button");
     sq.className = "sq" + (i === 0 && armed ? " armed" : "");
-    sq.textContent = i === 0 && armed ? `⬡ ${COST.name}` : "?";
+    sq.innerHTML = i === 0 && armed ? `Name one · ${HEX}${COST.name}` : "?";
     sq.onclick = square;
     el.hidden.appendChild(sq);
   }
 }
 
-function chip(t, reached) {
-  const c = document.createElement("div");
-  c.className = "target" + (t.id === world.summit ? " summit" : "") + (t.id === justNamed ? " new" : "");
-  if (reached) { c.innerHTML = `<span>${t.icon} ${t.name} — reached</span>`; return c; }
-  c.innerHTML = `<span>${t.icon} ${t.name}</span>`;
+// A recipe you bought, or the button that buys it.
+function recipeOrHint(t) {
   if (S.recipesKnown.includes(t.id)) {
-    const [a, b] = t.recipe.map((x) => byId.get(x));
-    c.innerHTML += `<span class="r">= ${a.icon} ${a.name} + ${b.icon} ${b.name}</span>`;
-  } else {
-    const btn = document.createElement("button");
-    btn.textContent = `how? · ${COST.recipe}`;
-    btn.onclick = (e) => { e.stopPropagation(); revealRecipe(t.id); };
-    c.appendChild(btn);
+    const rec = document.createElement("span");
+    rec.className = "rec";
+    rec.innerHTML = t.recipe.map((x) => `<span>${ic(x)}${byId.get(x).name}</span>`).join(`<span class="plus">+</span>`);
+    return rec;
   }
-  return c;
+  const btn = document.createElement("button");
+  btn.className = "hint";
+  btn.innerHTML = `Recipe · ${HEX}${COST.recipe}`;
+  btn.onclick = (e) => { e.stopPropagation(); revealRecipe(t.id); };
+  return btn;
 }
 
 // ---------- play ----------
@@ -206,11 +216,11 @@ function reveal(id, a, b, guessed) {
   st.className = "stage show";
   st.innerHTML = `<div class="backdrop"></div><div class="who" id="who">
     <div class="arena">
-      <div class="anchor ing a"><div>${A.icon}</div></div><div class="anchor ing b"><div>${B.icon}</div></div>
+      <div class="anchor ing a"><div>${ic(a)}</div></div><div class="anchor ing b"><div>${ic(b)}</div></div>
       <div class="anchor flash"><div></div></div><div class="anchor ring"><div></div></div><div class="anchor glow"><div></div></div>${sparks}
-      <div class="anchor out"><div>${it.icon}</div></div>
+      <div class="anchor out"><div>${ic(id)}</div></div>
     </div>
-    <div class="pair in" style="animation-delay:${d0}ms">${A.icon} ${A.name} + ${B.icon} ${B.name}</div>
+    <div class="pair in" style="animation-delay:${d0}ms">${ic(a)} ${A.name} <span class="plus">+</span> ${ic(b)} ${B.name}</div>
     <div class="name in" style="animation-delay:${d0 + 100}ms">${it.name}</div>
     <div class="blurb in" style="animation-delay:${d0 + 250}ms">${it.blurb}</div>
     <div class="credit in ${guessed ? "" : "none"}" style="animation-delay:${d0 + 450}ms">${guessed ? `+${EARN} credit` : "hinted · no credit"}</div>${stats}</div>`;
@@ -263,7 +273,7 @@ function square() {
   const c = cands[Math.floor(Math.random() * cands.length)];
   nameIt(c.id); justNamed = c.id;
   S.log.push({ t: Date.now(), kind: "hint", type: "name", revealed: c.id });
-  el.note.textContent = `${c.icon} ${c.name} can be made from what you have.`;
+  el.note.innerHTML = `${ic(c.id)} ${c.name} can be made from what you have.`;
   save(); render();
 }
 
@@ -276,13 +286,18 @@ function revealRecipe(tid) {
   save(); render();
 }
 
-// ---------- footer ----------
+// ---------- menu: the time played, and the tools that are ours rather than the player's ----------
+function menu(open) { el.sheet.hidden = !open; el.menuBtn.setAttribute("aria-expanded", open); }
+el.menuBtn.onclick = (e) => { e.stopPropagation(); menu(el.sheet.hidden); };
+document.addEventListener("click", (e) => { if (!el.sheet.hidden && !el.sheet.contains(e.target)) menu(false); });
 $("copyLog").onclick = async () => {
+  menu(false);
   const text = JSON.stringify({ world: world.id, ...S }, null, 0);
   try { await navigator.clipboard.writeText(text); toast("Play log copied."); }
   catch { prompt("Copy this:", text); }
 };
 $("reset").onclick = () => {
+  menu(false);
   if (!confirm("Start over? This wipes your progress in this world.")) return;
   S = fresh(); selected = null; lastResult = null; resultState = "idle"; save(); render();
 };
@@ -300,7 +315,7 @@ render();
 if (SYNC_ON && !player) {
   el.stage.className = "stage show form";
   el.stage.innerHTML = `<div class="backdrop"></div><div class="who">
-    <div class="icon">👋</div>
+    ${ic(world.summit)}
     <h2>Who's playing?</h2>
     <p>Your name goes on the play log, so we know whose discoveries are whose. Nothing else is collected.</p>
     <form id="nameForm"><input id="nameInput" maxlength="40" placeholder="your name" autocomplete="off" required> <button type="submit">Play</button></form></div>`;
